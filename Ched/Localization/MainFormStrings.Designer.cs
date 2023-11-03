@@ -232,11 +232,38 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   チャンネル別ガイド音 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ChannelSounds {
+            get {
+                return ResourceManager.GetString("ChannelSounds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   チャンネルごとのスピード に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ChannelSpeeds {
+            get {
+                return ResourceManager.GetString("ChannelSpeeds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   クリア に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Clear {
             get {
                 return ResourceManager.GetString("Clear", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   色 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Color {
+            get {
+                return ResourceManager.GetString("Color", resourceCulture);
             }
         }
         
@@ -340,6 +367,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   デフォルト に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Default {
+            get {
+                return ResourceManager.GetString("Default", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   イベント削除 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string DeleteEvent {
@@ -385,6 +421,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   イベント に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Event {
+            get {
+                return ResourceManager.GetString("Event", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   終了 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Exit {
@@ -421,6 +466,42 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   ガイドのデフォルトフェードタイプ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string GuideFadeTypes {
+            get {
+                return ResourceManager.GetString("GuideFadeTypes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   フェードイン に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string GuideIn {
+            get {
+                return ResourceManager.GetString("GuideIn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   無し に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string GuideNone {
+            get {
+                return ResourceManager.GetString("GuideNone", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   フェードアウト に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string GuideOut {
+            get {
+                return ResourceManager.GetString("GuideOut", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   ガイド音音量(共通) に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string GuideVolume {
@@ -444,6 +525,15 @@ namespace Ched.Localization {
         public static string HelpMenu {
             get {
                 return ResourceManager.GetString("HelpMenu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   を隠す に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Hide {
+            get {
+                return ResourceManager.GetString("Hide", resourceCulture);
             }
         }
         
@@ -493,6 +583,24 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   ガイドと重なった時 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string isOnGuide {
+            get {
+                return ResourceManager.GetString("isOnGuide", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   スライドと重なった時 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string isOnSlide {
+            get {
+                return ResourceManager.GetString("isOnSlide", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   昇格試験用の譜面 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string isSiken {
@@ -507,6 +615,15 @@ namespace Ched.Localization {
         public static string isSikendis {
             get {
                 return ResourceManager.GetString("isSikendis", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   可視 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string isVisible {
+            get {
+                return ResourceManager.GetString("isVisible", resourceCulture);
             }
         }
         
@@ -534,6 +651,15 @@ namespace Ched.Localization {
         public static string KeyCombination {
             get {
                 return ResourceManager.GetString("KeyCombination", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   レーン場所 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string LaneIndex {
+            get {
+                return ResourceManager.GetString("LaneIndex", resourceCulture);
             }
         }
         
@@ -619,6 +745,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   ノーツ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Notes {
+            get {
+                return ResourceManager.GetString("Notes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   ノーツデザイナー に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string NotesDesigner {
@@ -651,6 +786,15 @@ namespace Ched.Localization {
         public static string Other {
             get {
                 return ResourceManager.GetString("Other", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ペイント に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Paint {
+            get {
+                return ResourceManager.GetString("Paint", resourceCulture);
             }
         }
         
@@ -714,6 +858,15 @@ namespace Ched.Localization {
         public static string Plugin {
             get {
                 return ResourceManager.GetString("Plugin", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   プロパティ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Property {
+            get {
+                return ResourceManager.GetString("Property", resourceCulture);
             }
         }
         
@@ -844,6 +997,24 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   スピードチャンネル に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SpeedCh {
+            get {
+                return ResourceManager.GetString("SpeedCh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   スピード比 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SpeedRatio {
+            get {
+                return ResourceManager.GetString("SpeedRatio", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   ステップのチャンネル移動なし に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string steptype1 {
@@ -894,6 +1065,15 @@ namespace Ched.Localization {
         public static string ThemeWhite {
             get {
                 return ResourceManager.GetString("ThemeWhite", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ティック に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tick {
+            get {
+                return ResourceManager.GetString("Tick", resourceCulture);
             }
         }
         
@@ -975,6 +1155,15 @@ namespace Ched.Localization {
         public static string WidenLaneWidth {
             get {
                 return ResourceManager.GetString("WidenLaneWidth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   幅 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Width {
+            get {
+                return ResourceManager.GetString("Width", resourceCulture);
             }
         }
         

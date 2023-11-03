@@ -429,4 +429,67 @@
   <data name="ColorYellow" xml:space="preserve">
     <value>イエロー</value>
   </data>
+  <data name="ChannelSounds" xml:space="preserve">
+    <value>チャンネル別ガイド音</value>
+  </data>
+  <data name="Paint" xml:space="preserve">
+    <value>ペイント</value>
+  </data>
+  <data name="Default" xml:space="preserve">
+    <value>デフォルト</value>
+  </data>
+  <data name="ChannelSpeeds" xml:space="preserve">
+    <value>チャンネルごとのスピード</value>
+  </data>
+  <data name="Event" xml:space="preserve">
+    <value>イベント</value>
+  </data>
+  <data name="Property" xml:space="preserve">
+    <value>プロパティ</value>
+  </data>
+  <data name="LaneIndex" xml:space="preserve">
+    <value>レーン場所</value>
+  </data>
+  <data name="Tick" xml:space="preserve">
+    <value>ティック</value>
+  </data>
+  <data name="Width" xml:space="preserve">
+    <value>幅</value>
+  </data>
+  <data name="isVisible" xml:space="preserve">
+    <value>可視</value>
+  </data>
+  <data name="Color" xml:space="preserve">
+    <value>色</value>
+  </data>
+  <data name="GuideFadeTypes" xml:space="preserve">
+    <value>ガイドのデフォルトフェードタイプ</value>
+  </data>
+  <data name="GuideIn" xml:space="preserve">
+    <value>フェードイン</value>
+  </data>
+  <data name="GuideNone" xml:space="preserve">
+    <value>無し</value>
+  </data>
+  <data name="GuideOut" xml:space="preserve">
+    <value>フェードアウト</value>
+  </data>
+  <data name="Hide" xml:space="preserve">
+    <value>を隠す</value>
+  </data>
+  <data name="isOnGuide" xml:space="preserve">
+    <value>ガイドと重なった時</value>
+  </data>
+  <data name="isOnSlide" xml:space="preserve">
+    <value>スライドと重なった時</value>
+  </data>
+  <data name="Notes" xml:space="preserve">
+    <value>ノーツ</value>
+  </data>
+  <data name="SpeedCh" xml:space="preserve">
+    <value>スピードチャンネル</value>
+  </data>
+  <data name="SpeedRatio" xml:space="preserve">
+    <value>スピード比</value>
+  </data>
 </root>

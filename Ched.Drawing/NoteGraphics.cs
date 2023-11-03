@@ -211,11 +211,6 @@ namespace Ched.Drawing
                 var orderedSteps = steps.OrderBy(p => p.Point.Y).ToList();
                 var orderedVisibleSteps = visibleSteps.OrderBy(p => p).ToList();
 
-                if (orderedSteps[0].Point.Y < orderedVisibleSteps[0] || orderedSteps[orderedSteps.Count - 1].Point.Y > orderedVisibleSteps[orderedVisibleSteps.Count - 1])
-                {
-                    //throw new ArgumentOutOfRangeException("visibleSteps", "visibleSteps must contain steps");
-                }
-
                 using (var path = new GraphicsPath())
                 {
                     var left = orderedSteps.Select(p => p.Point);
@@ -225,7 +220,7 @@ namespace Ched.Drawing
                     float head = orderedVisibleSteps[0];
                     float height = orderedVisibleSteps[orderedVisibleSteps.Count - 1] - head;
                     var pathBounds = path.GetBounds();
-                    var blendBounds = new RectangleF(pathBounds.X, head, pathBounds.Width, height);
+                    var blendBounds = new RectangleF(pathBounds.X, head, pathBounds.Width, height + 0.1f);
                     using (var brush = new LinearGradientBrush(blendBounds, Color.Black, Color.Black, LinearGradientMode.Vertical))
                     {
                         var heights = orderedVisibleSteps.Zip(orderedVisibleSteps.Skip(1), (p, q) => Tuple.Create(p, q - p));

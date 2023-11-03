@@ -33,8 +33,12 @@ namespace Ched.UI.Shortcuts
 
         public static string FlipSelectedNotes => "editor.action.flipSelectedNotes";
         public static string RemoveSelectedNotes => "editor.action.removeSelectedNotes";
-        public static string RemoveSelectedEvents => "editor.action.removeSelectedEvents";
         public static string ChangeChannelSelectedNotes => "editor.action.chgchSelectedNotes";
+
+        public static string CopyEvents => "editor.action.clipboardCopyEvents";
+        public static string CutEvents => "editor.action.clipboardCutEvents";
+        public static string PasteEvents => "editor.action.clipboardPasteEvents";
+        public static string RemoveSelectedEvents => "editor.action.removeSelectedEvents";
 
         public static string SwitchScorePreviewMode => "editor.view.switchScorePreviewMode";
 
@@ -53,6 +57,8 @@ namespace Ched.UI.Shortcuts
         public static string SelectPen => "editor.selectPen";
         public static string SelectSelection => "editor.selectSelection";
         public static string SelectEraser => "editor.selectEraser";
+        public static string SelectPaint => "editor.selectPaint";
+        public static string SelectProperty => "editor.selectProperty";
 
         public static string ZoomIn => "editor.view.zoomIn";
         public static string ZoomOut => "editor.view.zoomOut";

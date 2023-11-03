@@ -20,6 +20,7 @@ namespace Ched.Core.Notes
         [Newtonsoft.Json.JsonProperty]
         private bool isStart = false;
 
+
         /// <summary>
         /// ノートの位置を表すTickを設定します。
         /// </summary>
@@ -29,7 +30,6 @@ namespace Ched.Core.Notes
             set
             {
                 if (tick == value) return;
-                if (tick < 0) throw new ArgumentOutOfRangeException("value", "value must not be negative.");
                 tick = value;
             }
         }
@@ -88,7 +88,7 @@ namespace Ched.Core.Notes
         {
             if (width < 0.1 )
                 throw new ArgumentOutOfRangeException("width", "Invalid width.");
-
+            
         }
 
         public void SetPosition(float laneIndex, float width)

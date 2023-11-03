@@ -22,15 +22,19 @@ using System.Globalization;
 using Ched.Drawing;
 using System.Runtime.CompilerServices;
 using System.Configuration;
+using System.Runtime.Versioning;
 
 namespace Ched.UI
 {
     public partial class MainForm : Form
     {
         private event EventHandler PreviewModeChanged;
+        
 
         private readonly string UserShortcutKeySourcePath = "keybindings.json";
+
         private readonly string FileExtension = ".chs";
+
         private string FileTypeFilter => FileFilterStrings.ChedFilter + string.Format("({0})|{1}", "*" + FileExtension, "*" + FileExtension);
 
         private bool isPreviewMode;
@@ -55,7 +59,9 @@ namespace Ched.UI
         private float WidthAmount { get; set; } = 1;
 
         private bool LaneVisual { get; set; } = false;
-         
+
+        public bool FormSpeedbyCh { get; set; } = ApplicationSettings.Default.IsAnotherChannelSounds;
+
         private int defaultCh = 1;
 
 
@@ -80,7 +86,7 @@ namespace Ched.UI
         }
 
         private bool CanWidenLaneWidth => !IsPreviewMode && NoteView.UnitLaneWidth < 24;
-        private bool CanNarrowLaneWidth => !IsPreviewMode && NoteView.UnitLaneWidth > 12;
+        private bool CanNarrowLaneWidth => !IsPreviewMode && NoteView.UnitLaneWidth > 4;
         private bool CanZoomIn => !IsPreviewMode && NoteView.UnitBeatHeight < 9600;
         private bool CanZoomOut => !IsPreviewMode && NoteView.UnitBeatHeight > 30;
         private bool CanEdit => !IsPreviewMode && !PreviewManager.Playing;
@@ -177,7 +183,7 @@ namespace Ched.UI
                 if (e.Data.GetDataPresent(DataFormats.FileDrop))
                 {
                     var items = (string[])e.Data.GetData(DataFormats.FileDrop);
-                    if (items.Length == 1 && items.All(p => Path.GetExtension(p) == FileExtension && File.Exists(p)))
+                    if (items.Length == 1 && items.All(p => Path.GetExtension(p) == FileExtension  && File.Exists(p)))
                         e.Effect = DragDropEffects.Copy;
                 }
             };
@@ -243,8 +249,11 @@ namespace Ched.UI
 
         protected void LoadFile(string filePath)
         {
+            var extension = Path.GetExtension(filePath);
+            Console.WriteLine("Mainform loadfile " + extension);
             try
             {
+
                 if (!ScoreBook.IsCompatible(filePath))
                 {
                     MessageBox.Show(this, ErrorStrings.FileNotCompatible, Program.ApplicationName, MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -255,6 +264,7 @@ namespace Ched.UI
                     if (MessageBox.Show(this, ErrorStrings.FileUpgradeNeeded, Program.ApplicationName, MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.No)
                         return;
                 }
+                
                 LoadBook(ScoreBook.LoadFile(filePath));
             }
             catch (UnauthorizedAccessException)
@@ -299,6 +309,7 @@ namespace Ched.UI
             var events = book.Score.Events;
             events.BpmChangeEvents.Add(new BpmChangeEvent() { Tick = 0, Bpm = 120 });
             events.TimeSignatureChangeEvents.Add(new TimeSignatureChangeEvent() { Tick = 0, Numerator = 4, DenominatorExponent = 2 });
+            book.LaneOffset = ApplicationSettings.Default.LaneOffset;
             LoadBook(book);
         }
 
@@ -474,6 +485,7 @@ namespace Ched.UI
 
         private void PlayPreview()
         {
+
             if (string.IsNullOrEmpty(CurrentMusicSource?.FilePath))
             {
                 MessageBox.Show(this, ErrorStrings.MusicSourceNull, Program.ApplicationName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -504,7 +516,7 @@ namespace Ched.UI
                 CommitChanges();
                 var context = new SoundPreviewContext(ScoreBook.Score, CurrentMusicSource, SoundSettings.Default.GuideSound);
                 
-                if (!PreviewManager.Start(context, startTick)) return;
+                if (!PreviewManager.Start(context, startTick, NoteView)) return;
                 PreviewManager.Finished += lambda;
                 NoteView.Editable = CanEdit;
             }
@@ -581,6 +593,10 @@ namespace Ched.UI
             commandSource.RegisterCommand(Commands.Paste, MainFormStrings.Paste, () => NoteView.PasteNotes());
             commandSource.RegisterCommand(Commands.PasteFlip, MainFormStrings.PasteFlipped, () => NoteView.PasteFlippedNotes());
 
+            commandSource.RegisterCommand(Commands.CutEvents, MainFormStrings.Event + MainFormStrings.Cut, () => NoteView.CutSelectedEvents());
+            commandSource.RegisterCommand(Commands.CopyEvents, MainFormStrings.Event + MainFormStrings.Copy, () => NoteView.CopySelectedEvents());
+            commandSource.RegisterCommand(Commands.PasteEvents, MainFormStrings.Event + MainFormStrings.Paste, () => NoteView.PasteEvents());
+
             commandSource.RegisterCommand(Commands.SelectAll, MainFormStrings.SelectAll, () => NoteView.SelectAll());
             commandSource.RegisterCommand(Commands.SelectToBegin, MainFormStrings.SelectToBeginning, () => NoteView.SelectToBeginning());
             commandSource.RegisterCommand(Commands.SelectToEnd, MainFormStrings.SelectToEnd, () => NoteView.SelectToEnd());
@@ -622,9 +638,16 @@ namespace Ched.UI
             });
             commandSource.RegisterCommand(Commands.InsertHighSpeedChange, MainFormStrings.HighSpeed, () =>
             {
+                var spratio = NoteView.ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == NoteView.Channel).OrderBy(p => p.Tick).LastOrDefault(p => p.Tick <= NoteView.CurrentTick)?.SpeedRatio ?? 1.0m;
+
+                if (!FormSpeedbyCh)
+                {
+                    spratio = NoteView.ScoreEvents.HighSpeedChangeEvents.OrderBy(p => p.Tick).LastOrDefault(p => p.Tick <= NoteView.CurrentTick)?.SpeedRatio ?? 1.0m;
+                }
+
                 var form = new HighSpeedSelectionForm()
                 {
-                    SpeedRatio = NoteView.ScoreEvents.HighSpeedChangeEvents.OrderBy(p => p.Tick).LastOrDefault(p => p.Tick <= NoteView.CurrentTick)?.SpeedRatio ?? 1.0m,
+                    SpeedRatio = spratio,
                     SpeedCh = Channel
                 };
                 if (form.ShowDialog(this) != DialogResult.OK) return;
@@ -677,6 +700,8 @@ namespace Ched.UI
             commandSource.RegisterCommand(Commands.SelectPen, MainFormStrings.Pen, () => NoteView.EditMode = EditMode.Edit);
             commandSource.RegisterCommand(Commands.SelectSelection, MainFormStrings.Selection, () => NoteView.EditMode = EditMode.Select);
             commandSource.RegisterCommand(Commands.SelectEraser, MainFormStrings.Eraser, () => NoteView.EditMode = EditMode.Erase);
+            commandSource.RegisterCommand(Commands.SelectPaint, MainFormStrings.Paint, () => NoteView.EditMode = EditMode.Paint);
+            commandSource.RegisterCommand(Commands.SelectProperty, MainFormStrings.Property, () => NoteView.EditMode = EditMode.Property);
 
             commandSource.RegisterCommand(Commands.ZoomIn, MainFormStrings.ZoomIn, () =>
             {
@@ -988,6 +1013,185 @@ namespace Ched.UI
             {
                 Checked = ApplicationSettings.Default.IsAnotherChannelEditable
             };
+            var channelSoundsItem = new ToolStripMenuItem(MainFormStrings.ChannelSounds, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsAnotherChannelSounds = item.Checked;
+                noteView.SoundbyCh = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsAnotherChannelSounds
+            };
+
+            var isFormSpeedItem = new ToolStripMenuItem(MainFormStrings.ChannelSpeeds, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsAnotherChannelFormSpeeds = item.Checked;
+                FormSpeedbyCh = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsAnotherChannelFormSpeeds
+            };
+
+
+            var uscfadeNone = new ToolStripMenuItem(MainFormStrings.GuideNone, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                ApplicationSettings.Default.GuideDefaultFade = 0;
+                noteView.GuideDefaultFade = 0;
+
+                item.Checked = noteView.GuideDefaultFade == 0;
+            })
+            {
+                Checked = ApplicationSettings.Default.GuideDefaultFade == 0
+            };
+
+            var uscfadeOut = new ToolStripMenuItem(MainFormStrings.GuideOut, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                ApplicationSettings.Default.GuideDefaultFade = 1;
+                noteView.GuideDefaultFade = 1;
+
+                item.Checked = noteView.GuideDefaultFade == 1;
+            })
+            {
+                Checked = ApplicationSettings.Default.GuideDefaultFade == 1
+            };
+
+            var uscfadeIn = new ToolStripMenuItem(MainFormStrings.GuideIn, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                ApplicationSettings.Default.GuideDefaultFade = 2;
+                noteView.GuideDefaultFade = 2;
+                
+                item.Checked = noteView.GuideDefaultFade == 2;
+            })
+            {
+                Checked = ApplicationSettings.Default.GuideDefaultFade == 2
+            };
+
+            var uscfadeItems = new ToolStripItem[] { uscfadeNone, uscfadeOut, uscfadeIn };
+            var ExportuscfadeItems = new ToolStripMenuItem(MainFormStrings.GuideFadeTypes, null, uscfadeItems);
+
+
+            var slideHideTap = new ToolStripMenuItem(MainFormStrings.isOnSlide + "TAP" + MainFormStrings.Hide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsTapHideOnSlide = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsTapHideOnSlide
+            };
+            var guideHideTap = new ToolStripMenuItem(MainFormStrings.isOnGuide + "TAP" + MainFormStrings.Hide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsTapHideOnGuide = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsTapHideOnGuide
+            };
+
+            var slideHideExTap = new ToolStripMenuItem(MainFormStrings.isOnSlide + "ExTAP" + MainFormStrings.Hide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsExTapHideOnSlide = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsExTapHideOnSlide
+            };
+            var guideHideExTap = new ToolStripMenuItem(MainFormStrings.isOnGuide + "ExTAP" + MainFormStrings.Hide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsExTapHideOnGuide = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsExTapHideOnGuide
+            };
+
+
+            var slideHideFlick = new ToolStripMenuItem(MainFormStrings.isOnSlide + "Flick" + MainFormStrings.Hide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsFlickHideOnSlide = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsFlickHideOnSlide
+            };
+
+            var slideHideDamage = new ToolStripMenuItem(MainFormStrings.isOnSlide + "DAMAGE" + MainFormStrings.Hide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsDamageHideOnSlide = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsDamageHideOnSlide
+            };
+            var guideHideDamage = new ToolStripMenuItem(MainFormStrings.isOnGuide + "DAMAGE" + MainFormStrings.Hide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsDamageHideOnGuide = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsDamageHideOnGuide
+            };
+
+
+
+
+
+            var tapNoteMenu = new ToolStripMenuItem[]
+            {
+                slideHideTap,
+                guideHideTap
+            };
+            var extapNoteMenu = new ToolStripMenuItem[]
+            {
+                slideHideExTap,
+                guideHideExTap
+            };
+            var tap2NoteMenu = new ToolStripMenuItem[]
+            {
+
+            };
+            var extap2NoteMenu = new ToolStripMenuItem[]
+            {
+
+            };
+            var flickNoteMenu = new ToolStripMenuItem[]
+            {
+                slideHideFlick
+            };
+            var damageNoteMenu = new ToolStripMenuItem[]
+            {
+                slideHideDamage,
+                guideHideDamage
+            };
+
+            var TapNoteItem = new ToolStripMenuItem("TAP", Resources.TapIcon, tapNoteMenu);
+            var ExTapNoteItem = new ToolStripMenuItem("ExTAP", Resources.ExTapIcon, extapNoteMenu);
+            var Tap2NoteItem = new ToolStripMenuItem("TAP2", Resources.TapIcon2, tap2NoteMenu);
+            var ExTap2NoteItem = new ToolStripMenuItem("ExTAP", Resources.ExTapIcon2, extap2NoteMenu);
+            var FlickNoteItem = new ToolStripMenuItem("FLICK", Resources.TapIcon, flickNoteMenu);
+            var DamageNoteItem = new ToolStripMenuItem("DAMAGE", Resources.DamgeIcon, damageNoteMenu);
+
+            var NoteItems = new ToolStripMenuItem[]
+            {
+                TapNoteItem, ExTapNoteItem, Tap2NoteItem, ExTap2NoteItem, FlickNoteItem, DamageNoteItem
+            };
+
+            var ExportNotesItems = new ToolStripMenuItem(MainFormStrings.Notes, null, NoteItems);
+
+
+
 
             noteView.NoteVisualMode = ApplicationSettings.Default.NoteVisualMode;
             var noteVisualModeItems = new ToolStripMenuItem[]
@@ -1028,7 +1232,9 @@ namespace Ched.UI
 
             var themeMenuItems = new ToolStripItem[] { themeBlack, themeWhite};
 
-            var channelMenuItems = new ToolStripItem[] { channelMovableItem, noteVisualModeItem, changeChannelSelectedNotesItem };
+            var channelMenuItems = new ToolStripItem[] { channelMovableItem, channelSoundsItem, noteVisualModeItem, changeChannelSelectedNotesItem, isFormSpeedItem };
+
+            var exportMenuItems = new ToolStripItem[] { ExportuscfadeItems, ExportNotesItems };
 
 
 
@@ -1044,19 +1250,16 @@ namespace Ched.UI
                 RenderMode = ToolStripRenderMode.Professional
             };
 
-            var lanemenu = new ToolStripMenuItem(MainFormStrings.LaneMenu, null, (s, e) =>
+            noteView.GuideFademodeChanged += (s, e) =>
             {
-                var form = new LaneSelectionForm() { LanesCount = noteView.LanesCount, MinusLanesCount = noteView.MinusLanesCount };
-                if (form.ShowDialog(this) == DialogResult.OK)
-                {
-                    ApplicationSettings.Default.LanesCount = form.LanesCount;
-                    noteView.LanesCount = form.LanesCount;
-                    noteView.MinusLanesCount = form.MinusLanesCount;
-                }
-            });
+                uscfadeNone.Checked = noteView.GuideDefaultFade == 0;
+                uscfadeOut.Checked = noteView.GuideDefaultFade == 1;
+                uscfadeIn.Checked = noteView.GuideDefaultFade == 2;
+                
+            };
 
 
-            menu.Items.AddRange(new ToolStripItem[]
+                menu.Items.AddRange(new ToolStripItem[]
             {
                 new ToolStripMenuItem(MainFormStrings.FileMenu, null, fileMenuItems),
                 new ToolStripMenuItem(MainFormStrings.EditMenu, null, editMenuItems),
@@ -1067,8 +1270,8 @@ namespace Ched.UI
                 new ToolStripMenuItem(MainFormStrings.HelpMenu, null, helpMenuItems),
                 new ToolStripMenuItem(MainFormStrings.ThemeMenu, null, themeMenuItems),
                 new ToolStripMenuItem(MainFormStrings.ChannelMenu, null, channelMenuItems),
-                
-                
+                new ToolStripMenuItem(MainFormStrings.Export, null, exportMenuItems),
+
             });
             return menu;
         }
@@ -1094,6 +1297,8 @@ namespace Ched.UI
             var penButton = shortcutItemBuilder.BuildItem(Commands.SelectPen, MainFormStrings.Pen, Resources.EditIcon);
             var selectionButton = shortcutItemBuilder.BuildItem(Commands.SelectSelection, MainFormStrings.Selection, Resources.SelectionIcon);
             var eraserButton = shortcutItemBuilder.BuildItem(Commands.SelectEraser, MainFormStrings.Eraser, Resources.EraserIcon);
+            var paintButton = shortcutItemBuilder.BuildItem(Commands.SelectPaint, MainFormStrings.Paint, Resources.PaintIcon);
+            var propertyButton = shortcutItemBuilder.BuildItem(Commands.SelectProperty, MainFormStrings.Property, Resources.PropertyIcon);
 
             var zoomInButton = shortcutItemBuilder.BuildItem(Commands.ZoomIn, MainFormStrings.ZoomIn, Resources.ZoomInIcon);
             zoomInButton.Enabled = CanZoomIn;
@@ -1131,6 +1336,8 @@ namespace Ched.UI
                 selectionButton.Checked = noteView.EditMode == EditMode.Select;
                 penButton.Checked = noteView.EditMode == EditMode.Edit;
                 eraserButton.Checked = noteView.EditMode == EditMode.Erase;
+                paintButton.Checked = noteView.EditMode == EditMode.Paint;
+                propertyButton.Checked = noteView.EditMode == EditMode.Property;
             };
 
             return new ToolStrip(new ToolStripItem[]
@@ -1138,7 +1345,7 @@ namespace Ched.UI
                 newFileButton, openFileButton, saveFileButton, exportButton, new ToolStripSeparator(),
                 cutButton, copyButton, pasteButton, new ToolStripSeparator(),
                 undoButton, redoButton, new ToolStripSeparator(),
-                penButton, selectionButton, eraserButton, new ToolStripSeparator(),
+                penButton, selectionButton, eraserButton, paintButton, propertyButton, new ToolStripSeparator(),
                 zoomInButton, zoomOutButton
             });
 
@@ -1267,7 +1474,7 @@ namespace Ched.UI
                 flickButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Flick);
                 damageButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Damage);
                 guideButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Guide) && !noteView.IsNewGuideStepVisible;
-                guideStepButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Slide) && noteView.IsNewGuideStepVisible;
+                guideStepButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Guide) && noteView.IsNewGuideStepVisible;
                 tap2Button.Checked = noteView.NewNoteType.HasFlag(NoteType.Tap) && noteView.IsNewNoteStart;
                 exTap2Button.Checked = noteView.NewNoteType.HasFlag(NoteType.ExTap) && noteView.IsNewNoteStart;
                 guideKind.Checked = noteView.NewNoteType.HasFlag(NoteType.Guide) && !noteView.IsNewGuideStepVisible;
@@ -1388,7 +1595,7 @@ namespace Ched.UI
                 }
                 else if (viewChBox.SelectedIndex == 0)
                 {
-                    ViewChannel = 1000;
+                    ViewChannel = -1;
                 }
                 else
                 {

@@ -72,19 +72,99 @@ namespace Ched.Configuration
         }
 
         [UserScopedSetting]
-        [DefaultSettingValue("16")]
-        public int LanesCount
+        [DefaultSettingValue("True")]
+        public bool IsAnotherChannelSounds
         {
-            get => (int)this["LanesCount"];
-            set => this["LanesCount"] = value;
+            get => (bool)this["IsAnotherChannelSounds"];
+            set => this["IsAnotherChannelSounds"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool IsAnotherChannelFormSpeeds
+        {
+            get => (bool)this["IsAnotherChannelFormSpeeds"];
+            set => this["IsAnotherChannelFormSpeeds"] = value;
+        }
+
+
+        [UserScopedSetting]
+        [DefaultSettingValue("0")]
+        public int GuideDefaultFade
+        {
+            get => (int)this["GuideDefaultFade"];
+            set => this["GuideDefaultFade"] = value;
         }
 
         [UserScopedSetting]
         [DefaultSettingValue("0")]
-        public int MinusLanesCount
+        public decimal LaneOffset
         {
-            get => (int)this["MinusLanesCount"];
-            set => this["MinusLanesCount"] = value;
+            get => (decimal)this["LaneOffset"];
+            set => this["LaneOffset"] = value;
         }
+
+
+
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool IsTapHideOnSlide
+        {
+            get => (bool)this["IsTapHideOnSlide"];
+            set => this["IsTapHideOnSlide"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool IsExTapHideOnSlide
+        {
+            get => (bool)this["IsExTapHideOnSlide"];
+            set => this["IsExTapHideOnSlide"] = value;
+        }
+
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool IsFlickHideOnSlide
+        {
+            get => (bool)this["IsFlickHideOnSlide"];
+            set => this["IsFlickHideOnSlide"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool IsDamageHideOnSlide
+        {
+            get => (bool)this["IsDamageHideOnSlide"];
+            set => this["IsDamageHideOnSlide"] = value;
+        }
+
+
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool IsTapHideOnGuide
+        {
+            get => (bool)this["IsTapHideOnGuide"];
+            set => this["IsTapHideOnGuide"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool IsExTapHideOnGuide
+        {
+            get => (bool)this["IsExTapHideOnGuide"];
+            set => this["IsExTapHideOnGuide"] = value;
+        }
+
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool IsFlickHideOnGuide
+        {
+            get => (bool)this["IsFlickHideOnGuide"];
+            set => this["IsFlickHideOnGuide"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool IsDamageHideOnGuide
+        {
+            get => (bool)this["IsDamageHideOnGuide"];
+            set => this["IsDamageHideOnGuide"] = value;
+        }
+
     }
 }

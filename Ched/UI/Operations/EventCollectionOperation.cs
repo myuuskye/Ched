@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Ched.Core.Events;
+using static Ched.UI.Operations.ChangeBpmEventOperation;
 
 namespace Ched.UI.Operations
 {
@@ -42,6 +43,142 @@ namespace Ched.UI.Operations
             Collection.Remove(Event);
         }
     }
+
+    public class ChangeBpmEventOperation : EventBase, IOperation
+    { 
+        public string Description { get { return "Bpmイベントの変更"; } }
+
+        protected BpmChangeEvent Event { get; }
+        protected List<BpmChangeEvent> Collection { get; }
+
+        protected EventDetail BeforeEvent { get; }
+        protected EventDetail AfterEvent { get; }
+
+        public ChangeBpmEventOperation(List<BpmChangeEvent> collection, BpmChangeEvent item, EventDetail before, EventDetail after) 
+        {
+            Collection = collection;
+            Event = item;
+            BeforeEvent = before;
+            AfterEvent = after;
+        }
+
+        public void Redo()
+        {
+            Event.Tick = AfterEvent.Tick;
+            Event.Bpm = AfterEvent.Bpm;
+        }
+
+        public void Undo()
+        {
+            Event.Tick = BeforeEvent.Tick;
+            Event.Bpm = BeforeEvent.Bpm;
+        }
+
+        public struct EventDetail
+        {
+            public int Tick { get; }
+            public double Bpm { get; }
+
+            public EventDetail(int tick, double bpm)
+            {
+                Tick = tick;
+                Bpm = bpm;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (obj == null || !(obj is EventDetail)) return false;
+                EventDetail other = (EventDetail)obj;
+                return Tick == other.Tick && Bpm == other.Bpm;
+            }
+
+            public override int GetHashCode()
+            {
+                return Tick ^ (int)Bpm;
+            }
+
+            public static bool operator ==(EventDetail a, EventDetail b)
+            {
+                return a.Equals(b);
+            }
+
+            public static bool operator !=(EventDetail a, EventDetail b)
+            {
+                return !a.Equals(b);
+            }
+        }
+    }
+
+    public class ChangeHighSpeedEventOperation : EventBase, IOperation
+    {
+        public string Description { get { return "HighSpeedイベントの変更"; } }
+
+        protected HighSpeedChangeEvent Event { get; }
+        protected List<HighSpeedChangeEvent> Collection { get; }
+
+        protected EventDetail BeforeEvent { get; }
+        protected EventDetail AfterEvent { get; }
+
+        public ChangeHighSpeedEventOperation(List<HighSpeedChangeEvent> collection, HighSpeedChangeEvent item, EventDetail before, EventDetail after)
+        {
+            Collection = collection;
+            Event = item;
+            BeforeEvent = before;
+            AfterEvent = after;
+        }
+
+        public void Redo()
+        {
+            Event.Tick = AfterEvent.Tick;
+            Event.SpeedRatio = AfterEvent.SpeedRatio;
+            Event.SpeedCh = AfterEvent.SpeedCh;
+        }
+
+        public void Undo()
+        {
+            Event.Tick = BeforeEvent.Tick;
+            Event.SpeedRatio = BeforeEvent.SpeedRatio;
+            Event.SpeedCh = BeforeEvent.SpeedCh;
+        }
+
+        public struct EventDetail
+        {
+            public int Tick { get; }
+            public decimal SpeedRatio { get; }
+            public int SpeedCh { get; }
+
+            public EventDetail(int tick, decimal ratio, int ch)
+            {
+                Tick = tick;
+                SpeedRatio = ratio;
+                SpeedCh = ch;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (obj == null || !(obj is EventDetail)) return false;
+                EventDetail other = (EventDetail)obj;
+                return Tick == other.Tick && SpeedRatio == other.SpeedRatio && SpeedCh == other.SpeedCh;
+            }
+
+            public override int GetHashCode()
+            {
+                return Tick ^ SpeedCh;
+            }
+
+            public static bool operator ==(EventDetail a, EventDetail b)
+            {
+                return a.Equals(b);
+            }
+
+            public static bool operator !=(EventDetail a, EventDetail b)
+            {
+                return !a.Equals(b);
+            }
+        }
+    }
+
+
 
     public class RemoveEventOperation<T> : EventCollectionOperation<T> where T : EventBase
     {

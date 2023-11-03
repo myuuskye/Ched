@@ -373,7 +373,7 @@
     <value>Channel</value>
   </data>
   <data name="ChannelMovable" xml:space="preserve">
-    <value>Edit by channel</value>
+    <value>Edit by Channel</value>
   </data>
   <data name="ChannelNote" xml:space="preserve">
     <value>Note Visual</value>
@@ -413,5 +413,59 @@
   </data>
   <data name="ColorNeutral" xml:space="preserve">
     <value>Neutral</value>
+  </data>
+  <data name="ChannelSounds" xml:space="preserve">
+    <value>Sounds by Channel</value>
+  </data>
+  <data name="Paint" xml:space="preserve">
+    <value>Paint</value>
+  </data>
+  <data name="Default" xml:space="preserve">
+    <value>Default</value>
+  </data>
+  <data name="ChannelSpeeds" xml:space="preserve">
+    <value>Insert Form Speed by Channel</value>
+  </data>
+  <data name="Event" xml:space="preserve">
+    <value>Event</value>
+  </data>
+  <data name="Property" xml:space="preserve">
+    <value>Property</value>
+  </data>
+  <data name="LaneIndex" xml:space="preserve">
+    <value>Position</value>
+  </data>
+  <data name="Tick" xml:space="preserve">
+    <value>Tick</value>
+  </data>
+  <data name="Width" xml:space="preserve">
+    <value>Width</value>
+  </data>
+  <data name="isVisible" xml:space="preserve">
+    <value>isVisible</value>
+  </data>
+  <data name="Color" xml:space="preserve">
+    <value>Colors</value>
+  </data>
+  <data name="GuideFadeTypes" xml:space="preserve">
+    <value>Default fade type for guides</value>
+  </data>
+  <data name="Hide" xml:space="preserve">
+    <value>is Hidden</value>
+  </data>
+  <data name="isOnGuide" xml:space="preserve">
+    <value>If on GuideNote</value>
+  </data>
+  <data name="isOnSlide" xml:space="preserve">
+    <value>If on SlideNote</value>
+  </data>
+  <data name="Notes" xml:space="preserve">
+    <value>Notes</value>
+  </data>
+  <data name="SpeedCh" xml:space="preserve">
+    <value>Speed Channel</value>
+  </data>
+  <data name="SpeedRatio" xml:space="preserve">
+    <value>Speed Ratio</value>
   </data>
 </root>

@@ -100,6 +100,54 @@ namespace Ched.UI.Operations
         }
     }
 
+
+    public class ChangeTapOperation : NoteCollectionOperation<TappableBase>
+    {
+        public override string Description { get { return "TAPをExTapと入れ替え"; } }
+        protected ExTap AfterNote { get; }
+
+        public ChangeTapOperation(NoteView.NoteCollection collection, Tap note, ExTap afternote) : base(collection, note)
+        {
+            AfterNote = afternote;
+        }
+        
+
+        public override void Redo()
+        {
+            Collection.Remove((Tap)Note);
+            Collection.Add(AfterNote);
+        }
+
+        public override void Undo()
+        {
+            Collection.Add((Tap)Note);
+            Collection.Remove(AfterNote);
+        }
+    }
+    public class ChangeExTapOperation : NoteCollectionOperation<TappableBase>
+    {
+        public override string Description { get { return "ExTAPをTapと入れ替え"; } }
+        protected Tap AfterNote { get; }
+
+        public ChangeExTapOperation(NoteView.NoteCollection collection, ExTap note, Tap afternote) : base(collection, note)
+        {
+            AfterNote = afternote;
+        }
+
+
+        public override void Redo()
+        {
+            Collection.Remove((ExTap)Note);
+            Collection.Add(AfterNote);
+        }
+
+        public override void Undo()
+        {
+            Collection.Add((ExTap)Note);
+            Collection.Remove(AfterNote);
+        }
+    }
+
     public class InsertHoldOperation : NoteCollectionOperation<Hold>
     {
         public override string Description { get { return "HOLDの追加"; } }
@@ -251,6 +299,34 @@ namespace Ched.UI.Operations
             Collection.Add(Note);
         }
     }
+    public class PaintAirOperation : NoteCollectionOperation<Air>
+    {
+        public override string Description { get { return "AIRの変更"; } }
+
+        protected HorizontalAirDirection BeforeHDirection { get; }
+        protected HorizontalAirDirection AfterHDirection { get; }
+
+        protected VerticalAirDirection BeforeVDirection { get; }
+        protected VerticalAirDirection AfterVDirection { get; }
+
+        public PaintAirOperation(NoteView.NoteCollection collection, Air note, HorizontalAirDirection hbefore, HorizontalAirDirection hafter, VerticalAirDirection vbefore, VerticalAirDirection vafter) : base(collection, note)
+        {
+            BeforeHDirection = hbefore;
+            AfterHDirection = hafter;
+            BeforeVDirection = vbefore;
+            AfterVDirection = vafter;
+        }
+
+        public override void Redo()
+        {
+            Collection.Paint(Note, AfterHDirection, AfterVDirection);
+        }
+
+        public override void Undo()
+        {
+            Collection.Paint(Note, BeforeHDirection, BeforeVDirection);
+        }
+    }
 
     public class InsertAirActionOperation : NoteCollectionOperation<AirAction>
     {
@@ -364,6 +440,29 @@ namespace Ched.UI.Operations
         public override void Undo()
         {
             Collection.Add(Note);
+        }
+    }
+    public class PaintGuideOperation : NoteCollectionOperation<Guide>
+    {
+        public override string Description { get { return "GUIDEの変更"; } }
+
+        Guide.USCGuideColor BeforeColor { get; }
+        Guide.USCGuideColor AfterColor { get; }
+
+        public PaintGuideOperation(NoteView.NoteCollection collection, Guide note, Guide.USCGuideColor beforecolor, Guide.USCGuideColor aftercolor) : base(collection, note)
+        {
+            BeforeColor = beforecolor;
+            AfterColor = aftercolor;
+        }
+
+        public override void Redo()
+        {
+            Collection.Paint(Note, AfterColor);
+        }
+
+        public override void Undo()
+        {
+            Collection.Paint(Note, BeforeColor);
         }
     }
 

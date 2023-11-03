@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using Ched.Configuration;
 using Ched.Core;
 using Ched.Localization;
 
@@ -102,6 +103,16 @@ namespace Ched.UI.Windows
                 NotifyPropertyChanged();
             }
         }
+        private decimal defaultlaneoffset;
+        public decimal DefaultLaneOffset
+        {
+            get => defaultlaneoffset;
+            set
+            {
+                defaultlaneoffset = value;
+                NotifyPropertyChanged();
+            }
+        }
 
         public bool siken;
 
@@ -156,6 +167,7 @@ namespace Ched.UI.Windows
             Artist = ScoreBook.ArtistName;
             NotesDesigner = ScoreBook.NotesDesignerName;
             LaneOffset = ScoreBook.LaneOffset;
+            DefaultLaneOffset = ApplicationSettings.Default.LaneOffset;
 
             MusicSourcePath = MusicSource.FilePath;
             MusicSourceLatency = MusicSource.Latency;
@@ -171,6 +183,7 @@ namespace Ched.UI.Windows
             ScoreBook.NotesDesignerName = NotesDesigner;
             ScoreBook.LaneOffset = LaneOffset;
             NoteView.laneOffset = LaneOffset;
+            ApplicationSettings.Default.LaneOffset = DefaultLaneOffset;
 
             MusicSource.FilePath = MusicSourcePath;
             MusicSource.Latency = MusicSourceLatency;

@@ -99,7 +99,7 @@ namespace Ched.Components.Exporter
                 writer.WriteLine();
 
 
-                var groupByCh = book.Score.Events.HighSpeedChangeEvents.GroupBy(p => p.SpeedCh);
+                var groupByCh = book.Score.Events.HighSpeedChangeEvents.OrderBy(q => q.SpeedCh).GroupBy(p => p.SpeedCh);
 
                 
 
@@ -150,6 +150,7 @@ namespace Ched.Components.Exporter
                 }
 
                 var speedchlist = book.Score.Events.HighSpeedChangeEvents
+                    .OrderBy(q => q.SpeedCh)
                     .GroupBy(p => p.SpeedCh);
 
 

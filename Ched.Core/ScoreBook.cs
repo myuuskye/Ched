@@ -138,9 +138,16 @@ namespace Ched.Core
         /// <returns></returns>
         public static ScoreBook LoadFile(string path)
         {
+            Version fileVersion = GetFileVersion(path);
             string data = GetDecompressedData(path);
+
+            var fileextension = System.IO.Path.GetExtension(path).Trim('.');
+            var res = new ScoreBook();
+
+
             var doc = JObject.Parse(data);
-            var fileVersion = GetFileVersion(path);
+
+
 
             if (fileVersion.Major < 2)
             {
@@ -173,12 +180,14 @@ namespace Ched.Core
 
             doc["version"] = JObject.FromObject(CurrentVersion);
 
-            var res = doc.ToObject<ScoreBook>(JsonSerializer.Create(SerializerSettings));
+            res = doc.ToObject<ScoreBook>(JsonSerializer.Create(SerializerSettings));
 
             if (res.Score.Events.TimeSignatureChangeEvents.Count == 0)
             {
                 res.Score.Events.TimeSignatureChangeEvents.Add(new Events.TimeSignatureChangeEvent() { Tick = 0, Numerator = 4, DenominatorExponent = 2 });
             }
+
+
 
             res.Path = path;
             return res;
@@ -210,6 +219,17 @@ namespace Ched.Core
             using (var stream = new MemoryStream())
             {
                 gz.CopyTo(stream);
+                return Encoding.UTF8.GetString(stream.ToArray());
+            }
+        }
+
+        private static string GetData(string path)
+        {
+            using (var file = new FileStream(path, FileMode.Open))
+            using (var stream = new MemoryStream())
+            {
+                Console.Write(Encoding.UTF8.GetString(stream.ToArray()));
+                file.CopyTo(stream);
                 return Encoding.UTF8.GetString(stream.ToArray());
             }
         }

@@ -184,6 +184,7 @@
     <Compile Include="Plugins\SlideMerger.cs" />
     <Compile Include="Plugins\SlideReverser.cs" />
     <Compile Include="Plugins\SlideSplitter.cs" />
+    <Compile Include="Plugins\UscImportPlugin.cs" />
     <Compile Include="Plugins\UscExportPlugin.cs" />
     <Compile Include="Plugins\SusExportPlugin.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -228,8 +229,32 @@
     <Compile Include="UI\Windows\Behaviors\OpenFileBehavior.cs" />
     <Compile Include="UI\Windows\Behaviors\StyleBehaviorCollection.cs" />
     <Compile Include="UI\Windows\Behaviors\UpdateOnEnterPressBehaviors.cs" />
+    <Compile Include="UI\Windows\BindableCheckBox.xaml.cs">
+      <DependentUpon>BindableCheckBox.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI\Windows\BindableNumericUpDown.xaml.cs">
       <DependentUpon>BindableNumericUpDown.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Windows\HighSpeedEventPropertyWindow.xaml.cs">
+      <DependentUpon>HighSpeedEventPropertyWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Windows\GuideNotePropertyWindow.xaml.cs">
+      <DependentUpon>GuideNotePropertyWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Windows\GuideStepNotePropertyWindow.xaml.cs">
+      <DependentUpon>GuideStepNotePropertyWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Windows\BpmEventPropertyWindow.xaml.cs">
+      <DependentUpon>BpmEventPropertyWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Windows\SlideStepNotePropertyWindow.xaml.cs">
+      <DependentUpon>SlideStepNotePropertyWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Windows\SlideNotePropertyWindow.xaml.cs">
+      <DependentUpon>SlideNotePropertyWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Windows\ShortNotePropertyWindow.xaml.cs">
+      <DependentUpon>ShortNotePropertyWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\Windows\BookPropertiesWindow.xaml.cs">
       <DependentUpon>BookPropertiesWindow.xaml</DependentUpon>
@@ -519,9 +544,41 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Page Include="UI\Windows\BindableCheckBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="UI\Windows\BindableNumericUpDown.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\Windows\HighSpeedEventPropertyWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Windows\GuideNotePropertyWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Windows\GuideStepNotePropertyWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Windows\BpmEventPropertyWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Windows\SlideStepNotePropertyWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Windows\SlideNotePropertyWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Windows\ShortNotePropertyWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="UI\Windows\BookPropertiesWindow.xaml">
       <SubType>Designer</SubType>
@@ -605,6 +662,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\guidegreen.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\brush.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\property.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\BASS.Native.2.4.12.2\build\BASS.Native.targets" Condition="Exists('..\packages\BASS.Native.2.4.12.2\build\BASS.Native.targets')" />

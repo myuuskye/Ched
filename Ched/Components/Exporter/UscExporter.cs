@@ -1,6 +1,8 @@
-﻿using Ched.Core;
+﻿using Ched.Configuration;
+using Ched.Core;
 using Ched.Core.Events;
 using Ched.Core.Notes;
+using Ched.UI;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
@@ -49,18 +51,20 @@ namespace Ched.Components.Exporter
 
         public void Export(Stream stream)
         {
-
+            
             var book = ScoreBook;
             var notes = book.Score.Notes;
             var objects = new List<USCObject>();
             usc = new USC(offset);
+
+            int guideDefType = ApplicationSettings.Default.GuideDefaultFade;
 
             var bpmchange = new List<USCObject>();
             var timescalechange = new List<USCObject>();
 
             foreach (var bpmevent in book.Score.Events.BpmChangeEvents)
             {
-                var change = new USCBpmChange(bpmevent.Tick, bpmevent.Bpm);
+                var change = new USCBpmChange((double)bpmevent.Tick / 480, bpmevent.Bpm);
 
                 usc.objects.Add(change);
 
@@ -105,7 +109,7 @@ namespace Ched.Components.Exporter
                         if ((note.LaneIndex == note3.LaneIndex) && (note.Tick == note3.Tick)) isOnSlide = true;
                     }
                 }
-                if (isOnSlide) continue; //SlideStepと重なってたらスキップ
+                if (isOnSlide && ApplicationSettings.Default.IsTapHideOnSlide) continue; //SlideStepと重なってたらスキップ
 
                 foreach (var note2 in notes.Guides)
                 {
@@ -115,13 +119,14 @@ namespace Ched.Components.Exporter
                         if ((note.LaneIndex == note3.LaneIndex) && (note.Tick == note3.Tick)) isOnGuide = true;
                     }
                 }
-                
+                if (isOnGuide && ApplicationSettings.Default.IsTapHideOnGuide) continue;
                 foreach (var note2 in notes.Airs)
                 {
                     if ((note.LaneIndex == note2.LaneIndex) && (note.Tick == note2.Tick) && (note2.VerticalDirection == VerticalAirDirection.Up)) isAir = true;
                     if ((note.LaneIndex == note2.LaneIndex) && (note.Tick == note2.Tick) && (note2.VerticalDirection == VerticalAirDirection.Down)) isAirDown = true;
                 }
                 if(isAir) continue; //Airと重なってたらスキップ
+               
                 if (isAirDown && !isOnGuide) continue; //AirDownと重なっていて、Guideと重なっていなかったらスキップ
 
                 foreach (var note2 in notes.Flicks)
@@ -157,7 +162,7 @@ namespace Ched.Components.Exporter
                         if ((note.LaneIndex == note3.LaneIndex) && (note.Tick == note3.Tick)) isOnSlide = true;
                     }
                 }
-                if (isOnSlide) continue; //Slideと重なってたらスキップ
+                if (isOnSlide && ApplicationSettings.Default.IsExTapHideOnSlide) continue; //Slideと重なっていて、スキップ可能だったらスキップ
                 foreach (var note2 in notes.Guides)
                 {
                     if ((note.LaneIndex == note2.StartNote.LaneIndex) && (note.Tick == note2.StartNote.Tick)) isOnGuide = true;
@@ -166,6 +171,7 @@ namespace Ched.Components.Exporter
                         if ((note.LaneIndex == note3.LaneIndex) && (note.Tick == note3.Tick)) isOnGuide = true;
                     }
                 }
+                if (isOnGuide && ApplicationSettings.Default.IsExTapHideOnGuide) continue;
                 foreach (var note2 in notes.Airs)
                 {
                     if ((note.LaneIndex == note2.LaneIndex) && (note.Tick == note2.Tick)) isAir = true;
@@ -203,7 +209,7 @@ namespace Ched.Components.Exporter
                         if ((note.LaneIndex == note3.LaneIndex) && (note.Tick == note3.Tick)) isOnSlide = true;
                     }
                 }
-                if (isOnSlide) continue; //Slideと重なってたらスキップ
+                if (isOnSlide && ApplicationSettings.Default.IsFlickHideOnSlide) continue; //Slideと重なってたらスキップ
                 foreach (var note2 in notes.Airs)
                 {
                     if ((note.LaneIndex == note2.LaneIndex) && (note.Tick == note2.Tick)) isAir = true;
@@ -233,7 +239,7 @@ namespace Ched.Components.Exporter
                     if ((note.LaneIndex == endNote.LaneIndex) && (note.Tick == endNote.Tick)) isOnSlide = true;
 
                 }
-                if (isOnSlide) continue; //Slideと重なってたらスキップ
+                if (isOnSlide && ApplicationSettings.Default.IsDamageHideOnSlide) continue; //Slideと重なってたらスキップ
                 foreach (var note2 in notes.Guides)
                 {
                     var endNote = note2.StepNotes.OrderBy(p => p.TickOffset).Last();
@@ -241,7 +247,7 @@ namespace Ched.Components.Exporter
                     if ((note.LaneIndex == endNote.LaneIndex) && (note.Tick == endNote.Tick)) isOnGuide = true;
 
                 }
-                if (isOnGuide) continue; //Slideと重なってたらスキップ
+                if (isOnGuide && ApplicationSettings.Default.IsDamageHideOnGuide) continue; //Slideと重なってたらスキップ
 
                 var laneIndex = note.LaneIndex - 8 + (float)book.LaneOffset + note.Width / 2;
                 var singlenote = new USCDamageNote((double)note.Tick / 480, note.Channel, laneIndex, note.Width / 2);
@@ -438,10 +444,53 @@ namespace Ched.Components.Exporter
                 string startEase = "linear";
                 var endNote = note.StepNotes.OrderBy(p => p.TickOffset).Last();
 
+                switch (guideDefType)
+                {
+                    case 0:
+                    default:
+                        fade = "none";
+                        break;
+                    case 1:
+                        fade = "out";
+                        break;
+                    case 2:
+                        fade = "in";
+                        break;
+                }
+
                 foreach (var note2 in notes.Damages)
                 {
-                    if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex) fade = "in";
-                    if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex) fade = "out";
+                    if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex)
+                    {
+                        switch (guideDefType)
+                        {
+                            case 0:
+                                fade = "in";
+                                break;
+                            case 1:
+                                fade = "in";
+                                break;
+                            case 2:
+                                fade = "out";
+                                break;
+                        }
+                    }
+                    if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex)
+                    {
+                        switch (guideDefType)
+                        {
+                            case 0:
+                                fade = "out";
+                                break;
+                            case 1:
+                                fade = "none";
+                                break;
+                            case 2:
+                                fade = "none";
+                                break;
+                        }
+                        
+                    }
                 }
 
                 foreach (var note2 in notes.Airs)
@@ -476,12 +525,6 @@ namespace Ched.Components.Exporter
                 */
 
                 color = note.GuideColor.ToString();
-
-                foreach (var note2 in notes.ExTaps)
-                {
-                    if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex) color = "yellow";
-                }
-
 
                 var startlaneIndex = note.StartNote.LaneIndex - 8 + (float)book.LaneOffset + note.StartNote.Width / 2;
 

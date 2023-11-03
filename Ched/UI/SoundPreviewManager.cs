@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -49,7 +50,7 @@ namespace Ched.UI
             });
         }
 
-        public bool Start(ISoundPreviewContext context, int startTick)
+        public bool Start(ISoundPreviewContext context, int startTick, NoteView noteview)
         {
             if (Playing) throw new InvalidOperationException();
             if (context == null) throw new ArgumentNullException("context");
@@ -58,7 +59,7 @@ namespace Ched.UI
             SoundManager.Register(context.MusicSource.FilePath);
 
             var timeCalculator = new TimeCalculator(context.TicksPerBeat, context.BpmDefinitions);
-            var ticks = new SortedSet<int>(context.GetGuideTicks()).ToList();
+            var ticks = new SortedSet<int>(context.GetGuideTicks(noteview)).ToList();
             TickElement = new LinkedList<int?>(ticks.Where(p => p >= startTick).OrderBy(p => p).Select(p => new int?(p))).First;
             BpmElement = new LinkedList<BpmChangeEvent>(context.BpmDefinitions.OrderBy(p => p.Tick)).First;
 
@@ -153,7 +154,7 @@ namespace Ched.UI
     {
         int TicksPerBeat { get; }
         double Speed { get; }
-        IEnumerable<int> GetGuideTicks();
+        IEnumerable<int> GetGuideTicks(NoteView noteview);
         IEnumerable<BpmChangeEvent> BpmDefinitions { get; }
         SoundSource MusicSource { get; }
         SoundSource ClapSource { get; }
@@ -169,6 +170,7 @@ namespace Ched.UI
         public SoundSource MusicSource { get; }
         public SoundSource ClapSource { get; }
 
+
         public SoundPreviewContext(Core.Score score, SoundSource musicSource, SoundSource clapSource)
         {
             this.score = score;
@@ -177,14 +179,25 @@ namespace Ched.UI
             Speed = Configuration.ApplicationSettings.Default.IsSlowDownPreviewEnabled ? 0.5 : 1.0;
         }
 
-        public IEnumerable<int> GetGuideTicks() => GetGuideTicks(score.Notes);
+        public IEnumerable<int> GetGuideTicks(NoteView noteview) => GetGuideTicks(score.Notes, noteview);
 
-        private IEnumerable<int> GetGuideTicks(Core.NoteCollection notes)
+        private IEnumerable<int> GetGuideTicks(Core.NoteCollection notes, NoteView noteview)
         {
-            var shortNotesTick = notes.Taps.Cast<TappableBase>().Concat(notes.ExTaps).Concat(notes.Flicks).Concat(notes.Damages).Select(p => p.Tick);
+            
+            var shortNotesTick = notes.Taps.Cast<TappableBase>().Concat(notes.ExTaps).Concat(notes.Flicks).Select(p => p.Tick);
             var holdsTick = notes.Holds.SelectMany(p => new int[] { p.StartTick, p.StartTick + p.Duration });
             var slidesTick = notes.Slides.SelectMany(p => new int[] { p.StartTick }.Concat(p.StepNotes.Where(q => q.IsVisible).Select(q => q.Tick)));
             var airActionsTick = notes.AirActions.SelectMany(p => p.ActionNotes.Select(q => p.StartTick + q.Offset));
+            
+            var allch = noteview.ViewChannel == -1;
+            if (noteview.SoundbyCh)
+            {
+                shortNotesTick = notes.Taps.Cast<TappableBase>().Where(p => p.Channel == noteview.ViewChannel || allch).Concat(notes.ExTaps.Where(p => p.Channel == noteview.ViewChannel || allch)).Concat(notes.Flicks.Where(p => p.Channel == noteview.ViewChannel || allch)).Select(p => p.Tick);
+                holdsTick = notes.Holds.SelectMany(p => new int[] { p.StartTick, p.StartTick + p.Duration });
+                slidesTick = notes.Slides.Where(p => p.Channel == noteview.ViewChannel || allch).SelectMany(p => new int[] { p.StartTick }.Concat(p.StepNotes.Where(q => q.IsVisible).Select(q => q.Tick)));
+                airActionsTick = notes.AirActions.SelectMany(p => p.ActionNotes.Select(q => p.StartTick + q.Offset));
+            }
+            
 
             return shortNotesTick.Concat(holdsTick).Concat(slidesTick).Concat(airActionsTick);
         }

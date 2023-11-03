@@ -27,6 +27,15 @@ namespace Ched.UI
                      h => (o, e) => h(e),
                      h => control.MouseDown += h,
                      h => control.MouseDown -= h);
+            
+        }
+        public static IObservable<MouseEventArgs> MouseClickAsObservable(this Control control)
+        {
+            return Observable.FromEvent<MouseEventHandler, MouseEventArgs>(
+                     h => (o, e) => h(e),
+                     h => control.MouseClick += h,
+                     h => control.MouseClick -= h);
+
         }
 
         public static IObservable<MouseEventArgs> MouseMoveAsObservable(this Control control)

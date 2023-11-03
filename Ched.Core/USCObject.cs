@@ -315,7 +315,7 @@ namespace Ched.Core
         public double bpm {get; set; }
 
 
-        public USCBpmChange(int beat, double bpm)
+        public USCBpmChange(double beat, double bpm)
         {
             this.beat = beat;
             this.bpm = bpm;

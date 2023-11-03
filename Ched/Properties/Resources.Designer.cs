@@ -373,9 +373,29 @@ namespace Ched.Properties {
         /// <summary>
         ///   型 System.Drawing.Bitmap のローカライズされたリソースを検索します。
         /// </summary>
+        public static System.Drawing.Bitmap PaintIcon {
+            get {
+                object obj = ResourceManager.GetObject("PaintIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   型 System.Drawing.Bitmap のローカライズされたリソースを検索します。
+        /// </summary>
         public static System.Drawing.Bitmap PasteIcon {
             get {
                 object obj = ResourceManager.GetObject("PasteIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   型 System.Drawing.Bitmap のローカライズされたリソースを検索します。
+        /// </summary>
+        public static System.Drawing.Bitmap PropertyIcon {
+            get {
+                object obj = ResourceManager.GetObject("PropertyIcon", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
