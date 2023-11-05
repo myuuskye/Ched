@@ -468,4 +468,13 @@
   <data name="SpeedRatio" xml:space="preserve">
     <value>Speed Ratio</value>
   </data>
+  <data name="AllowStepCh" xml:space="preserve">
+    <value>Allow step channels (USC only)</value>
+  </data>
+  <data name="EraceSlideEnd" xml:space="preserve">
+    <value>erases slide end</value>
+  </data>
+  <data name="EraceSlideStart" xml:space="preserve">
+    <value>erases slide start</value>
+  </data>
 </root>

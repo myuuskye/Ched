@@ -112,7 +112,8 @@ namespace Ched.UI
                 Dock = DockStyle.Fill,
                 UnitBeatHeight = ApplicationSettings.Default.UnitBeatHeight,
                 UnitLaneWidth = ApplicationSettings.Default.UnitLaneWidth,
-                InsertAirWithAirAction = ApplicationSettings.Default.InsertAirWithAirAction
+                InsertAirWithAirAction = ApplicationSettings.Default.InsertAirWithAirAction,
+                AllowStepCh = ApplicationSettings.Default.IsAllowStepChannel,
             };
 
             PreviewManager = new SoundPreviewManager(this);
@@ -895,6 +896,17 @@ namespace Ched.UI
                 Checked = ApplicationSettings.Default.InsertAirWithAirAction
             };
 
+            var allowStepChItem = new ToolStripMenuItem(MainFormStrings.AllowStepCh, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                NoteView.AllowStepCh = item.Checked;
+                ApplicationSettings.Default.IsAllowStepChannel = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsAllowStepChannel
+            };
+
             var pluginItems = PluginManager.ScorePlugins.Select(p => new ToolStripMenuItem(p.DisplayName, null, (s, e) =>
             {
                 CommitChanges();
@@ -926,7 +938,7 @@ namespace Ched.UI
                 cutItem, copyItem, pasteItem, pasteFlippedItem, new ToolStripSeparator(),
                 selectAllItem, selectToEndItem, selectoToBeginningItem, new ToolStripSeparator(),
                 flipSelectedNotesItem, removeSelectedNotesItem, removeEventsItem, new ToolStripSeparator(),
-                insertAirWithAirActionItem, new ToolStripSeparator(),
+                insertAirWithAirActionItem, allowStepChItem, new ToolStripSeparator(),
                 pluginItem
             };
 
@@ -1114,6 +1126,24 @@ namespace Ched.UI
                 Checked = ApplicationSettings.Default.IsExTapHideOnGuide
             };
 
+            var slideHideTap2 = new ToolStripMenuItem(MainFormStrings.isOnSlide + "TAP2" + MainFormStrings.Hide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsTap2HideOnSlide = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsTap2HideOnSlide
+            };
+            var slideHideExTap2 = new ToolStripMenuItem(MainFormStrings.isOnSlide + "ExTAP2" + MainFormStrings.Hide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsExTap2HideOnSlide = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsExTap2HideOnSlide
+            };
 
             var slideHideFlick = new ToolStripMenuItem(MainFormStrings.isOnSlide + "Flick" + MainFormStrings.Hide, null, (s, e) =>
             {
@@ -1123,6 +1153,15 @@ namespace Ched.UI
             })
             {
                 Checked = ApplicationSettings.Default.IsFlickHideOnSlide
+            };
+            var guideHideFlick = new ToolStripMenuItem(MainFormStrings.isOnGuide + "Flick" + MainFormStrings.Hide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsFlickHideOnGuide = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsFlickHideOnGuide
             };
 
             var slideHideDamage = new ToolStripMenuItem(MainFormStrings.isOnSlide + "DAMAGE" + MainFormStrings.Hide, null, (s, e) =>
@@ -1145,35 +1184,138 @@ namespace Ched.UI
             };
 
 
+            var startEraseTap = new ToolStripMenuItem("TAP " + MainFormStrings.EraceSlideStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsTapEraseStart = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsTapEraseStart
+            };
+            var startEraseExTap = new ToolStripMenuItem("ExTAP " + MainFormStrings.EraceSlideStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsExTapEraseStart = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsExTapEraseStart
+            };
+            var startEraseTap2 = new ToolStripMenuItem("TAP2 " + MainFormStrings.EraceSlideStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsTap2EraseStart = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsTap2EraseStart
+            };
+            var startEraseExTap2 = new ToolStripMenuItem("ExTAP2 " + MainFormStrings.EraceSlideStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsExTap2EraseStart = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsExTap2EraseStart
+            };
+            var startEraseDamage = new ToolStripMenuItem("DAMAGE " + MainFormStrings.EraceSlideStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsDamageEraseStart = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsDamageEraseStart
+            };
+
+            var endEraseTap = new ToolStripMenuItem("TAP " + MainFormStrings.EraceSlideEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsTapEraseEnd = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsTapEraseEnd
+            };
+            var endEraseExTap = new ToolStripMenuItem("ExTAP " + MainFormStrings.EraceSlideEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsExTapEraseEnd = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsExTapEraseEnd
+            };
+            var endEraseTap2 = new ToolStripMenuItem("TAP2 " + MainFormStrings.EraceSlideEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsTap2EraseEnd = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsTap2EraseEnd
+            };
+            var endEraseExTap2 = new ToolStripMenuItem("ExTAP2 " + MainFormStrings.EraceSlideEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsExTap2EraseEnd = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsExTap2EraseEnd
+            };
+            var endEraseDamage = new ToolStripMenuItem("DAMAGE " + MainFormStrings.EraceSlideEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsDamageEraseEnd = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsDamageEraseEnd
+            };
 
 
 
             var tapNoteMenu = new ToolStripMenuItem[]
             {
                 slideHideTap,
-                guideHideTap
+                guideHideTap,
+                startEraseTap, 
+                endEraseTap,
             };
             var extapNoteMenu = new ToolStripMenuItem[]
             {
                 slideHideExTap,
-                guideHideExTap
+                guideHideExTap,
+                startEraseExTap,
+                endEraseExTap,
             };
             var tap2NoteMenu = new ToolStripMenuItem[]
             {
-
+                slideHideTap2,
+                startEraseTap2,
+                endEraseTap2
             };
             var extap2NoteMenu = new ToolStripMenuItem[]
             {
-
+                slideHideExTap2,
+                startEraseExTap2,
+                endEraseExTap2
             };
             var flickNoteMenu = new ToolStripMenuItem[]
             {
-                slideHideFlick
+                slideHideFlick,
+                guideHideFlick,
+                
             };
             var damageNoteMenu = new ToolStripMenuItem[]
             {
                 slideHideDamage,
-                guideHideDamage
+                guideHideDamage,
+                startEraseDamage,
+                endEraseDamage,
             };
 
             var TapNoteItem = new ToolStripMenuItem("TAP", Resources.TapIcon, tapNoteMenu);
@@ -1270,7 +1412,7 @@ namespace Ched.UI
                 new ToolStripMenuItem(MainFormStrings.HelpMenu, null, helpMenuItems),
                 new ToolStripMenuItem(MainFormStrings.ThemeMenu, null, themeMenuItems),
                 new ToolStripMenuItem(MainFormStrings.ChannelMenu, null, channelMenuItems),
-                new ToolStripMenuItem(MainFormStrings.Export, null, exportMenuItems),
+                new ToolStripMenuItem("USC" +  MainFormStrings.Export, null, exportMenuItems),
 
             });
             return menu;
@@ -1381,7 +1523,8 @@ namespace Ched.UI
                 new ToolStripMenuItem(MainFormStrings.AirRightUp, Resources.AirRightUpIcon, (s, e) => noteView.AirDirection = new AirDirection(VerticalAirDirection.Up, HorizontalAirDirection.Right)),
                 new ToolStripMenuItem(MainFormStrings.AirDown, Resources.AirDownIcon, (s, e) => noteView.AirDirection = new AirDirection(VerticalAirDirection.Down, HorizontalAirDirection.Center)),
                 new ToolStripMenuItem(MainFormStrings.AirLeftDown, Resources.AirLeftDownIcon, (s, e) => noteView.AirDirection = new AirDirection(VerticalAirDirection.Down, HorizontalAirDirection.Left)),
-                new ToolStripMenuItem(MainFormStrings.AirRightDown, Resources.AirRightDownIcon, (s, e) => noteView.AirDirection = new AirDirection(VerticalAirDirection.Down, HorizontalAirDirection.Right))
+                new ToolStripMenuItem(MainFormStrings.AirRightDown, Resources.AirRightDownIcon, (s, e) => noteView.AirDirection = new AirDirection(VerticalAirDirection.Down, HorizontalAirDirection.Right)),
+                new ToolStripMenuItem("AIR", Resources.AirOtherIcon, (s, e) => noteView.AirDirection = new AirDirection(VerticalAirDirection.Other, HorizontalAirDirection.Center))
             });
             airKind.Image = Resources.AirUpIcon;
             ShortcutManager.ShortcutUpdated += (s, e) =>
@@ -1486,6 +1629,7 @@ namespace Ched.UI
                 {
                     case HorizontalAirDirection.Center:
                         airKind.Image = noteView.AirDirection.VerticalDirection == VerticalAirDirection.Up ? Resources.AirUpIcon : Resources.AirDownIcon;
+                        if (noteView.AirDirection.VerticalDirection == VerticalAirDirection.Other) airKind.Image = Resources.AirOtherIcon;
                         break;
 
                     case HorizontalAirDirection.Left:
@@ -1599,7 +1743,6 @@ namespace Ched.UI
                 }
                 else
                 {
-                    Console.WriteLine(viewchCounts[viewChBox.SelectedIndex - 1]);
                     ViewChannel = viewchCounts[viewChBox.SelectedIndex - 1];
                 }
                 noteView.ViewChannel = ViewChannel;

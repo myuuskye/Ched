@@ -75,6 +75,7 @@ namespace Ched.UI
         private int guidedefaultfade = ApplicationSettings.Default.GuideDefaultFade;
         private bool editablebyCh = ApplicationSettings.Default.IsAnotherChannelEditable;
         private bool soundsbyCh = ApplicationSettings.Default.IsAnotherChannelSounds;
+        private bool allowstepCh = ApplicationSettings.Default.IsAllowStepChannel;
         private int noteVisualMode = 1;
         private SelectionRange selectedRange = SelectionRange.Empty;
         private NoteType newNoteType = NoteType.Tap;
@@ -512,6 +513,18 @@ namespace Ched.UI
         }
 
         /// <summary>
+        /// ステップ別チャンネルが許可されるかを設定します。
+        /// </summary>
+        public bool AllowStepCh
+        {
+            get { return allowstepCh; }
+            set
+            {
+                allowstepCh = value;
+            }
+        }
+
+        /// <summary>
         /// ノーツの描画を設定します。
         /// </summary>
         public int NoteVisualMode
@@ -767,6 +780,11 @@ namespace Ched.UI
                     .Concat(ScoreEvents.HighSpeedChangeEvents)
                     .Where(q => visibleTick(q.Tick))
                     .Select(q => GetClickableRectFromEventPosition2(q.Tick));
+
+                    var timesignatureevents = Enumerable.Empty<EventBase>()
+                    .Concat(ScoreEvents.TimeSignatureChangeEvents)
+                    .Where(q => visibleTick(q.Tick))
+                    .Select(q => GetClickableRectFromEventPosition3(q.Tick));
 
 
 
@@ -1062,7 +1080,7 @@ namespace Ched.UI
                                     widthChange = 3;
                                 }
                                 step.SetPosition(laneIndexOffset, widthChange);
-                                step.Channel = step.ParentNote.Channel;
+                                if(!allowstepCh) step.Channel = step.ParentNote.Channel;
                                 Cursor.Current = Cursors.SizeWE;
                             })
                             .Finally(() =>
@@ -1100,7 +1118,7 @@ namespace Ched.UI
                                 {
                                     step.WidthChange = 0;
                                 }
-                                step.Channel = step.ParentNote.Channel;
+                                if (!allowstepCh) step.Channel = step.ParentNote.Channel;
                                 Cursor.Current = Cursors.SizeWE;
                             })
                             .Finally(() =>
@@ -1162,7 +1180,7 @@ namespace Ched.UI
                                     step.LaneIndexOffset = 0;
                                 }
                                 step.TickOffset = offset;
-                                step.Channel = step.ParentNote.Channel;
+                                if (!allowstepCh) step.Channel = step.ParentNote.Channel;
                                 //step.Channel = step.ParentNote.Channel;
                                 Cursor.Current = Cursors.SizeAll;
                             });
@@ -1174,7 +1192,7 @@ namespace Ched.UI
                         {
                             RectangleF stepRect = GetClickableRectFromNotePosition(step.Tick, step.LaneIndex, step.Width);
                             var beforeStepPos = new MoveSlideStepNoteOperation.NotePosition(step.TickOffset, step.LaneIndexOffset, step.WidthChange);
-                            step.Channel = slide.Channel;
+                            if (!allowstepCh) step.Channel = slide.Channel;
 
                             if (stepRect.Contains(scorePos))
                             {
@@ -1366,7 +1384,7 @@ namespace Ched.UI
                                     widthChange = 3;
                                 }
                                 step.SetPosition(laneIndexOffset, widthChange);
-                                step.Channel = step.ParentNote.Channel;
+                                if (!allowstepCh) step.Channel = step.ParentNote.Channel;
                                 Cursor.Current = Cursors.SizeWE;
                             })
                             .Finally(() =>
@@ -1404,7 +1422,7 @@ namespace Ched.UI
                                 {
                                     step.WidthChange = 0;
                                 }
-                                step.Channel = step.ParentNote.Channel;
+                                if (!allowstepCh) step.Channel = step.ParentNote.Channel;
                                 Cursor.Current = Cursors.SizeWE;
                             })
                             .Finally(() =>
@@ -1431,6 +1449,7 @@ namespace Ched.UI
                                 if ((step.Channel != channel) && (editablebyCh == true)) return;
                                 var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
                                 int offset = GetQuantizedTick(GetTickFromYPosition(currentScorePos.Y)) - step.ParentNote.StartTick;
+
                                 float xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
                                 if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
                                 {
@@ -1441,7 +1460,7 @@ namespace Ched.UI
                                     xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
                                 }
                                 float laneIndexOffset = beforeStepPos.LaneIndexOffset + xdiff;
-                                step.LaneIndexOffset = (int)Math.Min(Constants.LanesCount - step.Width - step.ParentNote.StartLaneIndex, Math.Max(-step.ParentNote.StartLaneIndex, laneIndexOffset));
+                                step.LaneIndexOffset = Math.Min(Constants.LanesCount - step.Width - step.ParentNote.StartLaneIndex, Math.Max(-step.ParentNote.StartLaneIndex, laneIndexOffset));
                                 if (bool.Parse(ConfigurationManager.AppSettings["SlideExtend"]) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
                                 {
                                     if (isMaxOffsetStep) step.IsVisible = true;
@@ -1465,7 +1484,7 @@ namespace Ched.UI
                                     step.LaneIndexOffset = 0;
                                 }
                                 step.TickOffset = offset;
-                                step.Channel = step.ParentNote.Channel;
+                                if (!allowstepCh) step.Channel = step.ParentNote.Channel;
                                 //step.Channel = step.ParentNote.Channel;
                                 Cursor.Current = Cursors.SizeAll;
                             });
@@ -1477,7 +1496,7 @@ namespace Ched.UI
                         {
                             RectangleF stepRect = GetClickableRectFromNotePosition(step.Tick, step.LaneIndex, step.Width);
                             var beforeStepPos = new MoveGuideStepNoteOperation.NotePosition(step.TickOffset, step.LaneIndexOffset, step.WidthChange);
-                            step.Channel = guide.Channel;
+                            if (!allowstepCh) step.Channel = guide.Channel;
 
                             if (stepRect.Contains(scorePos))
                             {
@@ -1786,25 +1805,58 @@ namespace Ched.UI
                     // AIR系編集時
                     if ((NoteType.Air | NoteType.AirAction).HasFlag(NewNoteType))
                     {
+                        
+                        var slidesteps = new List<Slide.StepTap>();
+                        foreach(var slide in Notes.Slides)
+                        {
+                            foreach(var step in slide.StepNotes)
+                            {
+                                slidesteps.Add(step);
+                            }
+                            
+                        }
+
+                        var guidesteps = new List<Guide.StepTap>();
+                        foreach (var guide in Notes.Guides)
+                        {
+                            foreach (var step in guide.StepNotes)
+                            {
+                                guidesteps.Add(step);
+                            }
+
+                        }
+
                         var airables = Enumerable.Empty<IAirable>()
                             .Concat(Notes.Damages.Reverse())
                             .Concat(Notes.ExTaps.Reverse())
                             .Concat(Notes.Taps.Reverse())
                             .Concat(Notes.Flicks.Reverse())
-                            .Concat(Notes.Slides.Reverse().Select(q => q.StepNotes.OrderByDescending(r => r.TickOffset).First()))
+                           // .Concat(Notes.Slides.Reverse().Select(q => q.StepNotes.OrderByDescending(r => r.TickOffset).First()))
+                            .Concat(slidesteps)
+                            .Concat(guidesteps)
                             .Concat(Notes.Holds.Reverse().Select(q => q.EndNote));
+                        
 
                         IObservable<MouseEventArgs> addAirHandler()
                         {
 
-                            foreach (var note in airables)
+                            foreach (var note in Notes.Slides)
                             {
-                                
-                                RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
+                                RectangleF rect = GetClickableRectFromNotePosition(note.StartNote.Tick, note.StartNote.LaneIndex, note.StartNote.Width);
                                 if (rect.Contains(scorePos))
                                 {
-                                    // 既に配置されていれば追加しない
-                                    if (Notes.GetReferencedAir(note).Count() > 0) break;
+                                    bool isOn = false;
+                                    foreach (var note2 in airables)
+                                    {
+                                        if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex) isOn = true;
+                                    }
+                                    if (isOn) break;
+                                    bool isAired = false;
+                                    foreach (var air in Notes.Airs)
+                                    {
+                                        if (note.StartNote.Tick == air.Tick && note.StartNote.LaneIndex == air.LaneIndex) isAired = true;
+                                    }
+                                    if (isAired) break;
                                     if ((note.Channel != channel) && (editablebyCh == true)) break;
                                     return mouseMove
                                         .TakeUntil(mouseUp)
@@ -1814,19 +1866,345 @@ namespace Ched.UI
                                         .Select(q => q.Args)
                                         .Do(q =>
                                         {
+                                            var newNote = new Tap() { Tick = note.StartNote.Tick, Channel = note.StartNote.Channel, LaneIndex = note.StartNote.LaneIndex, Width = note.StartNote.Width };
+                                            var air = new Air(newNote)
+                                            {
+                                                VerticalDirection = AirDirection.VerticalDirection,
+                                                HorizontalDirection = AirDirection.HorizontalDirection
+                                            };
+                                            Notes.Add(newNote);
+                                            Notes.Add(air);
+                                            Invalidate();
+                                            var op = new InsertAirOperation(Notes, air);
+                                            var op2 = new InsertTapOperation(Notes, newNote);
+                                            var op3 = new CompositeOperation("Airとそのノーツを追加", new IOperation[] { op, op2 });
+                                            OperationManager.Push(op3);
+                                        });
+                                }
+                            }
+
+                            foreach (var note in Notes.Guides)
+                            {
+                                RectangleF rect = GetClickableRectFromNotePosition(note.StartNote.Tick, note.StartNote.LaneIndex, note.StartNote.Width);
+                                if (rect.Contains(scorePos))
+                                {
+                                    bool isOn = false;
+                                    foreach (var note2 in airables)
+                                    {
+                                        if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex) isOn = true;
+                                    }
+                                    if (isOn) break;
+                                    bool isAired = false;
+                                    foreach (var air in Notes.Airs)
+                                    {
+                                        if (note.StartNote.Tick == air.Tick && note.StartNote.LaneIndex == air.LaneIndex) isAired = true;
+                                    }
+                                    if (isAired) break;
+                                    if ((note.Channel != channel) && (editablebyCh == true)) break;
+                                    return mouseMove
+                                        .TakeUntil(mouseUp)
+                                        .Count()
+                                        .Zip(mouseUp, (q, r) => new { Args = r, Count = q })
+                                        .Where(q => q.Count == 0)
+                                        .Select(q => q.Args)
+                                        .Do(q =>
+                                        {
+                                            var newNote = new Tap() { Tick = note.StartNote.Tick, Channel = note.StartNote.Channel, LaneIndex = note.StartNote.LaneIndex, Width = note.StartNote.Width };
+                                            var air = new Air(newNote)
+                                            {
+                                                VerticalDirection = AirDirection.VerticalDirection,
+                                                HorizontalDirection = AirDirection.HorizontalDirection
+                                            };
+                                            Notes.Add(newNote);
+                                            Notes.Add(air);
+                                            Invalidate();
+                                            var op = new InsertAirOperation(Notes, air);
+                                            var op2 = new InsertTapOperation(Notes, newNote);
+                                            var op3 = new CompositeOperation("Airとそのノーツを追加", new IOperation[] { op, op2 });
+                                            OperationManager.Push(op3);
+                                        });
+                                }
+                            }
+
+
+
+                            foreach (var note in airables)
+                            {
+
+                                RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
+                                if (rect.Contains(scorePos))
+                                {
+                                    // 既に配置されていれば追加しない
+                                    if (Notes.GetReferencedAir(note).Count() > 0) break;
+                                    if ((note.Channel != channel) && (editablebyCh == true)) break;
+
+
+                                    return mouseMove
+                                        .TakeUntil(mouseUp)
+                                        .Count()
+                                        .Zip(mouseUp, (q, r) => new { Args = r, Count = q })
+                                        .Where(q => q.Count == 0)
+                                        .Select(q => q.Args)
+                                        .Do(q =>
+                                        {
+
                                             var air = new Air(note)
                                             {
                                                 VerticalDirection = AirDirection.VerticalDirection,
                                                 HorizontalDirection = AirDirection.HorizontalDirection
                                             };
                                             Notes.Add(air);
+
                                             Invalidate();
                                             OperationManager.Push(new InsertAirOperation(Notes, air));
                                         });
                                 }
                             }
+
+
                             return null;
                         }
+
+
+                        IObservable<MouseEventArgs> addAirHandler2()
+                        {
+
+
+                            foreach (var note in Notes.Slides)
+                            {
+                                RectangleF rect = GetClickableRectFromNotePosition(note.StartNote.Tick, note.StartNote.LaneIndex, note.StartNote.Width);
+                                if (rect.Contains(scorePos))
+                                {
+
+                                    bool isOn = false;
+                                    foreach (var note2 in airables)
+                                    {
+                                        if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex) isOn = true;
+                                    }
+                                    if (isOn) break;
+                                    bool isAired = false;
+                                    foreach (var air in Notes.Airs)
+                                    {
+                                        if (note.StartNote.Tick == air.Tick && note.StartNote.LaneIndex == air.LaneIndex) isAired = true;
+                                    }
+                                    if (isAired) break;
+                                    if ((note.Channel != channel) && (editablebyCh == true)) break;
+
+                                    var beforemouseX = p.X;
+                                    var beforemouseY = p.Y;
+
+                                    return mouseMove
+                                        .TakeUntil(mouseUp)
+                                        .Count()
+                                        .Zip(mouseUp, (q, r) => new { Args = r, Count = q })
+                                        .Where(q => q.Count > 0)
+                                        .Select(q => q.Args)
+                                        .Do(q =>
+                                        {
+
+                                            var aftermouseX = q.X;
+                                            var aftermouseY = q.Y;
+                                            VerticalAirDirection Vdirection = VerticalAirDirection.Up;
+                                            HorizontalAirDirection Hdirection = HorizontalAirDirection.Center;
+
+                                            if (beforemouseX + 30 < aftermouseX)
+                                            {
+                                                Hdirection = HorizontalAirDirection.Right;
+                                            }
+                                            else if (beforemouseX - 30 > aftermouseX)
+                                            {
+                                                Hdirection = HorizontalAirDirection.Left;
+                                            }
+                                            else
+                                            {
+                                                Hdirection = HorizontalAirDirection.Center;
+                                            }
+
+                                            if (beforemouseY + 5 < aftermouseY)
+                                            {
+                                                Vdirection = VerticalAirDirection.Down;
+                                            }
+                                            else if (beforemouseY - 5 > aftermouseY)
+                                            {
+                                                Vdirection = VerticalAirDirection.Up;
+                                            }
+                                            else
+                                            {
+                                                Vdirection = VerticalAirDirection.Up;
+                                            }
+
+                                            var newNote = new Tap() { Tick = note.StartNote.Tick, Channel = note.StartNote.Channel, LaneIndex = note.StartNote.LaneIndex, Width = note.StartNote.Width };
+                                            var air = new Air(newNote)
+                                            {
+                                                VerticalDirection = Vdirection,
+                                                HorizontalDirection = Hdirection
+                                            };
+                                            Notes.Add(newNote);
+                                            Notes.Add(air);
+                                            Invalidate();
+                                            var op = new InsertAirOperation(Notes, air);
+                                            var op2 = new InsertTapOperation(Notes, newNote);
+                                            var op3 = new CompositeOperation("Airとそのノーツを追加", new IOperation[] { op, op2 });
+                                            OperationManager.Push(op3);
+                                        });
+                                }
+                            }
+
+                            foreach (var note in Notes.Guides)
+                            {
+                                RectangleF rect = GetClickableRectFromNotePosition(note.StartNote.Tick, note.StartNote.LaneIndex, note.StartNote.Width);
+                                if (rect.Contains(scorePos))
+                                {
+
+                                    bool isOn = false;
+                                    foreach (var note2 in airables)
+                                    {
+                                        if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex) isOn = true;
+                                    }
+                                    if (isOn) break;
+                                    bool isAired = false;
+                                    foreach (var air in Notes.Airs)
+                                    {
+                                        if (note.StartNote.Tick == air.Tick && note.StartNote.LaneIndex == air.LaneIndex) isAired = true;
+                                    }
+                                    if (isAired) break;
+                                    if ((note.Channel != channel) && (editablebyCh == true)) break;
+
+                                    var beforemouseX = p.X;
+                                    var beforemouseY = p.Y;
+
+                                    return mouseMove
+                                        .TakeUntil(mouseUp)
+                                        .Count()
+                                        .Zip(mouseUp, (q, r) => new { Args = r, Count = q })
+                                        .Where(q => q.Count > 0)
+                                        .Select(q => q.Args)
+                                        .Do(q =>
+                                        {
+
+                                            var aftermouseX = q.X;
+                                            var aftermouseY = q.Y;
+                                            VerticalAirDirection Vdirection = VerticalAirDirection.Up;
+                                            HorizontalAirDirection Hdirection = HorizontalAirDirection.Center;
+
+                                            if (beforemouseX + 30 < aftermouseX)
+                                            {
+                                                Hdirection = HorizontalAirDirection.Right;
+                                            }
+                                            else if (beforemouseX - 30 > aftermouseX)
+                                            {
+                                                Hdirection = HorizontalAirDirection.Left;
+                                            }
+                                            else
+                                            {
+                                                Hdirection = HorizontalAirDirection.Center;
+                                            }
+
+                                            if (beforemouseY + 5 < aftermouseY)
+                                            {
+                                                Vdirection = VerticalAirDirection.Down;
+                                            }
+                                            else if (beforemouseY - 5 > aftermouseY)
+                                            {
+                                                Vdirection = VerticalAirDirection.Up;
+                                            }
+                                            else
+                                            {
+                                                Vdirection = VerticalAirDirection.Up;
+                                            }
+
+                                            var newNote = new Tap() { Tick = note.StartNote.Tick, Channel = note.StartNote.Channel, LaneIndex = note.StartNote.LaneIndex, Width = note.StartNote.Width };
+                                            var air = new Air(newNote)
+                                            {
+                                                VerticalDirection = Vdirection,
+                                                HorizontalDirection = Hdirection
+                                            };
+                                            Notes.Add(newNote);
+                                            Notes.Add(air);
+                                            Invalidate();
+                                            var op = new InsertAirOperation(Notes, air);
+                                            var op2 = new InsertTapOperation(Notes, newNote);
+                                            var op3 = new CompositeOperation("Airとそのノーツを追加", new IOperation[] { op, op2 });
+                                            OperationManager.Push(op3);
+                                        });
+                                }
+                            }
+
+
+                            foreach (var note in airables)
+                            {
+
+                                RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
+                                if (rect.Contains(scorePos))
+                                {
+                                    // 既に配置されていれば追加しない
+                                    if (Notes.GetReferencedAir(note).Count() > 0) Notes.Remove(Notes.GetReferencedAir(note).First());
+                                    if ((note.Channel != channel) && (editablebyCh == true)) break;
+
+                                    var beforemouseX = p.X;
+                                    var beforemouseY = p.Y;
+
+                                    return mouseMove
+                                        .TakeUntil(mouseUp)
+                                        .Count()
+                                        .Zip(mouseUp, (q, r) => new { Args = r, Count = q })
+                                        .Where(q => q.Count > 0)
+                                        .Select(q => q.Args)
+                                        .Do(q =>
+                                        {
+
+                                            var aftermouseX = q.X;
+                                            var aftermouseY = q.Y;
+                                            VerticalAirDirection Vdirection = VerticalAirDirection.Up;
+                                            HorizontalAirDirection Hdirection = HorizontalAirDirection.Center;
+
+                                            if (beforemouseX + 30 < aftermouseX)
+                                            {
+                                                Hdirection = HorizontalAirDirection.Right;
+                                            }
+                                            else if (beforemouseX - 30 > aftermouseX)
+                                            {
+                                                Hdirection = HorizontalAirDirection.Left;
+                                            }
+                                            else
+                                            {
+                                                Hdirection = HorizontalAirDirection.Center;
+                                            }
+
+                                            if (beforemouseY + 5 < aftermouseY)
+                                            {
+                                                Vdirection = VerticalAirDirection.Down;
+                                            }
+                                            else if (beforemouseY - 5 > aftermouseY)
+                                            {
+                                                Vdirection = VerticalAirDirection.Up;
+                                            }
+                                            else
+                                            {
+                                                Vdirection = VerticalAirDirection.Up;
+                                            }
+
+
+                                            var air = new Air(note)
+                                            {
+                                                VerticalDirection = Vdirection,
+                                                HorizontalDirection = Hdirection
+                                            };
+                                            Notes.Add(air);
+
+                                            Invalidate();
+                                            OperationManager.Push(new InsertAirOperation(Notes, air));
+                                        });
+                                }
+                            }
+
+
+                            return null;
+                        }
+
+
+
+
 
                         IObservable<MouseEventArgs> addAirActionHandler()
                         {
@@ -1879,8 +2257,16 @@ namespace Ched.UI
                         switch (NewNoteType)
                         {
                             case NoteType.Air:
+                                if(AirDirection.VerticalDirection == VerticalAirDirection.Other)
+                                {
+                                    return  addAirHandler2() ?? Observable.Empty<MouseEventArgs>();
+                                }
+                                else
+                                {
+                                    return Observable.Merge(surfaceNotesHandler() ?? Observable.Empty<MouseEventArgs>(), addAirHandler() ?? Observable.Empty<MouseEventArgs>());
+                                }
                                 // クリック後MouseMoveするならノーツ操作 / MouseUpならAIR追加
-                                return Observable.Merge(surfaceNotesHandler() ?? Observable.Empty<MouseEventArgs>(), addAirHandler() ?? Observable.Empty<MouseEventArgs>());
+                                
 
                             case NoteType.AirAction:
                                 // AIR-ACTION追加時はその後のドラッグをハンドルする
@@ -2920,6 +3306,41 @@ namespace Ched.UI
                     }
 
 
+                    IObservable<MouseEventArgs> TimeSignatureEventHandler(TimeSignatureChangeEvent @event)
+                    {
+                        return mouseClick
+                            .TakeUntil(mouseUp)
+                            .Do(q =>
+                            {
+
+                                var vm = new TimeSignatureEventPropertiesWindowViewModel(@event);
+                                var window = new TimeSignatureEventPropertiesWindow() { DataContext = vm };
+                                window.ShowDialog();
+                            })
+                            .Finally(() => Cursor.Current = Cursors.Default);
+                    }
+
+
+                    IObservable<MouseEventArgs> timesignatureHandler(TimeSignatureChangeEvent @event)
+                    {
+                        RectangleF rect = GetClickableRectFromEventPosition3(@event.Tick);
+                        var beforeEvent = new ChangeTimeSignatureEventOperation.EventDetail(@event.Tick, @event.Numerator, @event.DenominatorExponent);
+
+                        if (rect.Contains(scorePos))
+                        {
+                            Console.WriteLine("Event");
+                            return TimeSignatureEventHandler(@event)
+                            .Finally(() => {
+                                var afterEvent = new ChangeTimeSignatureEventOperation.EventDetail(@event.Tick, @event.Numerator, @event.DenominatorExponent);
+                                if (beforeEvent == afterEvent) return;
+                                OperationManager.Push(new ChangeTimeSignatureEventOperation(ScoreEvents.TimeSignatureChangeEvents, @event, beforeEvent, afterEvent));
+                            });
+                        }
+
+                        return null;
+                    }
+
+
 
 
                     IObservable<MouseEventArgs> surfaceNotesHandler()
@@ -2968,6 +3389,7 @@ namespace Ched.UI
                             var subscription = highspeedHandler(@event);
                             if (subscription != null) return subscription;
                         }
+
 
                         return null;
                     }
@@ -3277,7 +3699,7 @@ namespace Ched.UI
                     bool isch = ((step.Channel == viewchannel) || viewchannel == -1);
 
                         if (!Editable && !step.IsVisible) continue;
-                        if (Notes.GetReferencedAir(step).Count() > 0) break; // AIR付き終点
+                        // if (Notes.GetReferencedAir(step).Count() > 0) break; // AIR付き終点
                         RectangleF rect = GetRectFromNotePosition(step.Tick, step.LaneIndex, step.Width);
                         if (step.IsVisible) dc.DrawSlideStep(rect,isch, noteVisualMode);
                         else dc.DrawBorder(rect, isch, noteVisualMode);
@@ -3295,7 +3717,7 @@ namespace Ched.UI
                     bool isch = ((step.Channel == viewchannel) || viewchannel == -1);
 
                     if (!Editable && !step.IsVisible) continue;
-                    if (Notes.GetReferencedAir(step).Count() > 0) break; // AIR付き終点
+                    //if (Notes.GetReferencedAir(step).Count() > 0) break; // AIR付き終点
                     RectangleF rect = GetRectFromNotePosition(step.Tick, step.LaneIndex, step.Width);
                     if (step.IsVisible) dc.DrawGuideStep(rect, isch, noteVisualMode, guide.GuideColor);
                     else dc.DrawBorder(rect, isch, noteVisualMode);
@@ -3646,6 +4068,16 @@ namespace Ched.UI
                 ShortNoteHeight + 10
                 );
         }
+        private RectangleF GetRectFromEventPosition3(int tick)
+        {
+            //x, y ,width height
+            return new RectangleF(
+                (UnitLaneWidth + BorderThickness) * Constants.LanesCount + 30,
+                GetYPositionFromTick(tick) - ShortNoteHeight / 2,
+                (UnitLaneWidth + BorderThickness) * 3 - BorderThickness,
+                ShortNoteHeight + 10
+                );
+        }
 
         private RectangleF GetClickableRectFromNotePosition(int tick, float laneIndex, float width)
         {
@@ -3659,7 +4091,10 @@ namespace Ched.UI
         {
             return GetRectFromEventPosition2(tick).Expand(1, 3);
         }
-
+        private RectangleF GetClickableRectFromEventPosition3(int tick)
+        {
+            return GetRectFromEventPosition3(tick).Expand(1, 3);
+        }
         private float GetNewNoteLaneIndex(float xpos, float width)
         {
             float newNoteLaneIndex = (int)Math.Round(xpos / (UnitLaneWidth + BorderThickness) - width / 2);
@@ -4188,14 +4623,26 @@ namespace Ched.UI
             var opSlides = dicSlides.Select(p =>
             {
                 var beforeCh = new ChangeSlideChannelOperation.NoteChannel(p.Channel);
-
+                if (!allowstepCh)
+                {
+                    foreach (var step in p.StepNotes)
+                    {
+                        step.Channel = p.Channel;
+                    }
+                }
                 p.SetChannel(channel);
                 return new ChangeSlideChannelOperation(p, beforeCh, afterCh2);
             });
             var opGuides = dicGuides.Select(p =>
             {
                 var beforeCh = new ChangeGuideChannelOperation.NoteChannel(p.Channel);
-
+                if (!allowstepCh)
+                {
+                    foreach (var step in p.StepNotes)
+                    {
+                        step.Channel = p.Channel;
+                    }
+                }
                 p.SetChannel(channel);
                 return new ChangeGuideChannelOperation(p, beforeCh, afterCh3);
             });

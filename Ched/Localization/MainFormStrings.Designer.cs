@@ -142,6 +142,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   ステップ別チャンネルを許可する(USCのみ) に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string AllowStepCh {
+            get {
+                return ResourceManager.GetString("AllowStepCh", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   アーティスト に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Artist {
@@ -408,6 +417,24 @@ namespace Ched.Localization {
         public static string EditMenu {
             get {
                 return ResourceManager.GetString("EditMenu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   でスライドの終点を消す に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string EraceSlideEnd {
+            get {
+                return ResourceManager.GetString("EraceSlideEnd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   でスライドの始点を消す に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string EraceSlideStart {
+            get {
+                return ResourceManager.GetString("EraceSlideStart", resourceCulture);
             }
         }
         

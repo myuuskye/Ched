@@ -492,4 +492,13 @@
   <data name="SpeedRatio" xml:space="preserve">
     <value>スピード比</value>
   </data>
+  <data name="AllowStepCh" xml:space="preserve">
+    <value>ステップ別チャンネルを許可する(USCのみ)</value>
+  </data>
+  <data name="EraceSlideEnd" xml:space="preserve">
+    <value>でスライドの終点を消す</value>
+  </data>
+  <data name="EraceSlideStart" xml:space="preserve">
+    <value>でスライドの始点を消す</value>
+  </data>
 </root>

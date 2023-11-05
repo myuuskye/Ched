@@ -294,7 +294,7 @@ namespace Ched.Plugins
                                     endTap.SetPosition(slideconnection.Value<float>("lane") + 8 - slideconnection.Value<float>("size") - slide.StartLaneIndex, slideconnection.Value<float>("size") * 2 - slide.StartWidth);
 
                                     slide.StepNotes.Add(endTap);
-
+                                    
                                     switch (slideconnection.Value<string>("judgeType"))
                                     {
                                         case "trace":
@@ -304,6 +304,18 @@ namespace Ched.Plugins
                                         case "none":
                                             var judgeDamage = new Damage() { Channel = slideconnection.Value<int>("timeScaleGroup"), Tick = (int)(slideconnection.Value<double>("beat") * 480), LaneIndex = slideconnection.Value<float>("lane") + 8 - slideconnection.Value<float>("size"), Width = slideconnection.Value<float>("size") * 2 };
                                             result.Score.Notes.Damages.Add(judgeDamage);
+                                            break;
+                                    }
+                                    switch (slideconnection.Value<string>("direction"))
+                                    {
+                                        case "left":
+                                            result.Score.Notes.Airs.Add(new Air(endTap) { VerticalDirection = VerticalAirDirection.Up, HorizontalDirection = HorizontalAirDirection.Left });
+                                            break;
+                                        case "up":
+                                            result.Score.Notes.Airs.Add(new Air(endTap) { VerticalDirection = VerticalAirDirection.Up, HorizontalDirection = HorizontalAirDirection.Center });
+                                            break;
+                                        case "right":
+                                            result.Score.Notes.Airs.Add(new Air(endTap) { VerticalDirection = VerticalAirDirection.Up, HorizontalDirection = HorizontalAirDirection.Right });
                                             break;
                                     }
 
@@ -347,6 +359,8 @@ namespace Ched.Plugins
                             };
                             guideStepTap.SetPosition(gm.Value<float>("lane") + 8 - gm.Value<float>("size") - guide.StartLaneIndex, gm.Value<float>("size") * 2 - guide.StartWidth);
 
+                            if (guideStepTap.Tick == guideStepTap.ParentNote.StartTick && guideStepTap.LaneIndex == guideStepTap.ParentNote.StartLaneIndex && guideStepTap.Width == guideStepTap.ParentNote.StartWidth) continue;
+
                             guide.StepNotes.Add(guideStepTap);
                             var stepairedNote = new Tap() { Channel = gm.Value<int>("timeScaleGroup"), Tick = (int)(gm.Value<double>("beat") * 480), LaneIndex = gm.Value<float>("lane") + 8 - gm.Value<float>("size"), Width = gm.Value<float>("size") * 2 };
 
@@ -365,6 +379,8 @@ namespace Ched.Plugins
                             }
 
                         }
+
+                        
 
                         guide.StepNotes.OrderBy(p => p.Tick).Last().IsVisible = true;
 

@@ -20,6 +20,7 @@ namespace Ched.Core.Notes
 
         private Constants constants = new Constants();
 
+
         /// <summary>
         /// 開始ノートの配置されるレーン番号を設定します。。
         /// </summary>
@@ -60,6 +61,12 @@ namespace Ched.Core.Notes
 
         public List<StepTap> StepNotes { get { return stepNotes; } }
         public StartTap StartNote { get; }
+
+        public int Tick  { get { return StartTick; } }
+
+        public float LaneIndex { get { return StartLaneIndex; } }
+
+        public float Width { get { return StartWidth; } }
 
         public Slide()
         {
@@ -229,8 +236,8 @@ namespace Ched.Core.Notes
                     //throw new ArgumentOutOfRangeException("laneIndexOffset", "Invalid lane index offset.");
 
                 float actualWidth = widthChange + ParentNote.StartWidth;
-                if (actualWidth < 0.01 )
-                    throw new ArgumentOutOfRangeException("widthChange", "Invalid width change value.");
+                //if (actualWidth < 0.01 )
+                    //throw new ArgumentOutOfRangeException("widthChange", "Invalid width change value.");
             }
         }
     }

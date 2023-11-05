@@ -179,6 +179,76 @@ namespace Ched.UI.Operations
     }
 
 
+    public class ChangeTimeSignatureEventOperation : EventBase, IOperation
+    {
+        public string Description { get { return "TimeSignatureイベントの変更"; } }
+
+        protected TimeSignatureChangeEvent Event { get; }
+        protected List<TimeSignatureChangeEvent> Collection { get; }
+
+        protected EventDetail BeforeEvent { get; }
+        protected EventDetail AfterEvent { get; }
+
+        public ChangeTimeSignatureEventOperation(List<TimeSignatureChangeEvent> collection, TimeSignatureChangeEvent item, EventDetail before, EventDetail after)
+        {
+            Collection = collection;
+            Event = item;
+            BeforeEvent = before;
+            AfterEvent = after;
+        }
+
+        public void Redo()
+        {
+            Event.Tick = AfterEvent.Tick;
+            Event.Numerator = AfterEvent.Numrator;
+            Event.DenominatorExponent = AfterEvent.DenominatorExponent;
+        }
+
+        public void Undo()
+        {
+            Event.Tick = BeforeEvent.Tick;
+            Event.Numerator = BeforeEvent.Numrator;
+            Event.DenominatorExponent = BeforeEvent.DenominatorExponent;
+        }
+
+        public struct EventDetail
+        {
+            public int Tick { get; }
+            public int Numrator { get; }
+            public int DenominatorExponent { get; }
+
+            public EventDetail(int tick, int numrator, int denominatorex)
+            {
+                Tick = tick;
+                Numrator = numrator;
+                DenominatorExponent = denominatorex;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (obj == null || !(obj is EventDetail)) return false;
+                EventDetail other = (EventDetail)obj;
+                return Tick == other.Tick && Numrator == other.Numrator && DenominatorExponent == other.DenominatorExponent;
+            }
+
+            public override int GetHashCode()
+            {
+                return Tick ^ (int)Numrator ^ DenominatorExponent;
+            }
+
+            public static bool operator ==(EventDetail a, EventDetail b)
+            {
+                return a.Equals(b);
+            }
+
+            public static bool operator !=(EventDetail a, EventDetail b)
+            {
+                return !a.Equals(b);
+            }
+        }
+    }
+
+
 
     public class RemoveEventOperation<T> : EventCollectionOperation<T> where T : EventBase
     {

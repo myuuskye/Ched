@@ -109,7 +109,8 @@ namespace Ched.Components.Exporter
                         if ((note.LaneIndex == note3.LaneIndex) && (note.Tick == note3.Tick)) isOnSlide = true;
                     }
                 }
-                if (isOnSlide && ApplicationSettings.Default.IsTapHideOnSlide) continue; //SlideStepと重なってたらスキップ
+                if (isOnSlide && ApplicationSettings.Default.IsTapHideOnSlide && !note.IsStart) continue; //SlideやStepと重なってたらスキップ
+                if (isOnSlide && ApplicationSettings.Default.IsTap2HideOnSlide && note.IsStart) continue; //SlideやStepと重なってたらスキップ(TAP2)
 
                 foreach (var note2 in notes.Guides)
                 {
@@ -119,7 +120,7 @@ namespace Ched.Components.Exporter
                         if ((note.LaneIndex == note3.LaneIndex) && (note.Tick == note3.Tick)) isOnGuide = true;
                     }
                 }
-                if (isOnGuide && ApplicationSettings.Default.IsTapHideOnGuide) continue;
+                if (isOnGuide && ApplicationSettings.Default.IsTapHideOnGuide && note.IsStart) continue;
                 foreach (var note2 in notes.Airs)
                 {
                     if ((note.LaneIndex == note2.LaneIndex) && (note.Tick == note2.Tick) && (note2.VerticalDirection == VerticalAirDirection.Up)) isAir = true;
@@ -162,7 +163,8 @@ namespace Ched.Components.Exporter
                         if ((note.LaneIndex == note3.LaneIndex) && (note.Tick == note3.Tick)) isOnSlide = true;
                     }
                 }
-                if (isOnSlide && ApplicationSettings.Default.IsExTapHideOnSlide) continue; //Slideと重なっていて、スキップ可能だったらスキップ
+                if (isOnSlide && ApplicationSettings.Default.IsExTapHideOnSlide && !note.IsStart) continue; //Slideと重なっていて、スキップ可能だったらスキップ
+                if (isOnSlide && ApplicationSettings.Default.IsExTap2HideOnSlide && note.IsStart) continue; //Slideと重なっていて、スキップ可能だったらスキップ
                 foreach (var note2 in notes.Guides)
                 {
                     if ((note.LaneIndex == note2.StartNote.LaneIndex) && (note.Tick == note2.StartNote.Tick)) isOnGuide = true;
@@ -199,6 +201,7 @@ namespace Ched.Components.Exporter
             foreach (var note in notes.Flicks)
             {
                 bool isOnSlide = false;
+                bool isOnGuide = false;
                 bool isAir = false;
                 bool isCritical = false;
                 foreach (var note2 in notes.Slides)
@@ -210,6 +213,15 @@ namespace Ched.Components.Exporter
                     }
                 }
                 if (isOnSlide && ApplicationSettings.Default.IsFlickHideOnSlide) continue; //Slideと重なってたらスキップ
+                foreach (var note2 in notes.Guides)
+                {
+                    if ((note.LaneIndex == note2.StartNote.LaneIndex) && (note.Tick == note2.StartNote.Tick)) isOnGuide = true;
+                    foreach (var note3 in note2.StepNotes)
+                    {
+                        if ((note.LaneIndex == note3.LaneIndex) && (note.Tick == note3.Tick)) isOnGuide = true;
+                    }
+                }
+                if (isOnGuide && ApplicationSettings.Default.IsFlickHideOnGuide) continue; //Slideと重なってたらスキップ
                 foreach (var note2 in notes.Airs)
                 {
                     if ((note.LaneIndex == note2.LaneIndex) && (note.Tick == note2.Tick)) isAir = true;
@@ -314,6 +326,19 @@ namespace Ched.Components.Exporter
                 int endDirection = 3;
                 var endNote = note.StepNotes.OrderBy(p => p.TickOffset).Last();
 
+                var isTapEraceStart = ApplicationSettings.Default.IsTapEraseStart;
+                var isExTapEraceStart = ApplicationSettings.Default.IsExTapEraseStart;
+                var isTap2EraceStart = ApplicationSettings.Default.IsTap2EraseStart;
+                var isExTap2EraceStart = ApplicationSettings.Default.IsExTap2EraseStart;
+                var isDamageEraceStart = ApplicationSettings.Default.IsDamageEraseStart;
+
+
+                var isTapEraceEnd = ApplicationSettings.Default.IsTapEraseEnd;
+                var isExTapEraceEnd = ApplicationSettings.Default.IsExTapEraseEnd;
+                var isTap2EraceEnd = ApplicationSettings.Default.IsTap2EraseEnd;
+                var isExTap2EraceEnd = ApplicationSettings.Default.IsExTap2EraseEnd;
+                var isDamageEraceEnd = ApplicationSettings.Default.IsDamageEraseEnd;
+
 
                 foreach (var note2 in notes.ExTaps)
                 {
@@ -325,10 +350,25 @@ namespace Ched.Components.Exporter
                     if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex) startJudge = "trace";
                     if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex) endJudge = "trace";
                 }
+                foreach (var note2 in notes.Taps)
+                {
+                    if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex && isTapEraceStart && note2.IsStart == false) startJudge = "none";
+                    if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex && isTap2EraceStart && note2.IsStart == true) startJudge = "none";
+                    if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && isTapEraceEnd && note2.IsStart == false) endJudge = "none";
+                    if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && isTap2EraceEnd && note2.IsStart == true) endJudge = "none";
+                }
+                foreach (var note2 in notes.ExTaps)
+                {
+                    if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex && isExTapEraceStart && note2.IsStart == false) startJudge = "none";
+                    if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex && isExTap2EraceStart && note2.IsStart == true) startJudge = "none";
+                    if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && isExTapEraceEnd && note2.IsStart == false) endJudge = "none";
+                    if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && isExTap2EraceEnd && note2.IsStart == true) endJudge = "none";
+
+                }
                 foreach (var note2 in notes.Damages)
                 {
-                    if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex) startJudge = "none";
-                    if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex) endJudge = "none";
+                    if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex && isDamageEraceStart) startJudge = "none";
+                    if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && isDamageEraceEnd) endJudge = "none";
                 }
                 foreach (var note2 in notes.Airs)
                 {

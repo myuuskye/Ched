@@ -103,6 +103,16 @@ namespace Ched.Properties {
         /// <summary>
         ///   型 System.Drawing.Bitmap のローカライズされたリソースを検索します。
         /// </summary>
+        public static System.Drawing.Bitmap AirOtherIcon {
+            get {
+                object obj = ResourceManager.GetObject("AirOtherIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   型 System.Drawing.Bitmap のローカライズされたリソースを検索します。
+        /// </summary>
         public static System.Drawing.Bitmap AirRightDownIcon {
             get {
                 object obj = ResourceManager.GetObject("AirRightDownIcon", resourceCulture);

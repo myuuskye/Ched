@@ -1,4 +1,4 @@
-﻿<Window x:Class="Ched.UI.Windows.GuideStepNotePropertiesWindow"
+﻿<Window x:Class="Ched.UI.Windows.TimeSignatureEventPropertiesWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -14,7 +14,7 @@
         Title="{x:Static localization:MainFormStrings.Property}"
         Style="{DynamicResource DialogWindowStyle}"
         mc:Ignorable="d"
-        d:DataContext="{d:DesignInstance Type=local:GuideStepNotePropertiesWindowViewModel}">
+        d:DataContext="{d:DesignInstance Type=local:TimeSignatureEventPropertiesWindowViewModel}">
 
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="ContentRendered">
@@ -55,7 +55,7 @@
                         </Grid.ColumnDefinitions>
 
                         <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.Tick}" />
-                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding NoteTick}" DecimalPlaces="0" Increment="1" Minimum="0" Maximum="1000000000000000" />
+                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding EventTick}" DecimalPlaces="0" Increment="1" Maximum="1000000000000000" />
                     </Grid>
                     <Grid Style="{StaticResource ResourceKey=InputFieldRow}">
                         <Grid.ColumnDefinitions>
@@ -63,29 +63,20 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.Channel}" />
-                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding NoteChannel}" DecimalPlaces="0" Increment="1" Minimum="0"  Maximum="1000" />
+                        <Label Grid.Column="0" Content="分子" />
+                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding EventNumrator}" DecimalPlaces="0" Increment="1" Minimum="1"  Maximum="1000" />
                     </Grid>
-
                     <Grid Style="{StaticResource ResourceKey=InputFieldRow}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.LaneIndex}" />
-                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding NoteLaneIndex}" DecimalPlaces="1" Increment="1" Minimum="-10000" Maximum="10000" />
+                        <Label Grid.Column="0" Content="分母" />
+                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding EventDenominatorExponent}" DecimalPlaces="0" Increment="1" Minimum="2"  Maximum="100000" />
                     </Grid>
 
-                    <Grid Style="{StaticResource ResourceKey=InputFieldRow}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
 
-                        <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.Width}" />
-                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding NoteWidth}" DecimalPlaces="1" Increment="1" Minimum="-10000"  Maximum="10000"/>
-                    </Grid>
 
 
 
@@ -94,6 +85,7 @@
 
             <GroupBox Header="{x:Static localization:MainFormStrings.Other}" Margin="{StaticResource ContainerMargin}">
 
+                  
 
             </GroupBox>
 

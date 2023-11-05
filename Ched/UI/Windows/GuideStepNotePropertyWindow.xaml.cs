@@ -95,7 +95,8 @@ namespace Ched.UI.Windows
             }
         }
 
-        
+
+
 
 
         public GuideStepNotePropertiesWindowViewModel()
@@ -119,6 +120,10 @@ namespace Ched.UI.Windows
 
         public void CommitEdit()
         {
+            if (NoteWidth + Note.ParentNote.StartWidth  < 0.01)
+            {
+                NoteWidth = -Note.ParentNote.StartWidth + 0.1f;
+            }
             Note.TickOffset = NoteTick;
             Note.Channel = NoteChannel;
             Note.LaneIndexOffset = NoteLaneIndex;

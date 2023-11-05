@@ -241,8 +241,8 @@ namespace Ched.Core.Notes
                     //throw new ArgumentOutOfRangeException("laneIndexOffset", "Invalid lane index offset.");
 
                 float actualWidth = widthChange + ParentNote.StartWidth;
-                if (actualWidth < 0.01 )
-                    throw new ArgumentOutOfRangeException("widthChange", "Invalid width change value.");
+                //if (actualWidth < 0.01 )
+                    //throw new ArgumentOutOfRangeException("widthChange", "Invalid width change value.");
             }
         }
 
