@@ -33,6 +33,8 @@ namespace Ched.Core
         private List<AirAction> airActions;
         [Newtonsoft.Json.JsonProperty]
         private List<Guide> guides;
+        [Newtonsoft.Json.JsonProperty]
+        private List<StepNoteTap> stepNoteTaps;
 
 
         public List<Tap> Taps
@@ -89,6 +91,12 @@ namespace Ched.Core
             set { guides = value; }
         }
 
+        public List<StepNoteTap> StepNoteTaps
+        {
+            get { return stepNoteTaps; }
+            set { stepNoteTaps = value; }
+        }
+
 
         public NoteCollection()
         {
@@ -101,6 +109,7 @@ namespace Ched.Core
             Flicks = new List<Flick>();
             Damages = new List<Damage>();
             Guides = new List<Guide>();
+            StepNoteTaps = new List<StepNoteTap>();
         }
 
         public NoteCollection(NoteCollection collection)
@@ -114,11 +123,12 @@ namespace Ched.Core
             Flicks = collection.Flicks.ToList();
             Damages = collection.Damages.ToList();
             Guides = collection.Guides.ToList();
+            StepNoteTaps = collection.StepNoteTaps.ToList();
         }
 
         public IEnumerable<TappableBase> GetShortNotes()
         {
-            return Taps.Cast<TappableBase>().Concat(ExTaps).Concat(Flicks).Concat(Damages);
+            return Taps.Cast<TappableBase>().Concat(ExTaps).Concat(Flicks).Concat(Damages).Concat(StepNoteTaps);
         }
 
         public void UpdateTicksPerBeat(double factor)

@@ -154,7 +154,8 @@ namespace Ched.Components.Exporter
                 bool isAir = false;
                 bool isAirDown = false;
                 bool isOnFlick = false;
-     
+                bool isOnStepNoteTap = false;
+
                 foreach (var note2 in notes.Slides)
                 {
                     if ((note.LaneIndex == note2.StartNote.LaneIndex) && (note.Tick == note2.StartNote.Tick)) isOnSlide = true;
@@ -186,6 +187,11 @@ namespace Ched.Components.Exporter
                     if ((note.LaneIndex == note2.LaneIndex) && (note.Tick == note2.Tick)) isOnFlick = true;
                 }
                 if (isOnFlick) continue; //Flickと重なってたらスキップ
+                foreach (var note2 in notes.StepNoteTaps)
+                {
+                    if ((note.LaneIndex == note2.LaneIndex) && (note.Tick == note2.Tick)) isOnStepNoteTap = true;
+                }
+                if (isOnStepNoteTap) continue; //Flickと重なってたらスキップ
                 if (note.IsStart)
                 {
                     if (isOnGuide) continue; //Guideと重なってたらスキップ
@@ -267,6 +273,25 @@ namespace Ched.Components.Exporter
                 usc.objects.Add(singlenote);
             }
 
+            foreach (var note in notes.StepNoteTaps)
+            {
+                bool isCritical = false;
+
+                foreach (var note2 in notes.ExTaps)
+                {
+                    if (note.LaneIndex == note2.LaneIndex && note.Tick == note2.Tick) isCritical = true;
+                }
+                var laneIndex = note.LaneIndex - 8 + (float)book.LaneOffset + note.Width / 2;
+                var visiblestepnote = new USCConnectionVisibleTickNote((double)note.Tick / 480, note.Channel, laneIndex, note.Width / 2, isCritical, "linear");
+
+                var slidestart = new USCConnectionStartNote((double)note.Tick / 480, note.Channel, laneIndex, note.Width / 2, isCritical, "linear", "none");
+                var slideend = new USCConnectionEndNote((double)note.Tick / 480, note.Channel, laneIndex, note.Width / 2, isCritical, "none");
+
+                var slidenote = new USCSlideNote(isCritical, slidestart, visiblestepnote, slideend);
+
+                usc.objects.Add(slidenote);
+            }
+
 
             foreach (var note in notes.Airs)
             {
@@ -339,6 +364,34 @@ namespace Ched.Components.Exporter
                 var isExTap2EraceEnd = ApplicationSettings.Default.IsExTap2EraseEnd;
                 var isDamageEraceEnd = ApplicationSettings.Default.IsDamageEraseEnd;
 
+                var isFlickTraceStart = ApplicationSettings.Default.IsFlickSlideStartTrace;
+                var isFlickTraceEnd = ApplicationSettings.Default.IsFlickSlideEndTrace;
+
+                var slideStartDefType = ApplicationSettings.Default.SlideStartDefaultType;
+                var slideEndDefType = ApplicationSettings.Default.SlideEndDefaultType;
+
+                switch (slideStartDefType)
+                {
+                    case 1:
+                        startJudge = "trace";
+                        break;
+                    case 2:
+                        startJudge = "none";
+                        break;
+                }
+                switch (slideEndDefType)
+                {
+                    case 1:
+                        endJudge = "trace";
+                        break;
+                    case 2:
+                        endJudge = "none";
+                        break;
+                }
+
+
+
+
 
                 foreach (var note2 in notes.ExTaps)
                 {
@@ -347,8 +400,8 @@ namespace Ched.Components.Exporter
                 }
                 foreach (var note2 in notes.Flicks)
                 {
-                    if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex) startJudge = "trace";
-                    if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex) endJudge = "trace";
+                    if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex && isFlickTraceStart) startJudge = "trace";
+                    if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && isFlickTraceEnd) endJudge = "trace";
                 }
                 foreach (var note2 in notes.Taps)
                 {
@@ -484,6 +537,14 @@ namespace Ched.Components.Exporter
                 string startEase = "linear";
                 var endNote = note.StepNotes.OrderBy(p => p.TickOffset).Last();
 
+                var isTapChangeFade = ApplicationSettings.Default.IsTapChangeFade;
+                var isExTapChangeFade = ApplicationSettings.Default.IsExTapChangeFade;
+                var isTap2ChangeFade = ApplicationSettings.Default.IsTap2ChangeFade;
+                var isExTap2ChangeFade = ApplicationSettings.Default.IsExTap2ChangeFade;
+                var isFlickChangeFade = ApplicationSettings.Default.IsFlickChangeFade;
+                var isDamageChangeFade = ApplicationSettings.Default.IsDamageChangeFade;
+
+
                 switch (guideDefType)
                 {
                     case 0:
@@ -498,40 +559,231 @@ namespace Ched.Components.Exporter
                         break;
                 }
 
-                foreach (var note2 in notes.Damages)
+
+                foreach (var note2 in notes.Taps) {
+                    
+                        if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex) {
+                        if (isTapChangeFade && !note2.IsStart)
+                        {
+                            switch (guideDefType)
+                            {
+                                case 0:
+                                    fade = "in";
+                                    break;
+                                case 1:
+                                    fade = "in";
+                                    break;
+                                case 2:
+                                    fade = "out";
+                                    break;
+                            }
+                        }
+                        else if(isTap2ChangeFade && note2.IsStart)
+                        {
+                            switch (guideDefType)
+                            {
+                                case 0:
+                                    fade = "in";
+                                    break;
+                                case 1:
+                                    fade = "in";
+                                    break;
+                                case 2:
+                                    fade = "out";
+                                    break;
+                            }
+                        }
+                            
+                        }
+                    if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex)
+                    {
+                        if (isTapChangeFade && !note2.IsStart)
+                        {
+                            switch (guideDefType)
+                            {
+                                case 0:
+                                    fade = "out";
+                                    break;
+                                case 1:
+                                    fade = "none";
+                                    break;
+                                case 2:
+                                    fade = "none";
+                                    break;
+                            }
+                        }
+                        else if (isTap2ChangeFade && note2.IsStart)
+                        {
+                            switch (guideDefType)
+                            {
+                                case 0:
+                                    fade = "out";
+                                    break;
+                                case 1:
+                                    fade = "none";
+                                    break;
+                                case 2:
+                                    fade = "none";
+                                    break;
+                            }
+                        }
+                    }
+                    
+                }
+
+                foreach (var note2 in notes.ExTaps)
                 {
+
                     if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex)
                     {
-                        switch (guideDefType)
+                        if (isExTapChangeFade && !note2.IsStart)
                         {
-                            case 0:
-                                fade = "in";
-                                break;
-                            case 1:
-                                fade = "in";
-                                break;
-                            case 2:
-                                fade = "out";
-                                break;
+                            switch (guideDefType)
+                            {
+                                case 0:
+                                    fade = "in";
+                                    break;
+                                case 1:
+                                    fade = "in";
+                                    break;
+                                case 2:
+                                    fade = "out";
+                                    break;
+                            }
                         }
+                        else if (isExTap2ChangeFade && note2.IsStart)
+                        {
+                            switch (guideDefType)
+                            {
+                                case 0:
+                                    fade = "in";
+                                    break;
+                                case 1:
+                                    fade = "in";
+                                    break;
+                                case 2:
+                                    fade = "out";
+                                    break;
+                            }
+                        }
+
                     }
                     if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex)
                     {
-                        switch (guideDefType)
+                        if (isExTapChangeFade && !note2.IsStart)
                         {
-                            case 0:
-                                fade = "out";
-                                break;
-                            case 1:
-                                fade = "none";
-                                break;
-                            case 2:
-                                fade = "none";
-                                break;
+                            switch (guideDefType)
+                            {
+                                case 0:
+                                    fade = "out";
+                                    break;
+                                case 1:
+                                    fade = "none";
+                                    break;
+                                case 2:
+                                    fade = "none";
+                                    break;
+                            }
                         }
-                        
+                        else if (isExTap2ChangeFade && note2.IsStart)
+                        {
+                            switch (guideDefType)
+                            {
+                                case 0:
+                                    fade = "out";
+                                    break;
+                                case 1:
+                                    fade = "none";
+                                    break;
+                                case 2:
+                                    fade = "none";
+                                    break;
+                            }
+                        }
+                    }
+
+                }
+
+
+                foreach (var note2 in notes.Flicks)
+                {
+                    if (isFlickChangeFade == true)
+                    {
+                        if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex)
+                        {
+                            switch (guideDefType)
+                            {
+                                case 0:
+                                    fade = "in";
+                                    break;
+                                case 1:
+                                    fade = "in";
+                                    break;
+                                case 2:
+                                    fade = "out";
+                                    break;
+                            }
+                        }
+                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex)
+                        {
+                            switch (guideDefType)
+                            {
+                                case 0:
+                                    fade = "out";
+                                    break;
+                                case 1:
+                                    fade = "none";
+                                    break;
+                                case 2:
+                                    fade = "none";
+                                    break;
+                            }
+
+                        }
                     }
                 }
+
+                foreach (var note2 in notes.Damages)
+                {
+                    if (isDamageChangeFade == true)
+                    {
+                        if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex)
+                        {
+                            switch (guideDefType)
+                            {
+                                case 0:
+                                    fade = "in";
+                                    break;
+                                case 1:
+                                    fade = "in";
+                                    break;
+                                case 2:
+                                    fade = "out";
+                                    break;
+                            }
+                        }
+                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex)
+                        {
+                            switch (guideDefType)
+                            {
+                                case 0:
+                                    fade = "out";
+                                    break;
+                                case 1:
+                                    fade = "none";
+                                    break;
+                                case 2:
+                                    fade = "none";
+                                    break;
+                            }
+
+                        }
+                    }
+                }
+
+
+
+
 
                 foreach (var note2 in notes.Airs)
                 {

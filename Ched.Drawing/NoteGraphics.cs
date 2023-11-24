@@ -129,6 +129,32 @@ namespace Ched.Drawing
             
         }
 
+
+        public static void DrawStepNoteTap(this DrawingContext dc, RectangleF rect, bool isch, int mode)
+        {
+            if (isch)
+            {
+                dc.Graphics.DrawTappableNote(rect, dc.ColorProfile.StepNoteTapColor, dc.ColorProfile.BorderColor);
+            }
+            else
+            {
+                switch (mode)
+                {
+                    case 0:
+                        break;
+                    case 1:
+                        dc.Graphics.DrawTappableNote(rect, dc.ColorProfile.InvStepNoteTapColor, dc.ColorProfile.InvBorderColor);
+                        break;
+                    case 2:
+                        dc.Graphics.DrawTappableNote(rect, dc.ColorProfile.StepNoteTapColor, dc.ColorProfile.BorderColor);
+                        break;
+
+                }
+
+            }
+
+        }
+
         public static void DrawHoldBegin(this DrawingContext dc, RectangleF rect, int mode)
         {
             dc.DrawHoldEnd(rect);

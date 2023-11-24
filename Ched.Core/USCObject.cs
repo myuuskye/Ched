@@ -149,6 +149,17 @@ namespace Ched.Core
 
         }
 
+        public USCSlideNote(bool critical, USCConnectionStartNote start, USCConnectionVisibleTickNote vitick, USCConnectionEndNote end)
+        {
+            this.critical = critical;
+            connections = new List<USCObject>();
+            connections.Add(start);
+            if (vitick != null)
+                connections.Add(vitick);
+
+            connections.Add(end);
+        }
+
 
 
     }

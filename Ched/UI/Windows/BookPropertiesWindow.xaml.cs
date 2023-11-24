@@ -189,8 +189,11 @@ namespace Ched.UI.Windows
             MusicSource.Latency = MusicSourceLatency;
             MusicSource.Volume = MusicVolume;
             var guide = Configuration.SoundSettings.Default.GuideSound;
+            var tap = Configuration.SoundSettings.Default.TapSound;
             guide.Volume = GuideVolume;
+            tap.Volume = GuideVolume;
             Configuration.SoundSettings.Default.GuideSound = guide;
+            Configuration.SoundSettings.Default.TapSound = tap;
             Configuration.SoundSettings.Default.Save();
         }
     }

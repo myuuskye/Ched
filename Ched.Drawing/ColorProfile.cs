@@ -31,6 +31,8 @@ namespace Ched.Drawing
         /// </summary>
         public Tuple<GradientColor, GradientColor> FlickColor { get; set; }
         public GradientColor DamageColor { get; set; }
+
+        public GradientColor StepNoteTapColor { get; set; }
         public GradientColor HoldBackgroundColor { get; set; }
         public GradientColor HoldColor { get; set; }
         public GradientColor SlideBackgroundColor { get; set; }
@@ -64,6 +66,8 @@ namespace Ched.Drawing
         public GradientColor InvExTapColor { get; set; }
         public Tuple<GradientColor, GradientColor> InvFlickColor { get; set; }
         public GradientColor InvDamageColor { get; set; }
+
+        public GradientColor InvStepNoteTapColor { get; set; }
         public GradientColor InvHoldBackgroundColor { get; set; }
         public GradientColor InvHoldColor { get; set; }
         public GradientColor InvSlideBackgroundColor { get; set; }

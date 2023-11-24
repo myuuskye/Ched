@@ -23,8 +23,8 @@ namespace Ched.UI
 
         private int startTick;
         private int duration;
-        private int startLaneIndex;
-        private int selectedLanesCount;
+        private float startLaneIndex;
+        private float selectedLanesCount;
 
         /// <summary>
         /// 選択を開始したTickを設定します。
@@ -55,7 +55,7 @@ namespace Ched.UI
         /// <summary>
         /// 選択されたレーンの左端のインデックスを設定します。
         /// </summary>
-        public int StartLaneIndex
+        public float StartLaneIndex
         {
             get { return startLaneIndex; }
             set
@@ -67,7 +67,7 @@ namespace Ched.UI
         /// <summary>
         /// 選択されたレーン数を設定します。
         /// </summary>
-        public int SelectedLanesCount
+        public float SelectedLanesCount
         {
             get { return selectedLanesCount; }
             set

@@ -97,6 +97,21 @@ namespace Ched.Configuration
 
         [UserScopedSetting]
         [DefaultSettingValue("0")]
+        public int SlideStartDefaultType
+        {
+            get => (int)this["SlideStartDefaultType"];
+            set => this["SlideStartDefaultType"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("0")]
+        public int SlideEndDefaultType
+        {
+            get => (int)this["SlideEndDefaultType"];
+            set => this["SlideEndDefaultType"] = value;
+        }
+
+        [UserScopedSetting]
+        [DefaultSettingValue("0")]
         public decimal LaneOffset
         {
             get => (decimal)this["LaneOffset"];
@@ -255,12 +270,88 @@ namespace Ched.Configuration
             set => this["IsDamageEraseEnd"] = value;
         }
 
+
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool IsTapChangeFade
+        {
+            get => (bool)this["IsTapChangeFade"];
+            set => this["IsTapChangeFade"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool IsExTapChangeFade
+        {
+            get => (bool)this["IsExTapChangeFade"];
+            set => this["IsExTapChangeFade"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool IsTap2ChangeFade
+        {
+            get => (bool)this["IsTap2ChangeFade"];
+            set => this["IsTap2ChangeFade"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool IsExTap2ChangeFade
+        {
+            get => (bool)this["IsExTap2ChangeFade"];
+            set => this["IsExTap2ChangeFade"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool IsFlickChangeFade
+        {
+            get => (bool)this["IsFlickChangeFade"];
+            set => this["IsFlickChangeFade"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool IsDamageChangeFade
+        {
+            get => (bool)this["IsDamageChangeFade"];
+            set => this["IsDamageChangeFade"] = value;
+        }
+
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool IsFlickSlideStartTrace
+        {
+            get => (bool)this["IsFlickSlideStartTrace"];
+            set => this["IsFlickSlideStartTrace"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool IsFlickSlideEndTrace
+        {
+            get => (bool)this["IsFlickSlideEndTrace"];
+            set => this["IsFlickSlideEndTrace"] = value;
+        }
+
+
         [UserScopedSetting]
         [DefaultSettingValue("False")]
         public bool IsAllowStepChannel
         {
             get => (bool)this["IsAllowStepChannel"];
             set => this["IsAllowStepChannel"] = value;
+        }
+
+        [UserScopedSetting]
+        [DefaultSettingValue("1")]
+        public float ScrollAmount
+        {
+            get => (float)this["ScrollAmount"];
+            set => this["ScrollAmount"] = value;
+        }
+
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool IsPJsekaiSounds
+        {
+            get => (bool)this["IsPJsekaiSounds"];
+            set => this["IsPJsekaiSounds"] = value;
         }
 
     }

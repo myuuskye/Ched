@@ -45,7 +45,7 @@ namespace Ched.UI
         private ScrollBar NoteViewScrollBar { get; }
         private NoteView NoteView { get; }
 
-        private SoundPreviewManager PreviewManager { get; }
+        private SoundPreviewManager PreviewManager { get; set; }
         private SoundSource CurrentMusicSource;
 
         private ShortcutManagerHost ShortcutManagerHost { get; }
@@ -57,6 +57,7 @@ namespace Ched.UI
         private int ViewChannel { get; set; } = 0;
 
         private float WidthAmount { get; set; } = 1;
+        private float ScrollAmount { get; set; } = ApplicationSettings.Default.ScrollAmount;
 
         private bool LaneVisual { get; set; } = false;
 
@@ -516,7 +517,16 @@ namespace Ched.UI
             {
                 CommitChanges();
                 var context = new SoundPreviewContext(ScoreBook.Score, CurrentMusicSource, SoundSettings.Default.GuideSound);
-                
+                if (ApplicationSettings.Default.IsPJsekaiSounds)
+                {
+                    context = new SoundPreviewContext(ScoreBook.Score, CurrentMusicSource, SoundSettings.Default.GuideSound, SoundSettings.Default.TapSound, SoundSettings.Default.ExTapSound, SoundSettings.Default.AirSound, SoundSettings.Default.ExAirSound, SoundSettings.Default.TraceSound, SoundSettings.Default.ExTraceSound, SoundSettings.Default.StepSound, SoundSettings.Default.ExStepSound);
+                }
+                else
+                {
+                    context = new SoundPreviewContext(ScoreBook.Score, CurrentMusicSource, SoundSettings.Default.GuideSound);
+                }
+                Console.WriteLine(context);
+
                 if (!PreviewManager.Start(context, startTick, NoteView)) return;
                 PreviewManager.Finished += lambda;
                 NoteView.Editable = CanEdit;
@@ -729,6 +739,7 @@ namespace Ched.UI
                 NoteView.NewNoteType = NoteType.ExTap;
                 NoteView.IsNewNoteStart = false;
             });
+
             commandSource.RegisterCommand(Commands.SelectHold, "HOLD", () => NoteView.NewNoteType = NoteType.Hold);
             commandSource.RegisterCommand(Commands.SelectSlide, "SLIDE", () =>
             {
@@ -761,6 +772,7 @@ namespace Ched.UI
             commandSource.RegisterCommand(Commands.SelectAirAction, "AIR-ACTION", () => NoteView.NewNoteType = NoteType.AirAction);
             commandSource.RegisterCommand(Commands.SelectFlick, "FLICK", () => NoteView.NewNoteType = NoteType.Flick);
             commandSource.RegisterCommand(Commands.SelectDamage, "DAMAGE", () => NoteView.NewNoteType = NoteType.Damage);
+            commandSource.RegisterCommand(Commands.SelectStepNoteTap, "STEPNOTETAP", () => NoteView.NewNoteType = NoteType.StepNoteTap);
 
             commandSource.RegisterCommand(Commands.SelectGuide, "GUIDE", () =>
             {
@@ -968,7 +980,7 @@ namespace Ched.UI
 
 
             var insertMenuItems = new ToolStripItem[] { insertBpmItem, insertHighSpeedItem, insertTimeSignatureItem };
-            
+
 
             var playItem = shortcutItemBuilder.BuildItem(Commands.PlayPreview, MainFormStrings.Play);
 
@@ -1012,6 +1024,23 @@ namespace Ched.UI
                 Checked = ApplicationSettings.Default.IsPreviewAbortAtLastNote
             };
 
+            var isPjsekaiSounds = new ToolStripMenuItem("PJsekaiSounds", null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsPJsekaiSounds = item.Checked;
+                PreviewManager.Stop();
+                PreviewManager.Dispose();
+                PreviewManager = new SoundPreviewManager(this);
+                PreviewManager.IsStopAtLastNote = ApplicationSettings.Default.IsPreviewAbortAtLastNote;
+                PreviewManager.TickUpdated += (a, i) => NoteView.CurrentTick = i.Tick;
+                PreviewManager.ExceptionThrown += (a, i) => MessageBox.Show(this, ErrorStrings.PreviewException, Program.ApplicationName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            })
+            {
+                Checked = ApplicationSettings.Default.IsPJsekaiSounds
+            };
+
+
             PreviewManager.Started += (s, e) => isAbortAtLastNoteItem.Enabled = false;
             PreviewManager.Finished += (s, e) => isAbortAtLastNoteItem.Enabled = true;
 
@@ -1048,7 +1077,7 @@ namespace Ched.UI
             };
 
 
-            var uscfadeNone = new ToolStripMenuItem(MainFormStrings.GuideNone, null, (s, e) =>
+            var uscfadeNone = new ToolStripMenuItem(MainFormStrings.None, null, (s, e) =>
             {
                 var item = s as ToolStripMenuItem;
                 ApplicationSettings.Default.GuideDefaultFade = 0;
@@ -1077,7 +1106,7 @@ namespace Ched.UI
                 var item = s as ToolStripMenuItem;
                 ApplicationSettings.Default.GuideDefaultFade = 2;
                 noteView.GuideDefaultFade = 2;
-                
+
                 item.Checked = noteView.GuideDefaultFade == 2;
             })
             {
@@ -1086,6 +1115,83 @@ namespace Ched.UI
 
             var uscfadeItems = new ToolStripItem[] { uscfadeNone, uscfadeOut, uscfadeIn };
             var ExportuscfadeItems = new ToolStripMenuItem(MainFormStrings.GuideFadeTypes, null, uscfadeItems);
+
+
+            var slideStartTypeItems = new ToolStripItem[]
+            {
+            new ToolStripMenuItem(MainFormStrings.SlideNormal, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                ApplicationSettings.Default.SlideStartDefaultType = 0;
+
+                item.Checked = ApplicationSettings.Default.SlideStartDefaultType == 0;
+            })
+            {
+                Checked = ApplicationSettings.Default.SlideStartDefaultType == 0
+            },
+
+            new ToolStripMenuItem(MainFormStrings.SlideTrace, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                ApplicationSettings.Default.SlideStartDefaultType = 1;
+
+                item.Checked = ApplicationSettings.Default.SlideStartDefaultType == 1;
+            })
+            {
+                Checked = ApplicationSettings.Default.SlideStartDefaultType == 1
+            },
+
+            new ToolStripMenuItem(MainFormStrings.None, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                ApplicationSettings.Default.SlideStartDefaultType = 2;
+
+                item.Checked = ApplicationSettings.Default.SlideStartDefaultType == 2;
+            })
+            {
+                Checked = ApplicationSettings.Default.SlideStartDefaultType == 2
+            }
+            };
+            var ExportslidestartTypeItems = new ToolStripMenuItem(MainFormStrings.SlideStartTypes, null, slideStartTypeItems);
+
+
+            var slideEndTypeItems = new ToolStripItem[]
+            {
+            new ToolStripMenuItem(MainFormStrings.SlideNormal, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                ApplicationSettings.Default.SlideEndDefaultType = 0;
+
+                item.Checked = ApplicationSettings.Default.SlideEndDefaultType == 0;
+            })
+            {
+                Checked = ApplicationSettings.Default.SlideEndDefaultType == 0
+            },
+
+            new ToolStripMenuItem(MainFormStrings.SlideTrace, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                ApplicationSettings.Default.SlideEndDefaultType = 1;
+
+                item.Checked = ApplicationSettings.Default.SlideEndDefaultType == 1;
+            })
+            {
+                Checked = ApplicationSettings.Default.SlideEndDefaultType == 1
+            },
+
+            new ToolStripMenuItem(MainFormStrings.None, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                ApplicationSettings.Default.SlideEndDefaultType = 2;
+
+                item.Checked = ApplicationSettings.Default.SlideEndDefaultType == 2;
+            })
+            {
+                Checked = ApplicationSettings.Default.SlideEndDefaultType == 2
+            }
+            };
+            var ExportslideendTypeItems = new ToolStripMenuItem(MainFormStrings.SlideEndTypes, null, slideEndTypeItems);
+
 
 
             var slideHideTap = new ToolStripMenuItem(MainFormStrings.isOnSlide + "TAP" + MainFormStrings.Hide, null, (s, e) =>
@@ -1278,6 +1384,82 @@ namespace Ched.UI
 
 
 
+            var changeFadeTap = new ToolStripMenuItem("TAP " + MainFormStrings.ChangeGuideFade, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsTapChangeFade = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsTapChangeFade
+            };
+            var changeFadeExTap = new ToolStripMenuItem("ExTAP " + MainFormStrings.ChangeGuideFade, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsExTapChangeFade = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsExTapChangeFade
+            };
+            var changeFadeTap2 = new ToolStripMenuItem("TAP2 " + MainFormStrings.ChangeGuideFade, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsTap2ChangeFade = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsTap2ChangeFade
+            };
+            var changeFadeExTap2 = new ToolStripMenuItem("ExTAP2 " + MainFormStrings.ChangeGuideFade, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsExTap2ChangeFade = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsExTap2ChangeFade
+            };
+            var changeFadeFlick = new ToolStripMenuItem("FLICK " + MainFormStrings.ChangeGuideFade, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsFlickChangeFade = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsFlickChangeFade
+            };
+            var changeFadeDamage = new ToolStripMenuItem("DAMAGE " + MainFormStrings.ChangeGuideFade, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsDamageChangeFade = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsDamageChangeFade
+            };
+
+            var startTraceFlick = new ToolStripMenuItem("FLICK " + MainFormStrings.ChangeStartTrace, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsFlickSlideStartTrace= item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsFlickSlideStartTrace
+            };
+            var endTraceFlick = new ToolStripMenuItem("FLICK " + MainFormStrings.ChangeEndTrace, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsFlickSlideEndTrace = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsFlickSlideEndTrace
+            };
+
+
+
             var tapNoteMenu = new ToolStripMenuItem[]
             {
                 slideHideTap,
@@ -1308,6 +1490,8 @@ namespace Ched.UI
             {
                 slideHideFlick,
                 guideHideFlick,
+                startTraceFlick,
+                endTraceFlick,
                 
             };
             var damageNoteMenu = new ToolStripMenuItem[]
@@ -1317,17 +1501,29 @@ namespace Ched.UI
                 startEraseDamage,
                 endEraseDamage,
             };
+            var slideNoteMenu = new ToolStripMenuItem[]
+            {
+                ExportslidestartTypeItems,
+                ExportslideendTypeItems
+            };
+            var guideNoteMenu = new ToolStripMenuItem[]
+            {
+                ExportuscfadeItems
+            };
 
             var TapNoteItem = new ToolStripMenuItem("TAP", Resources.TapIcon, tapNoteMenu);
             var ExTapNoteItem = new ToolStripMenuItem("ExTAP", Resources.ExTapIcon, extapNoteMenu);
             var Tap2NoteItem = new ToolStripMenuItem("TAP2", Resources.TapIcon2, tap2NoteMenu);
-            var ExTap2NoteItem = new ToolStripMenuItem("ExTAP", Resources.ExTapIcon2, extap2NoteMenu);
-            var FlickNoteItem = new ToolStripMenuItem("FLICK", Resources.TapIcon, flickNoteMenu);
+            var ExTap2NoteItem = new ToolStripMenuItem("ExTAP2", Resources.ExTapIcon2, extap2NoteMenu);
+            var FlickNoteItem = new ToolStripMenuItem("FLICK", Resources.FlickIcon, flickNoteMenu);
             var DamageNoteItem = new ToolStripMenuItem("DAMAGE", Resources.DamgeIcon, damageNoteMenu);
+            var SlideNoteItem = new ToolStripMenuItem("SLIDE", Resources.SlideIcon, slideNoteMenu);
+            var GuideNoteItem = new ToolStripMenuItem("GUIDE", Resources.GuideGreen, guideNoteMenu);
 
             var NoteItems = new ToolStripMenuItem[]
             {
-                TapNoteItem, ExTapNoteItem, Tap2NoteItem, ExTap2NoteItem, FlickNoteItem, DamageNoteItem
+                TapNoteItem, ExTapNoteItem, Tap2NoteItem, ExTap2NoteItem, FlickNoteItem, DamageNoteItem,
+                SlideNoteItem, GuideNoteItem,
             };
 
             var ExportNotesItems = new ToolStripMenuItem(MainFormStrings.Notes, null, NoteItems);
@@ -1363,7 +1559,7 @@ namespace Ched.UI
             var playMenuItems = new ToolStripItem[]
             {
                 playItem, stopItem, new ToolStripSeparator(),
-                slowDownPreviewItem, isAbortAtLastNoteItem
+                slowDownPreviewItem, isAbortAtLastNoteItem, isPjsekaiSounds
             };
 
             var helpMenuItems = new ToolStripItem[]
@@ -1376,7 +1572,7 @@ namespace Ched.UI
 
             var channelMenuItems = new ToolStripItem[] { channelMovableItem, channelSoundsItem, noteVisualModeItem, changeChannelSelectedNotesItem, isFormSpeedItem };
 
-            var exportMenuItems = new ToolStripItem[] { ExportuscfadeItems, ExportNotesItems };
+            var exportMenuItems = new ToolStripItem[] { ExportNotesItems };
 
 
 
@@ -1482,13 +1678,44 @@ namespace Ched.UI
                 propertyButton.Checked = noteView.EditMode == EditMode.Property;
             };
 
+
+            var scrollAmountCounts = new float[]
+            {
+                0.1f, 0.3f, 0.5f, 0.8f, 1f, 1.5f, 1.8f, 2f, 2.3f, 2.5f, 2.8f, 3f, 3.3f, 3.5f, 3.8f, 4f, 4.3f, 4.5f, 4.8f, 5f, 5.3f, 5.5f, 5.8f, 6f, 6.5f, 7f, 7.5f, 8f, 8.5f, 9f, 9.5f, 10f
+            };
+
+
+            var scrollAmountBox = new ToolStripComboBox("スクロール変化量")
+            {
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                AutoSize = false,
+                Width = 60
+            };
+            scrollAmountBox.Items.AddRange(scrollAmountCounts.Select(p => "/ " + p).ToArray());
+
+            scrollAmountBox.SelectedIndexChanged += (s, e) =>
+            {
+
+                ScrollAmount = scrollAmountCounts[scrollAmountBox.SelectedIndex];
+                noteView.ScrollAmount = ScrollAmount;
+                ApplicationSettings.Default.ScrollAmount = ScrollAmount;
+                noteView.Update();
+                noteView.Focus();
+            };
+
+            scrollAmountBox.SelectedIndex = scrollAmountCounts.ToList().IndexOf(ApplicationSettings.Default.ScrollAmount);
+
+
+
             return new ToolStrip(new ToolStripItem[]
             {
                 newFileButton, openFileButton, saveFileButton, exportButton, new ToolStripSeparator(),
                 cutButton, copyButton, pasteButton, new ToolStripSeparator(),
                 undoButton, redoButton, new ToolStripSeparator(),
                 penButton, selectionButton, eraserButton, paintButton, propertyButton, new ToolStripSeparator(),
-                zoomInButton, zoomOutButton
+                zoomInButton, zoomOutButton, new ToolStripSeparator(),
+                scrollAmountBox
+                
             });
 
         }
@@ -1509,6 +1736,7 @@ namespace Ched.UI
             var guideStepButton = shortcutItemBuilder.BuildItem(Commands.SelectGuideStep, "GUIDESTEP", Resources.GuideStepIcon);
             var tap2Button = shortcutItemBuilder.BuildItem(Commands.SelectTap2, "TAP2", Resources.TapIcon2);
             var exTap2Button = shortcutItemBuilder.BuildItem(Commands.SelectExTap2, "ExTAP2", Resources.ExTapIcon2);
+            var stepNoteTapButton = shortcutItemBuilder.BuildItem(Commands.SelectStepNoteTap, "StepNoteTAP", Resources.ExTapIcon);
 
             var airKind = new CheckableToolStripSplitButton()
             {
@@ -1616,6 +1844,7 @@ namespace Ched.UI
                 airActionButton.Checked = noteView.NewNoteType.HasFlag(NoteType.AirAction);
                 flickButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Flick);
                 damageButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Damage);
+                stepNoteTapButton.Checked = noteView.NewNoteType.HasFlag(NoteType.StepNoteTap);
                 guideButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Guide) && !noteView.IsNewGuideStepVisible;
                 guideStepButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Guide) && noteView.IsNewGuideStepVisible;
                 tap2Button.Checked = noteView.NewNoteType.HasFlag(NoteType.Tap) && noteView.IsNewNoteStart;
@@ -1802,14 +2031,28 @@ namespace Ched.UI
 
 
 
+            var menu = new ToolStrip(new ToolStripItem[] {});
 
-
-            return new ToolStrip(new ToolStripItem[]
+            if (bool.Parse(ConfigurationManager.AppSettings["ShortCutNoteExtend"]))
+            {
+                menu = new ToolStrip(new ToolStripItem[]
+            {
+                tapButton, exTapButton, holdButton, slideButton, slideStepButton, airKind, airActionButton, flickButton, damageButton, guideKind,
+                 guideStepButton, tap2Button, exTap2Button, new ToolStripSeparator(), stepNoteTapButton,
+                quantizeComboBox, new ToolStripSeparator(), speedChBox, viewChBox,  laneVisible, widthAmountBox
+            });
+            }
+            else
+            {
+                menu = new ToolStrip(new ToolStripItem[]
             {
                 tapButton, exTapButton, holdButton, slideButton, slideStepButton, airKind, airActionButton, flickButton, damageButton, guideKind,
                  guideStepButton, tap2Button, exTap2Button,
                 quantizeComboBox, new ToolStripSeparator(), speedChBox, viewChBox,  laneVisible, widthAmountBox
             });
+            }
+
+            return menu;
         }
     }
 }

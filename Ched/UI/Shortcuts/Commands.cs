@@ -74,6 +74,7 @@ namespace Ched.UI.Shortcuts
         public static string SelectAirAction => "editor.selectAirAction";
         public static string SelectFlick => "editor.selectFlick";
         public static string SelectDamage => "editor.selectDamage";
+        public static string SelectStepNoteTap => "editor.selectStepNoteTap";
         public static string SelectGuide => "editor.selectGuide";
         public static string SelectGuideStep => "editor.selectGuideStep";
         public static string SelectTap2 => "editor.selectTap2";

@@ -466,4 +466,45 @@ namespace Ched.UI.Operations
         }
     }
 
+
+    public class InsertStepNoteTapOperation : NoteCollectionOperation<StepNoteTap>
+    {
+        public override string Description { get { return "StepNoteTAPの追加"; } }
+
+        public InsertStepNoteTapOperation(NoteView.NoteCollection collection, StepNoteTap note) : base(collection, note)
+        {
+        }
+
+        public override void Redo()
+        {
+            Collection.Add(Note);
+        }
+
+        public override void Undo()
+        {
+            Collection.Remove(Note);
+        }
+    }
+
+    public class RemoveStepNoteTapOperation : NoteCollectionOperation<StepNoteTap>
+    {
+        public override string Description { get { return "StepNoteTAPの削除"; } }
+
+        public RemoveStepNoteTapOperation(NoteView.NoteCollection collection, StepNoteTap note) : base(collection, note)
+        {
+        }
+
+        public override void Redo()
+        {
+            Collection.Remove(Note);
+        }
+
+        public override void Undo()
+        {
+            Collection.Add(Note);
+        }
+    }
+
+
+
 }

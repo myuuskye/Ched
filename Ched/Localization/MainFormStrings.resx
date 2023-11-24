@@ -501,4 +501,28 @@
   <data name="EraceSlideStart" xml:space="preserve">
     <value>でスライドの始点を消す</value>
   </data>
+  <data name="ChangeGuideFade" xml:space="preserve">
+    <value>でガイドのフェードを変える</value>
+  </data>
+  <data name="ChangeEndTrace" xml:space="preserve">
+    <value>で終点をトレースに変える</value>
+  </data>
+  <data name="ChangeStartTrace" xml:space="preserve">
+    <value>で始点をトレースに変える</value>
+  </data>
+  <data name="None" xml:space="preserve">
+    <value>無し</value>
+  </data>
+  <data name="SlideEndTypes" xml:space="preserve">
+    <value>スライド終点のデフォルトタイプ</value>
+  </data>
+  <data name="SlideNormal" xml:space="preserve">
+    <value>通常</value>
+  </data>
+  <data name="SlideStartTypes" xml:space="preserve">
+    <value>スライド始点のデフォルトタイプ</value>
+  </data>
+  <data name="SlideTrace" xml:space="preserve">
+    <value>トレース</value>
+  </data>
 </root>

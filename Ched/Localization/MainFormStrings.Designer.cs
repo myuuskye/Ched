@@ -205,6 +205,33 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   で終点をトレースに変える に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ChangeEndTrace {
+            get {
+                return ResourceManager.GetString("ChangeEndTrace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   でガイドのフェードを変える に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ChangeGuideFade {
+            get {
+                return ResourceManager.GetString("ChangeGuideFade", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   で始点をトレースに変える に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ChangeStartTrace {
+            get {
+                return ResourceManager.GetString("ChangeStartTrace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   チャンネル に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Channel {
@@ -772,6 +799,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   無し に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string None {
+            get {
+                return ResourceManager.GetString("None", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   ノーツ に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Notes {
@@ -997,11 +1033,47 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   スライド終点のデフォルトタイプ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SlideEndTypes {
+            get {
+                return ResourceManager.GetString("SlideEndTypes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   通常 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SlideNormal {
+            get {
+                return ResourceManager.GetString("SlideNormal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   スライド始点のデフォルトタイプ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SlideStartTypes {
+            get {
+                return ResourceManager.GetString("SlideStartTypes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   SLIDE(中継点) に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string SlideStep {
             get {
                 return ResourceManager.GetString("SlideStep", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   トレース に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SlideTrace {
+            get {
+                return ResourceManager.GetString("SlideTrace", resourceCulture);
             }
         }
         

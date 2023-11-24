@@ -472,9 +472,39 @@
     <value>Allow step channels (USC only)</value>
   </data>
   <data name="EraceSlideEnd" xml:space="preserve">
-    <value>erases slide end</value>
+    <value>Erases Slide End</value>
   </data>
   <data name="EraceSlideStart" xml:space="preserve">
-    <value>erases slide start</value>
+    <value>Erases Slide Start</value>
+  </data>
+  <data name="ChangeGuideFade" xml:space="preserve">
+    <value>Changes Guide Fade</value>
+  </data>
+  <data name="ChangeEndTrace" xml:space="preserve">
+    <value>Changes End Trace</value>
+  </data>
+  <data name="ChangeStartTrace" xml:space="preserve">
+    <value>Changes Start Trace</value>
+  </data>
+  <data name="GuideIn" xml:space="preserve">
+    <value>Fade In</value>
+  </data>
+  <data name="GuideOut" xml:space="preserve">
+    <value>Fade Out</value>
+  </data>
+  <data name="None" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="SlideEndTypes" xml:space="preserve">
+    <value>Slide End Types</value>
+  </data>
+  <data name="SlideNormal" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="SlideStartTypes" xml:space="preserve">
+    <value>Slide Start Types</value>
+  </data>
+  <data name="SlideTrace" xml:space="preserve">
+    <value>Trace</value>
   </data>
 </root>
