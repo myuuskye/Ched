@@ -68,6 +68,7 @@
     <Compile Include="BaseUSCObject.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="EventCollection.cs" />
+    <Compile Include="Events\CommentEvent.cs" />
     <Compile Include="Events\BpmChangeEvent.cs" />
     <Compile Include="Events\EventBase.cs" />
     <Compile Include="Events\HighSpeedChangeEvent.cs" />

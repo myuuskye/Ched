@@ -507,4 +507,10 @@
   <data name="SlideTrace" xml:space="preserve">
     <value>Trace</value>
   </data>
+  <data name="ChannelHistoryClear" xml:space="preserve">
+    <value>Delete Ch History</value>
+  </data>
+  <data name="Comment" xml:space="preserve">
+    <value>Comment</value>
+  </data>
 </root>

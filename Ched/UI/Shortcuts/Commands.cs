@@ -48,6 +48,7 @@ namespace Ched.UI.Shortcuts
         public static string InsertBpmChange => "editor.action.insertBpmChange";
         public static string InsertTimeSignatureChange => "editor.action.insertTimeSignatureChange";
         public static string InsertHighSpeedChange => "editor.action.insertHighSpeedChange";
+        public static string InsertComment => "editor.action.insertComment";
 
         public static string PlayPreview => "editor.view.playPreview";
 

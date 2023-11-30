@@ -241,6 +241,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   Ch履歴削除 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ChannelHistoryClear {
+            get {
+                return ResourceManager.GetString("ChannelHistoryClear", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   チャンネル に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string ChannelMenu {
@@ -372,6 +381,15 @@ namespace Ched.Localization {
         public static string Command {
             get {
                 return ResourceManager.GetString("Command", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   コメント に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Comment {
+            get {
+                return ResourceManager.GetString("Comment", resourceCulture);
             }
         }
         

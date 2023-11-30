@@ -3959,7 +3959,7 @@ namespace Ched.UI
                     foreach (var item in ScoreEvents.BpmChangeEvents.Where(p => p.Tick >= HeadTick && p.Tick < tailTick))
                     {
                         var point = new PointF(rightBase, -GetYPositionFromTick(item.Tick) - strSize.Height);
-                        pe.Graphics.DrawString(Regex.Replace(item.Bpm.ToString(), @"\.0$", "").PadLeft(3), font, Brushes.Lime, point);
+                        pe.Graphics.DrawString(Regex.Replace(item.Bpm.ToString(), @"\.0$", "").PadLeft(3), font, bpmBrush, point);
                     }
                 }
 
@@ -3982,14 +3982,55 @@ namespace Ched.UI
                         if(viewchannel == -1 || viewchannel == item.SpeedCh)
                         {
                             var point = new PointF(rightBase + strSize.Width * 2 + 5f, -GetYPositionFromTick(item.Tick) - strSize.Height);
-                            pe.Graphics.DrawString(string.Format("x{0: 0.00;-0.00} ch {1:00} ({2:00})", item.SpeedRatio, item.SpeedCh , RadixConvert.ToString(item.SpeedCh, 36, false).PadLeft(2, '0')), font, highSpeedBrush, point);
+                            pe.Graphics.DrawString(string.Format("x{0: 0.00;-0.00} ch {1:00}", item.SpeedRatio, item.SpeedCh), font, highSpeedBrush, point);
                         }
                         
                     }
                 }
+
+                // コメント描画
+
+                foreach (var item in ScoreEvents.CommentEvents.Where(p => p.Tick >= HeadTick && p.Tick < tailTick))
+                {
+                    var commentBrush = new SolidBrush(Color.FromArgb(0, 255, 255));
+                    switch (item.Color)
+                    {
+                        case 0:
+                            commentBrush = new SolidBrush(Color.FromArgb(0, 60, 255));
+                            break;
+                        case 1:
+                            commentBrush = new SolidBrush(Color.FromArgb(255, 40, 40));
+                            break;
+                        case 2:
+                            commentBrush = new SolidBrush(Color.FromArgb(255, 255, 40));
+                            break;
+                        case 3:
+                            commentBrush = new SolidBrush(Color.FromArgb(220, 0, 255));
+                            break;
+                        case 4:
+                            commentBrush = new SolidBrush(Color.FromArgb(0, 255, 0));
+                            break;
+                        case 5:
+                            commentBrush = new SolidBrush(Color.FromArgb(0, 255, 255));
+                            break;
+                        case 6:
+                            commentBrush = new SolidBrush(Color.FromArgb(255, 40, 255));
+                            break;
+                    }
+
+                    var cmfont = new Font("MS Gothic", item.Size);
+                    var point = new PointF(rightBase + strSize.Width * 5 + 5f, -GetYPositionFromTick(item.Tick) - strSize.Height);
+                    pe.Graphics.DrawString(item.Comment, cmfont, commentBrush, point);
+                }
+                
+
+
             }
 
-            pe.Graphics.Transform = prevMatrix;
+
+            
+
+                pe.Graphics.Transform = prevMatrix;
         }
 
         private Matrix GetDrawingMatrix(Matrix baseMatrix)
@@ -4268,17 +4309,17 @@ namespace Ched.UI
 
             var c = new Core.EventCollection();
 
+            c.BpmChangeEvents.AddRange(events.BpmChangeEvents.Where(p => isContained(p)));
+            c.TimeSignatureChangeEvents.AddRange(events.TimeSignatureChangeEvents.Where(p => isContained(p)));
+            c.CommentEvents.AddRange(events.CommentEvents.Where(p => isContained(p)));
+
             if (byCh)
             {
-                c.BpmChangeEvents.AddRange(events.BpmChangeEvents.Where(p => isContained(p)));
                 c.HighSpeedChangeEvents.AddRange(events.HighSpeedChangeEvents.Where(p => isContained(p) && p.SpeedCh == channel));
-                c.TimeSignatureChangeEvents.AddRange(events.TimeSignatureChangeEvents.Where(p => isContained(p)));
             }
             else
             {
-                c.BpmChangeEvents.AddRange(events.BpmChangeEvents.Where(p => isContained(p)));
                 c.HighSpeedChangeEvents.AddRange(events.HighSpeedChangeEvents.Where(p => isContained(p)));
-                c.TimeSignatureChangeEvents.AddRange(events.TimeSignatureChangeEvents.Where(p => isContained(p)));
             }
             
 
@@ -4486,12 +4527,17 @@ namespace Ched.UI
             {
                 @event.Tick = @event.Tick - originTick + CurrentTick;
             }
+            foreach (var @event in data.SelectedEvents.CommentEvents)
+            {
+                @event.Tick = @event.Tick - originTick + CurrentTick;
+            }
 
             action(data);
 
             var op = data.SelectedEvents.BpmChangeEvents.Select(p => new InsertEventOperation<BpmChangeEvent>(ScoreEvents.BpmChangeEvents, p)).Cast<IOperation>()
                 .Concat(data.SelectedEvents.TimeSignatureChangeEvents.Select(p => new InsertEventOperation<TimeSignatureChangeEvent>(ScoreEvents.TimeSignatureChangeEvents, p)))
-                .Concat(data.SelectedEvents.HighSpeedChangeEvents.Select(p => new InsertEventOperation<HighSpeedChangeEvent>(ScoreEvents.HighSpeedChangeEvents, p)));
+                .Concat(data.SelectedEvents.HighSpeedChangeEvents.Select(p => new InsertEventOperation<HighSpeedChangeEvent>(ScoreEvents.HighSpeedChangeEvents, p)))
+                .Concat(data.SelectedEvents.CommentEvents.Select(p => new InsertEventOperation<CommentEvent>(ScoreEvents.CommentEvents, p)));
             var composite = new CompositeOperation("クリップボードからペースト", op.ToList());
             composite.Redo(); // 追加書くの面倒になったので許せ
             return composite;
@@ -4586,7 +4632,12 @@ namespace Ched.UI
                 return new RemoveEventOperation<TimeSignatureChangeEvent>(events.TimeSignatureChangeEvents, p);
             });
 
-            OperationManager.InvokeAndPush(new CompositeOperation("イベント削除", bpmOp.Cast<IOperation>().Concat(speedOp).Concat(signatureOp).ToList()));
+            var commentOp = selected.CommentEvents.ToList().Select(p =>
+            {
+                return new RemoveEventOperation<CommentEvent>(events.CommentEvents, p);
+            });
+
+            OperationManager.InvokeAndPush(new CompositeOperation("イベント削除", bpmOp.Cast<IOperation>().Concat(speedOp).Concat(signatureOp).Concat(commentOp).ToList()));
             Invalidate();
         }
 

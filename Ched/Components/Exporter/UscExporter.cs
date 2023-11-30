@@ -24,7 +24,7 @@ namespace Ched.Components.Exporter
         protected BarIndexCalculator BarIndexCalculator { get; }
         protected int StandardBarTick => ScoreBook.Score.TicksPerBeat * 4;
 
-        private int offset = 0;
+        private double offset = 0;
        
 
         [Newtonsoft.Json.JsonProperty]
@@ -56,6 +56,8 @@ namespace Ched.Components.Exporter
             var notes = book.Score.Notes;
             var objects = new List<USCObject>();
             usc = new USC(offset);
+
+            usc.offset = book.Offset;
 
             int guideDefType = ApplicationSettings.Default.GuideDefaultFade;
 
@@ -849,6 +851,18 @@ namespace Ched.Components.Exporter
 
                     var midpoint = new USCGuideMidpointNote((double)step.Tick / 480, step.Channel, steplaneIndex, step.Width / 2, stepEase);
                     midpointnotes.Add(midpoint);
+
+                    if (step.IsVisible)
+                    {
+                        if (step == endNote) continue;
+                        bool isTraceCritical = false;
+                        foreach (var note2 in notes.ExTaps)
+                        {
+                            if (step.Tick == note2.Tick && step.LaneIndex == note2.LaneIndex) isTraceCritical = true;
+                        }
+                        var trace = new USCSingleNote((double)step.Tick / 480, step.Channel, steplaneIndex, step.Width / 2, isTraceCritical, true);
+                        usc.objects.Add(trace);
+                    }
                 }
 
                 

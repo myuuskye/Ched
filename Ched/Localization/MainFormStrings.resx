@@ -525,4 +525,10 @@
   <data name="SlideTrace" xml:space="preserve">
     <value>トレース</value>
   </data>
+  <data name="ChannelHistoryClear" xml:space="preserve">
+    <value>Ch履歴削除</value>
+  </data>
+  <data name="Comment" xml:space="preserve">
+    <value>コメント</value>
+  </data>
 </root>

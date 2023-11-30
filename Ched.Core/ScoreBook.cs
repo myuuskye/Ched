@@ -41,6 +41,10 @@ namespace Ched.Core
         private Score score = new Score();
         [Newtonsoft.Json.JsonProperty]
         private Dictionary<string, string> exportArgs = new Dictionary<string, string>();
+        [Newtonsoft.Json.JsonProperty]
+        private double offset = 0;
+        [Newtonsoft.Json.JsonProperty]
+        private Dictionary<int, string> channelNames = new Dictionary<int, string>();
 
         public string Path { get; set; }
 
@@ -88,6 +92,15 @@ namespace Ched.Core
             set { laneoffset = value; }
         }
 
+        /// <summary>
+        /// レーンオフセット(CCの拡張機能)を設定します。
+        /// </summary>
+        public double Offset
+        {
+            get { return offset; }
+            set { offset = value; }
+        }
+
 
 
         /// <summary>
@@ -106,6 +119,15 @@ namespace Ched.Core
         {
             get { return exportArgs; }
             set { exportArgs = value; }
+        }
+
+        /// <summary>
+        /// チャンネル名の設定を格納します。
+        /// </summary>
+        public Dictionary<int, string> ChannelNames
+        {
+            get { return channelNames; }
+            set { channelNames = value; }
         }
 
         public void Save(string path)

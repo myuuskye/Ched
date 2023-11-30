@@ -55,16 +55,17 @@
                         </Grid.ColumnDefinitions>
 
                         <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.Tick}" />
-                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding NoteTick}" DecimalPlaces="0" Increment="1" Maximum="1000000000000000" />
+                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding NoteTick}" DecimalPlaces="0" Increment="1" Maximum="10000000000000000000" />
                     </Grid>
                     <Grid Style="{StaticResource ResourceKey=InputFieldRow}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
-                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="23*" />
+                            <ColumnDefinition Width="137*"/>
                         </Grid.ColumnDefinitions>
 
                         <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.Channel}" />
-                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding NoteChannel}" DecimalPlaces="0" Increment="1" Minimum="0"  Maximum="1000" />
+                        <local:BindableNumericUpDown Value="{Binding NoteChannel}" DecimalPlaces="0" Increment="1" Minimum="0"  Maximum="100000" Grid.ColumnSpan="3" Margin="67,0,0,0" />
                     </Grid>
 
                     <Grid Style="{StaticResource ResourceKey=InputFieldRow}">
@@ -94,7 +95,7 @@
 
             <GroupBox Header="{x:Static localization:MainFormStrings.Other}" Margin="{StaticResource ContainerMargin}">
 
-                  
+
 
             </GroupBox>
 

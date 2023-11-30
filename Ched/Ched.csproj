@@ -194,6 +194,12 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="RadixConvert.cs" />
+    <Compile Include="UI\CommentInsertForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\CommentInsertForm.Designer.cs">
+      <DependentUpon>CommentInsertForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="UI\LaneSelectionForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -373,6 +379,12 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\CommentInsertForm.en.resx">
+      <DependentUpon>CommentInsertForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\CommentInsertForm.resx">
+      <DependentUpon>CommentInsertForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\BpmSelectionForm.en.resx">
       <DependentUpon>BpmSelectionForm.cs</DependentUpon>

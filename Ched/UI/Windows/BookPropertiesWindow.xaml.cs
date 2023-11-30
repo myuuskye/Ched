@@ -148,6 +148,17 @@ namespace Ched.UI.Windows
             }
         }
 
+        private double offset;
+        public double Offset
+        {
+            get => offset;
+            set
+            {
+                offset = value;
+                NotifyPropertyChanged();
+            }
+        }
+
 
 
 
@@ -170,7 +181,7 @@ namespace Ched.UI.Windows
             DefaultLaneOffset = ApplicationSettings.Default.LaneOffset;
 
             MusicSourcePath = MusicSource.FilePath;
-            MusicSourceLatency = MusicSource.Latency;
+            MusicSourceLatency = ScoreBook.Offset;
             MusicVolume = MusicSource.Volume;
             GuideVolume = Configuration.SoundSettings.Default.GuideSound.Volume;
 
@@ -182,11 +193,13 @@ namespace Ched.UI.Windows
             ScoreBook.ArtistName = Artist;
             ScoreBook.NotesDesignerName = NotesDesigner;
             ScoreBook.LaneOffset = LaneOffset;
+            ScoreBook.Offset = MusicSourceLatency;
             NoteView.laneOffset = LaneOffset;
             ApplicationSettings.Default.LaneOffset = DefaultLaneOffset;
 
             MusicSource.FilePath = MusicSourcePath;
             MusicSource.Latency = MusicSourceLatency;
+            
             MusicSource.Volume = MusicVolume;
             var guide = Configuration.SoundSettings.Default.GuideSound;
             var tap = Configuration.SoundSettings.Default.TapSound;

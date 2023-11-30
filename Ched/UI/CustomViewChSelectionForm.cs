@@ -33,7 +33,7 @@ namespace Ched.UI
 
 
             speedChBox.Minimum = 0;
-            speedChBox.Maximum = 1000;
+            speedChBox.Maximum = 100000;
             speedChBox.Increment = 1;
             speedChBox.DecimalPlaces = 0;
             speedChBox.Value = 1;

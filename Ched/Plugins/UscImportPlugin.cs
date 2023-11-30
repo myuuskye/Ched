@@ -46,10 +46,13 @@ namespace Ched.Plugins
             var doc = JObject.Parse(data);
             var objects = doc["usc"]["objects"];
 
+
             var events = result.Score.Events;
 
             int count = 0;
             int timescaleforcount = 0;
+
+            result.Offset = doc["usc"].Value<double>("offset");
 
             foreach (var obj in objects)
             {
