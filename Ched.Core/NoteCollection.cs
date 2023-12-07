@@ -24,6 +24,8 @@ namespace Ched.Core
         [Newtonsoft.Json.JsonProperty]
         private List<Slide> slides;
         [Newtonsoft.Json.JsonProperty]
+        private List<Guide> guides;
+        [Newtonsoft.Json.JsonProperty]
         private List<Flick> flicks;
         [Newtonsoft.Json.JsonProperty]
         private List<Damage> damages;
@@ -31,8 +33,6 @@ namespace Ched.Core
         private List<Air> airs;
         [Newtonsoft.Json.JsonProperty]
         private List<AirAction> airActions;
-        [Newtonsoft.Json.JsonProperty]
-        private List<Guide> guides;
         [Newtonsoft.Json.JsonProperty]
         private List<StepNoteTap> stepNoteTaps;
 
@@ -104,11 +104,11 @@ namespace Ched.Core
             ExTaps = new List<ExTap>();
             Holds = new List<Hold>();
             Slides = new List<Slide>();
+            Guides = new List<Guide>();
             Airs = new List<Air>();
             AirActions = new List<AirAction>();
             Flicks = new List<Flick>();
             Damages = new List<Damage>();
-            Guides = new List<Guide>();
             StepNoteTaps = new List<StepNoteTap>();
         }
 
@@ -118,11 +118,11 @@ namespace Ched.Core
             ExTaps = collection.ExTaps.ToList();
             Holds = collection.Holds.ToList();
             Slides = collection.Slides.ToList();
+            Guides = collection.Guides.ToList();
             Airs = collection.Airs.ToList();
             AirActions = collection.AirActions.ToList();
             Flicks = collection.Flicks.ToList();
             Damages = collection.Damages.ToList();
-            Guides = collection.Guides.ToList();
             StepNoteTaps = collection.StepNoteTaps.ToList();
         }
 

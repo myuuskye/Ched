@@ -531,4 +531,13 @@
   <data name="Comment" xml:space="preserve">
     <value>コメント</value>
   </data>
+  <data name="CopyEvents" xml:space="preserve">
+    <value>選択範囲内のイベントをコピー</value>
+  </data>
+  <data name="CutEvents" xml:space="preserve">
+    <value>選択範囲内のイベントをカット</value>
+  </data>
+  <data name="PasteEvents" xml:space="preserve">
+    <value>選択範囲内のイベントをペースト</value>
+  </data>
 </root>

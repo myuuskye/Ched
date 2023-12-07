@@ -18,6 +18,7 @@ namespace Ched.Drawing
 
         public static void DrawNote(this Graphics g, RectangleF rect, GradientColor foregroundColors, GradientColor borderColors)
         {
+            if (rect.Width < 0.1f) rect.Width = 0.1f;
             DrawNoteBase(g, rect, foregroundColors);
             DrawBorder(g, rect, borderColors);
         }

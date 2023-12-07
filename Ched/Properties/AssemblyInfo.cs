@@ -12,6 +12,6 @@ using System.Windows.Media;
 [assembly: ComVisible(false)]
 [assembly: Guid("4c0c9f98-6fcf-4d2f-b821-37a66362dc75")]
 
-[assembly: AssemblyVersion("3.2.3.3")]
+[assembly: AssemblyVersion("3.2.3.5")]
 
 [assembly: DisableDpiAwareness]

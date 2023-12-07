@@ -54,6 +54,8 @@ namespace Ched.UI.Shortcuts
 
         public static string ShowHelp => "application.showHelp";
 
+        public static string NoteCollection => "editor.action.noteCollection";
+
         // ToolStrip
         public static string SelectPen => "editor.selectPen";
         public static string SelectSelection => "editor.selectSelection";

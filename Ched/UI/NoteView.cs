@@ -3152,7 +3152,7 @@ namespace Ched.UI
                 .Where(p => p.Button == MouseButtons.Left && EditMode == EditMode.Property)
                 .SelectMany(p =>
                 {
-                    Console.WriteLine("viewProperty");
+                    //Console.WriteLine("viewProperty");
                     int tailTick = TailTick;
                     var from = p.Location;
                     Matrix matrix = GetDrawingMatrix(new Matrix());
@@ -3163,14 +3163,12 @@ namespace Ched.UI
 
                     IObservable<MouseEventArgs> TappableNoteHandler(TappableBase note)
                     {
-                        Console.WriteLine("Tappable");
+                        //Console.WriteLine("Tappable");
                         return mouseClick
                             .TakeUntil(mouseUp)
                             .Do(q =>
                             {
-                                Console.WriteLine("Tappable1");
                                 if ((note.Channel != channel) && (editablebyCh == true)) return;
-                                Console.WriteLine("Tappable2");
                                 var vm = new ShortNotePropertiesWindowViewModel(note);
                                 var window = new ShortNotePropertiesWindow() { DataContext = vm};
                                 window.ShowDialog();
@@ -3188,7 +3186,6 @@ namespace Ched.UI
                         if (rect.Contains(scorePos))
                         {
                             var beforePos = new ChangeShortNoteWidthOperation.NotePosition(note.LaneIndex, note.Width);
-                            Console.WriteLine("shortnote");
                             return TappableNoteHandler(note)
                             .Finally(() =>
                             {
@@ -3787,8 +3784,10 @@ namespace Ched.UI
                         if (!Editable && !step.IsVisible) continue;
                         // if (Notes.GetReferencedAir(step).Count() > 0) break; // AIR付き終点
                         RectangleF rect = GetRectFromNotePosition(step.Tick, step.LaneIndex, step.Width);
+
                         if (step.IsVisible) dc.DrawSlideStep(rect,isch, noteVisualMode);
                         else dc.DrawBorder(rect, isch, noteVisualMode);
+
 
                         
                 }
@@ -3823,7 +3822,7 @@ namespace Ched.UI
             {
                 bool isch = ((slide.Channel == viewchannel) || viewchannel == -1);
 
-                    dc.DrawSlideBegin(GetRectFromNotePosition(slide.StartTick, slide.StartNote.LaneIndex, slide.StartWidth), isch, noteVisualMode);
+                dc.DrawSlideBegin(GetRectFromNotePosition(slide.StartTick, slide.StartNote.LaneIndex, slide.StartWidth), isch, noteVisualMode);
                 
                     
             }
@@ -4178,10 +4177,16 @@ namespace Ched.UI
 
         private RectangleF GetRectFromNotePosition(int tick, float laneIndex, float width)
         {
+            float width2 = 0;
+
+            if(width < 0.1)
+            {
+                width2 = 0.1f;
+            }
             return new RectangleF(
                 (UnitLaneWidth + BorderThickness) * laneIndex + BorderThickness,
                 GetYPositionFromTick(tick) - ShortNoteHeight / 2,
-                (UnitLaneWidth + BorderThickness) * width - BorderThickness,
+                (UnitLaneWidth + BorderThickness) * (width + width2) - BorderThickness,
                 ShortNoteHeight
                 );
         }
@@ -4390,7 +4395,7 @@ namespace Ched.UI
         {
             var data = new SelectionData(SelectedRange.StartTick + Math.Min(SelectedRange.Duration, 0), UnitBeatTick, GetSelectedNotes());
             Clipboard.SetDataObject(data, true);
-            Console.WriteLine(data.StartTick + " " + data.TicksPerBeat + " " + data.SelectedNotes);
+            //Console.WriteLine(data.StartTick + " " + data.TicksPerBeat + " " + data.SelectedNotes);
         }
 
         public void CutSelectedEvents()
@@ -4400,10 +4405,10 @@ namespace Ched.UI
         }
         public void CopySelectedEvents()
         {
-            Console.WriteLine("CopyEvent");
+            //Console.WriteLine("CopyEvent");
             var data = new SelectionData(SelectedRange.StartTick + Math.Min(SelectedRange.Duration, 0), UnitBeatTick, GetSelectedEvents(editablebyCh));
             Clipboard.SetDataObject(data, true);
-            Console.WriteLine(data.StartTick + " " + data.TicksPerBeat + " " + data.SelectedEvents);
+            //Console.WriteLine(data.StartTick + " " + data.TicksPerBeat + " " + data.SelectedEvents);
         }
         public void PasteEvents()
         {
@@ -4501,7 +4506,7 @@ namespace Ched.UI
         /// <returns>ペースト操作を表す<see cref="IOperation"/></returns>
         protected IOperation PasteEvents(Action<SelectionData> action)
         {
-            Console.WriteLine("paste");
+            //Console.WriteLine("paste");
             var obj = Clipboard.GetDataObject();
             if (obj == null || !obj.GetDataPresent(typeof(SelectionData))) return null;
 
@@ -5183,7 +5188,7 @@ namespace Ched.UI
         {
             Data = new InnerData(startTick, ticksPerBeat,  null, events);
             serializedText = Newtonsoft.Json.JsonConvert.SerializeObject(Data, SerializerSettings);
-            Console.WriteLine(Data.StartTick);
+            //Console.WriteLine(Data.StartTick);
         }
         
 

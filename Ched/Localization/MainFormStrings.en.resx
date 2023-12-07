@@ -513,4 +513,13 @@
   <data name="Comment" xml:space="preserve">
     <value>Comment</value>
   </data>
+  <data name="CopyEvents" xml:space="preserve">
+    <value>Copy Selected Events</value>
+  </data>
+  <data name="CutEvents" xml:space="preserve">
+    <value>Cut Selected Events</value>
+  </data>
+  <data name="PasteEvents" xml:space="preserve">
+    <value>Paste Selected Events</value>
+  </data>
 </root>

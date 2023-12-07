@@ -723,6 +723,7 @@ namespace Ched.UI
                 UpdateEvent(NoteView.ScoreEvents.CommentEvents, item);
             });
 
+
             void UpdateEvent<T>(List<T> list, T item) where T : EventBase
             {
 
@@ -740,6 +741,76 @@ namespace Ched.UI
                 }
                 NoteView.Invalidate();
             }
+
+            commandSource.RegisterCommand(Commands.NoteCollection, "NoteCollection", () =>
+            {
+                var form = new NoteCollectionForm()
+                {
+                    BeforeBpm = NoteView.ScoreEvents.BpmChangeEvents.OrderBy(p => p.Tick).LastOrDefault(p => p.Tick <= NoteView.CurrentTick)?.Bpm * 2 ?? 240,
+                    AfterBpm = NoteView.ScoreEvents.BpmChangeEvents.OrderBy(p => p.Tick).LastOrDefault(p => p.Tick <= NoteView.CurrentTick)?.Bpm ?? 120
+                };
+                if (form.ShowDialog(this) != DialogResult.OK) return;
+
+                var BpmTick1 = NoteView.ScoreEvents.BpmChangeEvents.OrderBy(p => p.Tick).LastOrDefault(p => p.Tick <= NoteView.CurrentTick)?.Tick ?? 0;//選択場所のBPM
+                var BpmTick2 = NoteView.ScoreEvents.BpmChangeEvents.OrderBy(p => p.Tick).FirstOrDefault(p => p.Tick >= NoteView.CurrentTick)?.Tick ?? int.MaxValue; //選択場所の次のBPM
+
+                var BeforeBpm = form.BeforeBpm;
+                var AfterBpm = form.AfterBpm;
+
+                foreach (var note in NoteView.Notes.Taps.Where(p => (p.Tick >= BpmTick1) && (p.Tick < BpmTick2))){
+
+                    note.Tick = (int)(note.Tick * (AfterBpm / BeforeBpm));
+                }
+                foreach (var note in NoteView.Notes.ExTaps.Where(p => (p.Tick >= BpmTick1) && (p.Tick < BpmTick2)))
+                {
+
+                    note.Tick = (int)(note.Tick * (AfterBpm / BeforeBpm));
+                }
+                foreach (var note in NoteView.Notes.Flicks.Where(p => (p.Tick >= BpmTick1) && (p.Tick < BpmTick2)))
+                {
+
+                    note.Tick = (int)(note.Tick * (AfterBpm / BeforeBpm));
+                }
+                foreach (var note in NoteView.Notes.Damages.Where(p => (p.Tick >= BpmTick1) && (p.Tick < BpmTick2)))
+                {
+
+                    note.Tick = (int)(note.Tick * (AfterBpm / BeforeBpm));
+                }
+                foreach (var note in NoteView.Notes.Slides.Where(p => (p.StartTick >= BpmTick1) && (p.StartTick < BpmTick2)))
+                {
+
+                    note.StartTick = (int)(note.StartTick * (AfterBpm / BeforeBpm)) ;
+
+                    foreach(var step in note.StepNotes)
+                    {
+                        step.TickOffset = (int)(step.TickOffset * (AfterBpm / BeforeBpm));
+                    }
+                }
+                foreach (var note in NoteView.Notes.Guides.Where(p => (p.StartTick >= BpmTick1) && (p.StartTick < BpmTick2)))
+                {
+
+                    note.StartTick = (int)(note.StartTick * (AfterBpm / BeforeBpm));
+
+                    foreach (var step in note.StepNotes)
+                    {
+                        step.TickOffset = (int)(step.TickOffset * (AfterBpm / BeforeBpm));
+                    }
+                }
+                foreach(var @event in NoteView.ScoreEvents.HighSpeedChangeEvents)
+                {
+                    @event.Tick = (int)(@event.Tick * (AfterBpm / BeforeBpm));
+                }
+                foreach (var @event in NoteView.ScoreEvents.TimeSignatureChangeEvents)
+                {
+                    @event.Tick = (int)(@event.Tick * (AfterBpm / BeforeBpm));
+                }
+                foreach (var @event in NoteView.ScoreEvents.CommentEvents)
+                {
+                    @event.Tick = (int)(@event.Tick * (AfterBpm / BeforeBpm));
+                }
+
+            });
+
 
             commandSource.RegisterCommand(Commands.PlayPreview, MainFormStrings.Play, () => PlayPreview());
 
@@ -931,8 +1002,12 @@ namespace Ched.UI
 
             var flipSelectedNotesItem = shortcutItemBuilder.BuildItem(Commands.FlipSelectedNotes, MainFormStrings.FlipSelectedNotes);
             var removeSelectedNotesItem = shortcutItemBuilder.BuildItem(Commands.RemoveSelectedNotes, MainFormStrings.RemoveSelectedNotes);
+            var copyEventsItem = shortcutItemBuilder.BuildItem(Commands.CopyEvents, MainFormStrings.CopyEvents);
+            var cutEventsItem = shortcutItemBuilder.BuildItem(Commands.CutEvents, MainFormStrings.CutEvents);
+            var pasteEventsItem = shortcutItemBuilder.BuildItem(Commands.PasteEvents, MainFormStrings.PasteEvents);
             var removeEventsItem = shortcutItemBuilder.BuildItem(Commands.RemoveSelectedEvents, MainFormStrings.RemoveEvents);
             var changeChannelSelectedNotesItem = shortcutItemBuilder.BuildItem(Commands.ChangeChannelSelectedNotes, MainFormStrings.ChangeChannelSelectedNotes);
+            var noteCollectionItem = shortcutItemBuilder.BuildItem(Commands.NoteCollection, "NoteCollection");
 
             var insertAirWithAirActionItem = new ToolStripMenuItem(MainFormStrings.InsertAirWithAirAction, null, (s, e) =>
             {
@@ -986,8 +1061,10 @@ namespace Ched.UI
                 undoItem, redoItem, new ToolStripSeparator(),
                 cutItem, copyItem, pasteItem, pasteFlippedItem, new ToolStripSeparator(),
                 selectAllItem, selectToEndItem, selectoToBeginningItem, new ToolStripSeparator(),
-                flipSelectedNotesItem, removeSelectedNotesItem, removeEventsItem, new ToolStripSeparator(),
+                flipSelectedNotesItem, removeSelectedNotesItem,  new ToolStripSeparator(),
+                copyEventsItem, cutEventsItem, pasteEventsItem,removeEventsItem, new ToolStripSeparator(),
                 insertAirWithAirActionItem, allowStepChItem, new ToolStripSeparator(),
+                noteCollectionItem, new ToolStripSeparator(),
                 pluginItem
             };
 

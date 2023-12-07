@@ -403,6 +403,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   選択範囲内のイベントをコピー に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string CopyEvents {
+            get {
+                return ResourceManager.GetString("CopyEvents", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   カスタム に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Custom {
@@ -417,6 +426,15 @@ namespace Ched.Localization {
         public static string Cut {
             get {
                 return ResourceManager.GetString("Cut", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   選択範囲内のイベントをカット に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string CutEvents {
+            get {
+                return ResourceManager.GetString("CutEvents", resourceCulture);
             }
         }
         
@@ -885,6 +903,15 @@ namespace Ched.Localization {
         public static string Paste {
             get {
                 return ResourceManager.GetString("Paste", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   選択範囲内のイベントをペースト に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string PasteEvents {
+            get {
+                return ResourceManager.GetString("PasteEvents", resourceCulture);
             }
         }
         

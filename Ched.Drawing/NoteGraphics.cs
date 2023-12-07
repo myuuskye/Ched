@@ -240,13 +240,13 @@ namespace Ched.Drawing
                 using (var path = new GraphicsPath())
                 {
                     var left = orderedSteps.Select(p => p.Point);
-                    var right = orderedSteps.Select(p => new PointF(p.Point.X + p.Width, p.Point.Y)).Reverse();
+                    var right = orderedSteps.Select(p => new PointF(p.Point.X + p.Width , p.Point.Y)).Reverse();
                     path.AddPolygon(left.Concat(right).ToArray());
 
                     float head = orderedVisibleSteps[0];
                     float height = orderedVisibleSteps[orderedVisibleSteps.Count - 1] - head;
                     var pathBounds = path.GetBounds();
-                    var blendBounds = new RectangleF(pathBounds.X, head, pathBounds.Width, height + 0.1f);
+                    var blendBounds = new RectangleF(pathBounds.X, head, pathBounds.Width + 0.1f, height + 0.1f);
                     using (var brush = new LinearGradientBrush(blendBounds, Color.Black, Color.Black, LinearGradientMode.Vertical))
                     {
                         var heights = orderedVisibleSteps.Zip(orderedVisibleSteps.Skip(1), (p, q) => Tuple.Create(p, q - p));

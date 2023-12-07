@@ -194,6 +194,12 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="RadixConvert.cs" />
+    <Compile Include="UI\NoteCollectionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\NoteCollectionForm.Designer.cs">
+      <DependentUpon>NoteCollectionForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="UI\CommentInsertForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -379,6 +385,12 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\NoteCollectionForm.en.resx">
+      <DependentUpon>NoteCollectionForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\NoteCollectionForm.resx">
+      <DependentUpon>NoteCollectionForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\CommentInsertForm.en.resx">
       <DependentUpon>CommentInsertForm.cs</DependentUpon>
