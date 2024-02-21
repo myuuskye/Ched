@@ -751,11 +751,49 @@ namespace Ched.UI
                 };
                 if (form.ShowDialog(this) != DialogResult.OK) return;
 
+                var before = ScoreBook.Score;
+
                 var BpmTick1 = NoteView.ScoreEvents.BpmChangeEvents.OrderBy(p => p.Tick).LastOrDefault(p => p.Tick <= NoteView.CurrentTick)?.Tick ?? 0;//選択場所のBPM
                 var BpmTick2 = NoteView.ScoreEvents.BpmChangeEvents.OrderBy(p => p.Tick).FirstOrDefault(p => p.Tick >= NoteView.CurrentTick)?.Tick ?? int.MaxValue; //選択場所の次のBPM
 
                 var BeforeBpm = form.BeforeBpm;
                 var AfterBpm = form.AfterBpm;
+
+                var Oplist = new List<IOperation>();
+                var notes = ScoreBook.Score.Notes;
+
+                var dicShortNotes = notes.GetShortNotes().ToDictionary(q => q, q => new MoveShortNoteOperation.NotePosition(q.Tick, q.LaneIndex));
+                var dicHolds = notes.Holds.ToDictionary(q => q, q => new MoveHoldOperation.NotePosition(q.StartTick, q.LaneIndex, q.Width));
+                var dicSlides = notes.Slides.ToDictionary(q => q, q => new MoveSlideOperation.NotePosition(q.StartTick, q.StartLaneIndex, q.StartWidth));
+                var dicGuides = notes.Guides.ToDictionary(q => q, q => new MoveGuideOperation.NotePosition(q.StartTick, q.StartLaneIndex, q.StartWidth));
+                var referenced = new NoteCollection(notes);
+
+                var opShortNotes = dicShortNotes.Select(p =>
+                {
+                    p.Key.Tick = (int)(p.Key.Tick * (AfterBpm / BeforeBpm));
+                    var after = new MoveShortNoteOperation.NotePosition(p.Key.Tick, p.Key.LaneIndex);
+                    return new MoveShortNoteOperation(p.Key, p.Value, after);
+                });
+
+                var opHolds = dicHolds.Select(p =>
+                {
+                    p.Key.StartTick = (int)(p.Key.StartTick * (AfterBpm / BeforeBpm));
+                    var after = new MoveHoldOperation.NotePosition(p.Key.StartTick, p.Key.LaneIndex, p.Key.Width);
+                    return new MoveHoldOperation(p.Key, p.Value, after);
+                });
+
+                var opSlides = dicSlides.Select(p =>
+                {
+                    p.Key.StartTick = (int)(p.Key.StartTick * (AfterBpm / BeforeBpm));
+                    var after = new MoveSlideOperation.NotePosition(p.Key.StartTick, p.Key.StartLaneIndex, p.Key.StartWidth);
+                    return new MoveSlideOperation(p.Key, p.Value, after);
+                });
+                var opGuides = dicGuides.Select(p =>
+                {
+                    p.Key.StartTick = (int)(p.Key.StartTick * (AfterBpm / BeforeBpm));
+                    var after = new MoveGuideOperation.NotePosition(p.Key.StartTick, p.Key.StartLaneIndex, p.Key.StartWidth);
+                    return new MoveGuideOperation(p.Key, p.Value, after);
+                });
 
                 foreach (var note in NoteView.Notes.Taps.Where(p => (p.Tick >= BpmTick1) && (p.Tick < BpmTick2))){
 
@@ -808,6 +846,9 @@ namespace Ched.UI
                 {
                     @event.Tick = (int)(@event.Tick * (AfterBpm / BeforeBpm));
                 }
+
+                var opList = opShortNotes.Cast<IOperation>().Concat(opHolds).Concat(opSlides).Concat(opGuides).ToList();
+                OperationManager.InvokeAndPush(new CompositeOperation("ノーツの移動反転", opList));
 
             });
 
@@ -878,8 +919,8 @@ namespace Ched.UI
             commandSource.RegisterCommand(Commands.SelectAirUp, MainFormStrings.AirUp, () => HandleHorizontalAirDirection(VerticalAirDirection.Up));
             commandSource.RegisterCommand(Commands.SelectAirDown, MainFormStrings.AirDown, () => HandleHorizontalAirDirection(VerticalAirDirection.Down));
             commandSource.RegisterCommand(Commands.SelectAirAction, "AIR-ACTION", () => NoteView.NewNoteType = NoteType.AirAction);
-            commandSource.RegisterCommand(Commands.SelectFlick, "FLICK", () => NoteView.NewNoteType = NoteType.Flick);
-            commandSource.RegisterCommand(Commands.SelectDamage, "DAMAGE", () => NoteView.NewNoteType = NoteType.Damage);
+            commandSource.RegisterCommand(Commands.SelectFlick, "FLICK", () => { NoteView.NewNoteType = NoteType.Flick; NoteView.IsNewNoteStart = false; });
+            commandSource.RegisterCommand(Commands.SelectDamage, "DAMAGE", () => { NoteView.NewNoteType = NoteType.Damage; NoteView.IsNewNoteStart = false; });
             commandSource.RegisterCommand(Commands.SelectStepNoteTap, "STEPNOTETAP", () => NoteView.NewNoteType = NoteType.StepNoteTap);
 
             commandSource.RegisterCommand(Commands.SelectGuide, "GUIDE", () =>
@@ -901,6 +942,16 @@ namespace Ched.UI
             commandSource.RegisterCommand(Commands.SelectExTap2, "ExTAP2", () =>
             {
                 NoteView.NewNoteType = NoteType.ExTap;
+                NoteView.IsNewNoteStart = true;
+            });
+            commandSource.RegisterCommand(Commands.SelectFlick2, "FLICK2", () =>
+            {
+                NoteView.NewNoteType = NoteType.Flick;
+                NoteView.IsNewNoteStart = true;
+            });
+            commandSource.RegisterCommand(Commands.SelectDamage2, "DAMAGE2", () =>
+            {
+                NoteView.NewNoteType = NoteType.Damage;
                 NoteView.IsNewNoteStart = true;
             });
 
@@ -1404,6 +1455,45 @@ namespace Ched.UI
                 Checked = ApplicationSettings.Default.IsDamageHideOnGuide
             };
 
+            var slideHideFlick2 = new ToolStripMenuItem(MainFormStrings.isOnSlide + "Flick2" + MainFormStrings.Hide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsFlick2HideOnSlide = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsFlick2HideOnSlide
+            };
+            var guideHideFlick2 = new ToolStripMenuItem(MainFormStrings.isOnGuide + "Flick2" + MainFormStrings.Hide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsFlick2HideOnGuide = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsFlick2HideOnGuide
+            };
+
+            var slideHideDamage2 = new ToolStripMenuItem(MainFormStrings.isOnSlide + "DAMAGE2" + MainFormStrings.Hide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsDamage2HideOnSlide = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsDamage2HideOnSlide
+            };
+            var guideHideDamage2 = new ToolStripMenuItem(MainFormStrings.isOnGuide + "DAMAGE2" + MainFormStrings.Hide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsDamage2HideOnGuide = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsDamage2HideOnGuide
+            };
+
+
 
             var startEraseTap = new ToolStripMenuItem("TAP " + MainFormStrings.EraceSlideStart, null, (s, e) =>
             {
@@ -1554,67 +1644,1188 @@ namespace Ched.UI
                 Checked = ApplicationSettings.Default.IsDamageChangeFade
             };
 
-            var startTraceFlick = new ToolStripMenuItem("FLICK " + MainFormStrings.ChangeStartTrace, null, (s, e) =>
+
+            var SStapCritical = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlide, null, (s, e) =>
             {
                 var item = s as ToolStripMenuItem;
                 item.Checked = !item.Checked;
-                ApplicationSettings.Default.IsFlickSlideStartTrace= item.Checked;
+                ApplicationSettings.Default.SSIsTapCritical = item.Checked;
             })
             {
-                Checked = ApplicationSettings.Default.IsFlickSlideStartTrace
+                Checked = ApplicationSettings.Default.SSIsTapCritical
             };
-            var endTraceFlick = new ToolStripMenuItem("FLICK " + MainFormStrings.ChangeEndTrace, null, (s, e) =>
+            var SStap2Critical = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlide, null, (s, e) =>
             {
                 var item = s as ToolStripMenuItem;
                 item.Checked = !item.Checked;
-                ApplicationSettings.Default.IsFlickSlideEndTrace = item.Checked;
+                ApplicationSettings.Default.SSIsTap2Critical = item.Checked;
             })
             {
-                Checked = ApplicationSettings.Default.IsFlickSlideEndTrace
+                Checked = ApplicationSettings.Default.SSIsTap2Critical
+            };
+
+            var SSextapCritical = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsExTapCritical = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsExTapCritical
+            };
+            var SSextap2Critical = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsExTap2Critical = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsExTap2Critical
+            };
+            var SSflickCritical = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsFlickCritical = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsFlickCritical
+            };
+            var SSflick2Critical = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsFlick2Critical = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsFlick2Critical
+            };
+
+            var SSdamageCritical = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsDamageCritical = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsDamageCritical
+            };
+            var SSdamage2Critical = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsDamage2Critical = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsDamage2Critical
+            };
+            var SStapTraceS = new ToolStripMenuItem(MainFormStrings.SetTraceStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsTapChangeTraceS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsTapChangeTraceS
+            };
+            var SStapTraceE = new ToolStripMenuItem(MainFormStrings.SetTraceEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsTapChangeTraceE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsTapChangeTraceE
+            };
+            var SStap2TraceS = new ToolStripMenuItem(MainFormStrings.SetTraceStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsTap2ChangeTraceS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsTap2ChangeTraceS
+            };
+            var SStap2TraceE = new ToolStripMenuItem(MainFormStrings.SetTraceEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsTap2ChangeTraceE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsTap2ChangeTraceE
+            };
+            var SSextapTraceS = new ToolStripMenuItem(MainFormStrings.SetTraceStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsExTapChangeTraceS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsExTapChangeTraceS
+            };
+            var SSextapTraceE = new ToolStripMenuItem(MainFormStrings.SetTraceEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsExTapChangeTraceE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsExTapChangeTraceE
+            };
+            var SSextap2TraceS = new ToolStripMenuItem(MainFormStrings.SetTraceStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsExTap2ChangeTraceS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsExTap2ChangeTraceS
+            };
+            var SSextap2TraceE = new ToolStripMenuItem(MainFormStrings.SetTraceEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsExTap2ChangeTraceE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsExTap2ChangeTraceE
+            };
+            var SSflickTraceS = new ToolStripMenuItem(MainFormStrings.SetTraceStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsFlickChangeTraceS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsFlickChangeTraceS
+            };
+            var SSflickTraceE = new ToolStripMenuItem(MainFormStrings.SetTraceEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsFlickChangeTraceE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsFlickChangeTraceE
+            };
+            var SSflick2TraceS = new ToolStripMenuItem(MainFormStrings.SetTraceStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsFlick2ChangeTraceS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsFlick2ChangeTraceS
+            };
+            var SSflick2TraceE = new ToolStripMenuItem(MainFormStrings.SetTraceEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsFlick2ChangeTraceE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsFlick2ChangeTraceE
+            };
+            var SSdamageTraceS = new ToolStripMenuItem(MainFormStrings.SetTraceStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsDamageChangeTraceS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsDamageChangeTraceS
+            };
+            var SSdamageTraceE = new ToolStripMenuItem(MainFormStrings.SetTraceEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsDamageChangeTraceE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsDamageChangeTraceE
+            };
+            var SSdamage2TraceS = new ToolStripMenuItem(MainFormStrings.SetTraceStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsDamage2ChangeTraceS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsDamage2ChangeTraceS
+            };
+            var SSdamage2TraceE = new ToolStripMenuItem(MainFormStrings.SetTraceEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsDamage2ChangeTraceE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsDamage2ChangeTraceE
+            };
+
+            var SStapDeleteS = new ToolStripMenuItem(MainFormStrings.DeleteStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsTapDeleteS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsTapDeleteS
+            };
+            var SStapDeleteE = new ToolStripMenuItem(MainFormStrings.DeleteEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsTapDeleteE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsTapDeleteE
+            };
+            var SStap2DeleteS = new ToolStripMenuItem(MainFormStrings.DeleteStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsTap2DeleteS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsTap2DeleteS
+            };
+            var SStap2DeleteE = new ToolStripMenuItem(MainFormStrings.DeleteEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsTap2DeleteE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsTap2DeleteE
+            };
+            var SSextapDeleteS = new ToolStripMenuItem(MainFormStrings.DeleteStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsExTapDeleteS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsExTapDeleteS
+            };
+            var SSextapDeleteE = new ToolStripMenuItem(MainFormStrings.DeleteEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsExTapDeleteE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsExTapDeleteE
+            };
+            var SSextap2DeleteS = new ToolStripMenuItem(MainFormStrings.DeleteStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsExTap2DeleteS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsExTap2DeleteS
+            };
+            var SSextap2DeleteE = new ToolStripMenuItem(MainFormStrings.DeleteEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsExTap2DeleteE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsExTap2DeleteE
+            };
+            var SSflickDeleteS = new ToolStripMenuItem(MainFormStrings.DeleteStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsFlickDeleteS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsFlickDeleteS
+            };
+            var SSflickDeleteE = new ToolStripMenuItem(MainFormStrings.DeleteEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsFlickDeleteE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsFlickDeleteE
+            };
+            var SSflick2DeleteS = new ToolStripMenuItem(MainFormStrings.DeleteStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsFlick2DeleteS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsFlick2DeleteS
+            };
+            var SSflick2DeleteE = new ToolStripMenuItem(MainFormStrings.DeleteEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsFlick2DeleteE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsFlick2DeleteE
+            };
+            var SSdamageDeleteS = new ToolStripMenuItem(MainFormStrings.DeleteStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsDamageDeleteS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsDamageDeleteS
+            };
+            var SSdamageDeleteE = new ToolStripMenuItem(MainFormStrings.DeleteEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsDamageDeleteE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsDamageDeleteE
+            };
+            var SSdamage2DeleteS = new ToolStripMenuItem(MainFormStrings.DeleteStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsDamage2DeleteS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsDamage2DeleteS
+            };
+            var SSdamage2DeleteE = new ToolStripMenuItem(MainFormStrings.DeleteEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SSIsDamage2DeleteE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SSIsDamage2DeleteE
+            };
+
+            var STEtapCritical = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlideStep, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.STEIsTapCritical = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.STEIsTapCritical
+            };
+            var STEtap2Critical = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlideStep, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.STEIsTap2Critical = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.STEIsTap2Critical
+            };
+            var STEextapCritical = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlideStep, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.STEIsExTapCritical = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.STEIsExTapCritical
+            };
+            var STEextap2Critical = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlideStep, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.STEIsExTap2Critical = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.STEIsExTap2Critical
+            };
+            var STEflickCritical = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlideStep, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.STEIsFlickCritical = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.STEIsFlickCritical
+            };
+            var STEflick2Critical = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlideStep, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.STEIsFlick2Critical = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.STEIsFlick2Critical
+            };
+            var STEdamageCritical = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlideStep, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.STEIsDamageCritical = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.STEIsDamageCritical
+            };
+            var STEdamage2Critical = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlideStep, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.STEIsDamage2Critical = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.STEIsDamage2Critical
+            };
+
+            var STEtapAttach = new ToolStripMenuItem(MainFormStrings.MakeAttachStep, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.STEIsTapAttach = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.STEIsTapAttach
+            };
+            var STEtap2Attach = new ToolStripMenuItem(MainFormStrings.MakeAttachStep, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.STEIsTap2Attach = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.STEIsTap2Attach
+            };
+            var STEextapAttach = new ToolStripMenuItem(MainFormStrings.MakeAttachStep, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.STEIsExTapAttach = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.STEIsExTapAttach
+            };
+            var STEextap2Attach = new ToolStripMenuItem(MainFormStrings.MakeAttachStep, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.STEIsExTap2Attach = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.STEIsExTap2Attach
+            };
+            var STEflickAttach = new ToolStripMenuItem(MainFormStrings.MakeAttachStep, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.STEIsFlickAttach = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.STEIsFlickAttach
+            };
+            var STEflick2Attach = new ToolStripMenuItem(MainFormStrings.MakeAttachStep, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.STEIsFlick2Attach = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.STEIsFlick2Attach
+            };
+            var STEdamageAttach = new ToolStripMenuItem(MainFormStrings.MakeAttachStep, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.STEIsDamageAttach = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.STEIsDamageAttach
+            };
+            var STEdamage2Attach = new ToolStripMenuItem(MainFormStrings.MakeAttachStep, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.STEIsDamage2Attach = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.STEIsDamage2Attach
+            };
+
+            var SEtapCritical = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsTapCritical = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsTapCritical
+            };
+            var SEtap2Critical = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsTap2Critical = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsTap2Critical
+            };
+
+            var SEextapCritical = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsExTapCritical = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsExTapCritical
+            };
+            var SEextap2Critical = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsExTap2Critical = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsExTap2Critical
+            };
+            var SEflickCritical = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsFlickCritical = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsFlickCritical
+            };
+            var SEflick2Critical = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsFlick2Critical = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsFlick2Critical
+            };
+
+            var SEdamageCritical = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsDamageCritical = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsDamageCritical
+            };
+            var SEdamage2Critical = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsDamage2Critical = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsDamage2Critical
+            };
+
+            var SEtapCriticalE = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlideEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsTapCriticalE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsTapCriticalE
+            };
+            var SEtap2CriticalE = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlideEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsTap2CriticalE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsTap2CriticalE
+            };
+
+            var SEextapCriticalE = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlideEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsExTapCriticalE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsExTapCriticalE
+            };
+            var SEextap2CriticalE = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlideEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsExTap2CriticalE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsExTap2CriticalE
+            };
+            var SEflickCriticalE = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlideEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsFlickCriticalE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsFlickCriticalE
+            };
+            var SEflick2CriticalE = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlideEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsFlick2CriticalE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsFlick2CriticalE
+            };
+
+            var SEdamageCriticalE = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlideEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsDamageCriticalE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsDamageCriticalE
+            };
+            var SEdamage2CriticalE = new ToolStripMenuItem(MainFormStrings.MakeCriticalSlideEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsDamage2CriticalE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsDamage2CriticalE
+            };
+
+            var SEtapTraceS = new ToolStripMenuItem(MainFormStrings.SetTraceStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsTapChangeTraceS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsTapChangeTraceS
+            };
+            var SEtapTraceE = new ToolStripMenuItem(MainFormStrings.SetTraceEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsTapChangeTraceE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsTapChangeTraceE
+            };
+            var SEtap2TraceS = new ToolStripMenuItem(MainFormStrings.SetTraceStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsTap2ChangeTraceS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsTap2ChangeTraceS
+            };
+            var SEtap2TraceE = new ToolStripMenuItem(MainFormStrings.SetTraceEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsTap2ChangeTraceE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsTap2ChangeTraceE
+            };
+            var SEextapTraceS = new ToolStripMenuItem(MainFormStrings.SetTraceStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsExTapChangeTraceS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsExTapChangeTraceS
+            };
+            var SEextapTraceE = new ToolStripMenuItem(MainFormStrings.SetTraceEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsExTapChangeTraceE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsExTapChangeTraceE
+            };
+            var SEextap2TraceS = new ToolStripMenuItem(MainFormStrings.SetTraceStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsExTap2ChangeTraceS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsExTap2ChangeTraceS
+            };
+            var SEextap2TraceE = new ToolStripMenuItem(MainFormStrings.SetTraceEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsExTap2ChangeTraceE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsExTap2ChangeTraceE
+            };
+            var SEflickTraceS = new ToolStripMenuItem(MainFormStrings.SetTraceStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsFlickChangeTraceS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsFlickChangeTraceS
+            };
+            var SEflickTraceE = new ToolStripMenuItem(MainFormStrings.SetTraceEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsFlickChangeTraceE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsFlickChangeTraceE
+            };
+            var SEflick2TraceS = new ToolStripMenuItem(MainFormStrings.SetTraceStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsFlick2ChangeTraceS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsFlick2ChangeTraceS
+            };
+            var SEflick2TraceE = new ToolStripMenuItem(MainFormStrings.SetTraceEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsFlick2ChangeTraceE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsFlick2ChangeTraceE
+            };
+            var SEdamageTraceS = new ToolStripMenuItem(MainFormStrings.SetTraceStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsDamageChangeTraceS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsDamageChangeTraceS
+            };
+            var SEdamageTraceE = new ToolStripMenuItem(MainFormStrings.SetTraceEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsDamageChangeTraceE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsDamageChangeTraceE
+            };
+            var SEdamage2TraceS = new ToolStripMenuItem(MainFormStrings.SetTraceStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsDamage2ChangeTraceS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsDamage2ChangeTraceS
+            };
+            var SEdamage2TraceE = new ToolStripMenuItem(MainFormStrings.SetTraceEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsDamage2ChangeTraceE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsDamage2ChangeTraceE
+            };
+
+            var SEtapDeleteS = new ToolStripMenuItem(MainFormStrings.DeleteStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsTapDeleteS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsTapDeleteS
+            };
+            var SEtapDeleteE = new ToolStripMenuItem(MainFormStrings.DeleteEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsTapDeleteE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsTapDeleteE
+            };
+            var SEtap2DeleteS = new ToolStripMenuItem(MainFormStrings.DeleteStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsTap2DeleteS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsTap2DeleteS
+            };
+            var SEtap2DeleteE = new ToolStripMenuItem(MainFormStrings.DeleteEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsTap2DeleteE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsTap2DeleteE
+            };
+            var SEextapDeleteS = new ToolStripMenuItem(MainFormStrings.DeleteStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsExTapDeleteS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsExTapDeleteS
+            };
+            var SEextapDeleteE = new ToolStripMenuItem(MainFormStrings.DeleteEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsExTapDeleteE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsExTapDeleteE
+            };
+            var SEextap2DeleteS = new ToolStripMenuItem(MainFormStrings.DeleteStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsExTap2DeleteS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsExTap2DeleteS
+            };
+            var SEextap2DeleteE = new ToolStripMenuItem(MainFormStrings.DeleteEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsExTap2DeleteE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsExTap2DeleteE
+            };
+            var SEflickDeleteS = new ToolStripMenuItem(MainFormStrings.DeleteStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsFlickDeleteS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsFlickDeleteS
+            };
+            var SEflickDeleteE = new ToolStripMenuItem(MainFormStrings.DeleteEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsFlickDeleteE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsFlickDeleteE
+            };
+            var SEflick2DeleteS = new ToolStripMenuItem(MainFormStrings.DeleteStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsFlick2DeleteS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsFlick2DeleteS
+            };
+            var SEflick2DeleteE = new ToolStripMenuItem(MainFormStrings.DeleteEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsFlick2DeleteE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsFlick2DeleteE
+            };
+            var SEdamageDeleteS = new ToolStripMenuItem(MainFormStrings.DeleteStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsDamageDeleteS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsDamageDeleteS
+            };
+            var SEdamageDeleteE = new ToolStripMenuItem(MainFormStrings.DeleteEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsDamageDeleteE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsDamageDeleteE
+            };
+            var SEdamage2DeleteS = new ToolStripMenuItem(MainFormStrings.DeleteStart, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsDamage2DeleteS = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsDamage2DeleteS
+            };
+            var SEdamage2DeleteE = new ToolStripMenuItem(MainFormStrings.DeleteEnd, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.SEIsDamage2DeleteE = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SEIsDamage2DeleteE
             };
 
 
+
+
+
+
+
+
+            var SStapNoteMenu = new ToolStripMenuItem[]
+            {
+                SStapCritical,
+                SStapTraceS, SStapTraceE,
+                SStapDeleteS, SStapDeleteE,
+            };
+            var STEtapNoteMenu = new ToolStripMenuItem[]
+            {
+                STEtapCritical, STEtapAttach
+            };
+            var SEtapNoteMenu = new ToolStripMenuItem[]
+            {
+                SEtapCritical, SEtapCriticalE,
+                SEtapTraceS, SEtapTraceE,
+                SEtapDeleteS, SEtapDeleteE,
+            };
+            var SSextapNoteMenu = new ToolStripMenuItem[]
+            {
+                SSextapCritical,
+                SSextapTraceS, SSextapTraceE,
+                SSextapDeleteS, SSextapDeleteE,
+            };
+            var STEextapNoteMenu = new ToolStripMenuItem[]
+            {
+                STEextapCritical, STEextapAttach
+            };
+            var SEextapNoteMenu = new ToolStripMenuItem[]
+            {
+                SEextapCritical, SEextapCriticalE,
+                SEextapTraceS, SEextapTraceE,
+                SEextapDeleteS, SEextapDeleteE,
+            };
+            var SStap2NoteMenu = new ToolStripMenuItem[]
+            {
+                SStap2Critical,
+                SStap2TraceS, SStap2TraceE,
+                SStap2DeleteS, SStap2DeleteE,
+            };
+            var STEtap2NoteMenu = new ToolStripMenuItem[]
+            {
+                STEtap2Critical, STEtap2Attach
+            };
+            var SEtap2NoteMenu = new ToolStripMenuItem[]
+            {
+                SEtap2Critical, SEtap2CriticalE,
+                SEtap2TraceS, SEtap2TraceE,
+                SEtap2DeleteS, SEtap2DeleteE,
+            };
+            var SSextap2NoteMenu = new ToolStripMenuItem[]
+            {
+                SSextap2Critical,
+                SSextap2TraceS,  SSextap2TraceE,
+                SSextap2DeleteS, SSextap2DeleteE,
+            };
+            var STEextap2NoteMenu = new ToolStripMenuItem[]
+            {
+                STEextap2Critical, STEextap2Attach
+            };
+            var SEextap2NoteMenu = new ToolStripMenuItem[]
+            {
+                SEextap2Critical, SEextap2CriticalE,
+                SEextap2TraceS, SEextap2TraceE,
+                SEextap2DeleteS, SEextap2DeleteE,
+            };
+            var SSflickNoteMenu = new ToolStripMenuItem[]
+            {
+                SSflickCritical,
+                SSflickTraceS, SSflickTraceE,
+                SSflickDeleteS, SSflickDeleteE,
+            };
+            var STEflickNoteMenu = new ToolStripMenuItem[]
+            {
+                STEflickCritical, STEflickAttach
+            };
+            var SEflickNoteMenu = new ToolStripMenuItem[]
+            {
+                SEflickCritical, SEflickCriticalE,
+                SEflickTraceS, SEflickTraceE,
+                SEflickDeleteS, SEflickDeleteE,
+            };
+            var SSflick2NoteMenu = new ToolStripMenuItem[]
+            {
+                SSflick2Critical,
+                SSflick2TraceS, SSflick2TraceE,
+                SSflick2DeleteS, SSflick2DeleteE,
+            };
+            var STEflick2NoteMenu = new ToolStripMenuItem[]
+            {
+                STEflick2Critical, STEflick2Attach
+            };
+            var SEflick2NoteMenu = new ToolStripMenuItem[]
+            {
+                SEflick2Critical, SEflick2CriticalE,
+                SEflick2TraceS, SEflick2TraceE,
+                SEflick2DeleteS, SEflick2DeleteE,
+            };
+            var SSdamageNoteMenu = new ToolStripMenuItem[]
+            {
+                SSdamageCritical,
+                SSdamageTraceS, SSdamageTraceE,
+                SSdamageDeleteS, SSdamageDeleteE,
+            };
+            var STEdamageNoteMenu = new ToolStripMenuItem[]
+            {
+                STEdamageCritical, STEdamageAttach
+            };
+            var SEdamageNoteMenu = new ToolStripMenuItem[]
+            {
+                SEdamageCritical, SEdamageCriticalE,
+                SEdamageTraceS, SEdamageTraceE,
+                SEdamageDeleteS, SEdamageDeleteE,
+            };
+            var SSdamage2NoteMenu = new ToolStripMenuItem[]
+            {
+                SSdamage2Critical,
+                SSdamage2TraceS, SSdamage2TraceE,
+                SSdamage2DeleteS, SSdamage2DeleteE,
+            };
+            var STEdamage2NoteMenu = new ToolStripMenuItem[]
+            {
+                STEdamage2Critical, STEdamage2Attach
+            };
+            var SEdamage2NoteMenu = new ToolStripMenuItem[]
+            {
+                SEdamage2Critical, SEdamage2CriticalE,
+                SEdamage2TraceS, SEdamage2TraceE,
+                SEdamage2DeleteS, SEdamage2DeleteE,
+            };
+
+
+
+            var SSTapNoteItem = new ToolStripMenuItem(MainFormStrings.isOnSlideStart, null, SStapNoteMenu);
+            var STETapNoteItem = new ToolStripMenuItem(MainFormStrings.isOnSlideStep, null, STEtapNoteMenu);
+            var SETapNoteItem = new ToolStripMenuItem(MainFormStrings.isOnSlideEnd, null, SEtapNoteMenu);
+            var SSExTapNoteItem = new ToolStripMenuItem(MainFormStrings.isOnSlideStart, null, SSextapNoteMenu);
+            var STEExTapNoteItem = new ToolStripMenuItem(MainFormStrings.isOnSlideStep, null, STEextapNoteMenu);
+            var SEExTapNoteItem = new ToolStripMenuItem(MainFormStrings.isOnSlideEnd, null, SEextapNoteMenu);
+
+            var SSTap2NoteItem = new ToolStripMenuItem(MainFormStrings.isOnSlideStart, null, SStap2NoteMenu);
+            var STETap2NoteItem = new ToolStripMenuItem(MainFormStrings.isOnSlideStep, null, STEtap2NoteMenu);
+            var SETap2NoteItem = new ToolStripMenuItem(MainFormStrings.isOnSlideEnd, null, SEtap2NoteMenu);
+            var SSExTap2NoteItem = new ToolStripMenuItem(MainFormStrings.isOnSlideStart, null, SSextap2NoteMenu);
+            var STEExTap2NoteItem = new ToolStripMenuItem(MainFormStrings.isOnSlideStep, null, STEextap2NoteMenu);
+            var SEExTap2NoteItem = new ToolStripMenuItem(MainFormStrings.isOnSlideEnd, null, SEextap2NoteMenu);
+
+            var SSFlickNoteItem = new ToolStripMenuItem(MainFormStrings.isOnSlideStart, null, SSflickNoteMenu);
+            var STEFlickNoteItem = new ToolStripMenuItem(MainFormStrings.isOnSlideStep, null, STEflickNoteMenu);
+            var SEFlickNoteItem = new ToolStripMenuItem(MainFormStrings.isOnSlideEnd, null, SEflickNoteMenu);
+            var SSFlick2NoteItem = new ToolStripMenuItem(MainFormStrings.isOnSlideStart, null, SSflick2NoteMenu);
+            var STEFlick2NoteItem = new ToolStripMenuItem(MainFormStrings.isOnSlideStep, null, STEflick2NoteMenu);
+            var SEFlick2NoteItem = new ToolStripMenuItem(MainFormStrings.isOnSlideEnd, null, SEflick2NoteMenu);
+            var SSDamageNoteItem = new ToolStripMenuItem(MainFormStrings.isOnSlideStart, null, SSdamageNoteMenu);
+            var STEDamageNoteItem = new ToolStripMenuItem(MainFormStrings.isOnSlideStep, null, STEdamageNoteMenu);
+            var SEDamageNoteItem = new ToolStripMenuItem(MainFormStrings.isOnSlideEnd, null, SEdamageNoteMenu);
+            var SSDamage2NoteItem = new ToolStripMenuItem(MainFormStrings.isOnSlideStart, null, SSdamage2NoteMenu);
+            var STEDamage2NoteItem = new ToolStripMenuItem(MainFormStrings.isOnSlideStep, null, STEdamage2NoteMenu);
+            var SEDamage2NoteItem = new ToolStripMenuItem(MainFormStrings.isOnSlideEnd, null, SEdamage2NoteMenu);
 
             var tapNoteMenu = new ToolStripMenuItem[]
             {
                 slideHideTap,
                 guideHideTap,
-                startEraseTap, 
-                endEraseTap,
+                SSTapNoteItem,
+                STETapNoteItem,
+                SETapNoteItem
+               
             };
+
+
             var extapNoteMenu = new ToolStripMenuItem[]
             {
                 slideHideExTap,
                 guideHideExTap,
-                startEraseExTap,
-                endEraseExTap,
+                SSExTapNoteItem,
+                STEExTapNoteItem,
+                SEExTapNoteItem
             };
             var tap2NoteMenu = new ToolStripMenuItem[]
             {
                 slideHideTap2,
-                startEraseTap2,
-                endEraseTap2
+                SSTap2NoteItem,
+                STETap2NoteItem,
+                SETap2NoteItem
             };
             var extap2NoteMenu = new ToolStripMenuItem[]
             {
                 slideHideExTap2,
-                startEraseExTap2,
-                endEraseExTap2
+                SSExTap2NoteItem,
+                STEExTap2NoteItem,
+                SEExTap2NoteItem
             };
             var flickNoteMenu = new ToolStripMenuItem[]
             {
                 slideHideFlick,
                 guideHideFlick,
-                startTraceFlick,
-                endTraceFlick,
-                
+                SSFlickNoteItem,
+                STEFlickNoteItem,
+                SEFlickNoteItem
+
+            };
+            var flick2NoteMenu = new ToolStripMenuItem[]
+            {
+                slideHideFlick2,
+                guideHideFlick2,
+                SSFlick2NoteItem,
+                STEFlick2NoteItem,
+                SEFlick2NoteItem
+
             };
             var damageNoteMenu = new ToolStripMenuItem[]
             {
+                slideHideDamage2,
+                guideHideDamage2,
+                SSDamageNoteItem,
+                STEDamageNoteItem,
+                SEDamageNoteItem
+            };
+            var damage2NoteMenu = new ToolStripMenuItem[]
+            {
                 slideHideDamage,
                 guideHideDamage,
-                startEraseDamage,
-                endEraseDamage,
+                SSDamage2NoteItem,
+                STEDamage2NoteItem,
+                SEDamage2NoteItem
             };
             var slideNoteMenu = new ToolStripMenuItem[]
             {
@@ -1625,19 +2836,31 @@ namespace Ched.UI
             {
                 ExportuscfadeItems
             };
+            var Accuratedjudge = new ToolStripMenuItem(MainFormStrings.Accuratejudge, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsAccurateOverlap = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsAccurateOverlap
+            };
 
             var TapNoteItem = new ToolStripMenuItem("TAP", Resources.TapIcon, tapNoteMenu);
             var ExTapNoteItem = new ToolStripMenuItem("ExTAP", Resources.ExTapIcon, extapNoteMenu);
             var Tap2NoteItem = new ToolStripMenuItem("TAP2", Resources.TapIcon2, tap2NoteMenu);
             var ExTap2NoteItem = new ToolStripMenuItem("ExTAP2", Resources.ExTapIcon2, extap2NoteMenu);
             var FlickNoteItem = new ToolStripMenuItem("FLICK", Resources.FlickIcon, flickNoteMenu);
+            var Flick2NoteItem = new ToolStripMenuItem("FLICK2", Resources.FlickIcon, flick2NoteMenu);
             var DamageNoteItem = new ToolStripMenuItem("DAMAGE", Resources.DamgeIcon, damageNoteMenu);
+            var Damage2NoteItem = new ToolStripMenuItem("DAMAGE2", Resources.DamgeIcon, damage2NoteMenu);
+
             var SlideNoteItem = new ToolStripMenuItem("SLIDE", Resources.SlideIcon, slideNoteMenu);
             var GuideNoteItem = new ToolStripMenuItem("GUIDE", Resources.GuideGreen, guideNoteMenu);
 
             var NoteItems = new ToolStripMenuItem[]
             {
-                TapNoteItem, ExTapNoteItem, Tap2NoteItem, ExTap2NoteItem, FlickNoteItem, DamageNoteItem,
+                TapNoteItem, ExTapNoteItem, Tap2NoteItem, ExTap2NoteItem, FlickNoteItem, DamageNoteItem, Flick2NoteItem, Damage2NoteItem,
                 SlideNoteItem, GuideNoteItem,
             };
 
@@ -1683,11 +2906,12 @@ namespace Ched.UI
                 new ToolStripMenuItem(MainFormStrings.VersionInfo, null, (s, e) => new VersionInfoForm().ShowDialog(this))
             };
 
+
             var themeMenuItems = new ToolStripItem[] { themeBlack, themeWhite};
 
             var channelMenuItems = new ToolStripItem[] { channelMovableItem, channelSoundsItem, noteVisualModeItem, changeChannelSelectedNotesItem, isFormSpeedItem };
 
-            var exportMenuItems = new ToolStripItem[] { ExportNotesItems };
+            var exportMenuItems = new ToolStripItem[] { ExportNotesItems, Accuratedjudge };
 
 
 
@@ -1852,6 +3076,8 @@ namespace Ched.UI
             var tap2Button = shortcutItemBuilder.BuildItem(Commands.SelectTap2, "TAP2", Resources.TapIcon2);
             var exTap2Button = shortcutItemBuilder.BuildItem(Commands.SelectExTap2, "ExTAP2", Resources.ExTapIcon2);
             var stepNoteTapButton = shortcutItemBuilder.BuildItem(Commands.SelectStepNoteTap, "StepNoteTAP", Resources.ExTapIcon);
+            var flick2Button = shortcutItemBuilder.BuildItem(Commands.SelectFlick2, "FLICK2", Resources.FlickIcon2);
+            var damage2Button = shortcutItemBuilder.BuildItem(Commands.SelectDamage2, "DAMAGE2", Resources.DamgeIcon2);
 
             var airKind = new CheckableToolStripSplitButton()
             {
@@ -1902,6 +3128,7 @@ namespace Ched.UI
                 new ToolStripMenuItem(MainFormStrings.ColorYellow, Resources.GuideYellow, (s, e) => noteView.NewGuideColor = Guide.USCGuideColor.yellow),
                 new ToolStripMenuItem(MainFormStrings.ColorPurple, Resources.GuidePurple, (s, e) => noteView.NewGuideColor = Guide.USCGuideColor.purple),
                 new ToolStripMenuItem(MainFormStrings.ColorCyan, Resources.GuideCyan, (s, e) => noteView.NewGuideColor = Guide.USCGuideColor.cyan),
+                new ToolStripMenuItem(MainFormStrings.ColorBlack, Resources.GuideBlack, (s, e) => noteView.NewGuideColor = Guide.USCGuideColor.black),
             });
             guideKind.Image = Resources.GuideNeutral;
             ShortcutManager.ShortcutUpdated += (s, e) =>
@@ -1957,14 +3184,16 @@ namespace Ched.UI
                 slideStepButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Slide) && noteView.IsNewSlideStepVisible;
                 airKind.Checked = noteView.NewNoteType.HasFlag(NoteType.Air);
                 airActionButton.Checked = noteView.NewNoteType.HasFlag(NoteType.AirAction);
-                flickButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Flick);
-                damageButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Damage);
+                flickButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Flick) && !noteView.IsNewNoteStart;
+                damageButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Damage) && !noteView.IsNewNoteStart;
                 stepNoteTapButton.Checked = noteView.NewNoteType.HasFlag(NoteType.StepNoteTap);
                 guideButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Guide) && !noteView.IsNewGuideStepVisible;
                 guideStepButton.Checked = noteView.NewNoteType.HasFlag(NoteType.Guide) && noteView.IsNewGuideStepVisible;
                 tap2Button.Checked = noteView.NewNoteType.HasFlag(NoteType.Tap) && noteView.IsNewNoteStart;
                 exTap2Button.Checked = noteView.NewNoteType.HasFlag(NoteType.ExTap) && noteView.IsNewNoteStart;
                 guideKind.Checked = noteView.NewNoteType.HasFlag(NoteType.Guide) && !noteView.IsNewGuideStepVisible;
+                flick2Button.Checked = noteView.NewNoteType.HasFlag(NoteType.Flick) && noteView.IsNewNoteStart;
+                damage2Button.Checked = noteView.NewNoteType.HasFlag(NoteType.Damage) && noteView.IsNewNoteStart;
             };
 
             noteView.AirDirectionChanged += (s, e) =>
@@ -2010,6 +3239,9 @@ namespace Ched.UI
                         break;
                     case Guide.USCGuideColor.cyan:
                         guideKind.Image = Resources.GuideCyan;
+                        break;
+                    case Guide.USCGuideColor.black:
+                        guideKind.Image = Resources.GuideBlack;
                         break;
                 }
             };
@@ -2193,7 +3425,8 @@ namespace Ched.UI
                 menu = new ToolStrip(new ToolStripItem[]
             {
                 tapButton, exTapButton, holdButton, slideButton, slideStepButton, airKind, airActionButton, flickButton, damageButton, guideKind,
-                 guideStepButton, tap2Button, exTap2Button, new ToolStripSeparator(), stepNoteTapButton,
+                 guideStepButton, tap2Button, exTap2Button, flick2Button, damage2Button,
+                new ToolStripSeparator(), stepNoteTapButton,
                 quantizeComboBox, new ToolStripSeparator(), speedChBox, viewChBox,  laneVisible, widthAmountBox, deleteChhistory
             });
             }
@@ -2202,7 +3435,7 @@ namespace Ched.UI
                 menu = new ToolStrip(new ToolStripItem[]
             {
                 tapButton, exTapButton, holdButton, slideButton, slideStepButton, airKind, airActionButton, flickButton, damageButton, guideKind,
-                 guideStepButton, tap2Button, exTap2Button,
+                 guideStepButton, tap2Button, exTap2Button, flick2Button, damage2Button,
                 quantizeComboBox, new ToolStripSeparator(), speedChBox, viewChBox,  laneVisible, widthAmountBox, deleteChhistory
             });
             }

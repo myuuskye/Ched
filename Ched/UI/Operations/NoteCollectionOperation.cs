@@ -124,6 +124,25 @@ namespace Ched.UI.Operations
             Collection.Remove(AfterNote);
         }
     }
+    public class ChangeStartOperation : NoteCollectionOperation<TappableBase>
+    {
+        public override string Description { get { return "NoteのisStartを切り替える"; } }
+
+        public ChangeStartOperation(NoteView.NoteCollection collection, TappableBase note) : base(collection, note)
+        {
+        }
+
+
+        public override void Redo()
+        {
+            Note.IsStart = !Note.IsStart;
+        }
+
+        public override void Undo()
+        {
+            Note.IsStart = !Note.IsStart;
+        }
+    }
     public class ChangeExTapOperation : NoteCollectionOperation<TappableBase>
     {
         public override string Description { get { return "ExTAPをTapと入れ替え"; } }
@@ -147,6 +166,8 @@ namespace Ched.UI.Operations
             Collection.Remove(AfterNote);
         }
     }
+
+
 
     public class InsertHoldOperation : NoteCollectionOperation<Hold>
     {
@@ -223,6 +244,26 @@ namespace Ched.UI.Operations
             Collection.Add(Note);
         }
     }
+
+    public class ChangeVisibleOperation : NoteCollectionOperation<Slide.StepTap>
+    {
+        public override string Description { get { return "STEPの可視を設定"; } }
+
+        public ChangeVisibleOperation(NoteView.NoteCollection collection, Slide.StepTap step) : base(collection, step)
+        {
+        }
+
+        public override void Redo()
+        {
+            Note.IsVisible = !Note.IsVisible;
+        }
+
+        public override void Undo()
+        {
+            Note.IsVisible = !Note.IsVisible;
+        }
+    }
+
 
     public class InsertFlickOperation : NoteCollectionOperation<Flick>
     {

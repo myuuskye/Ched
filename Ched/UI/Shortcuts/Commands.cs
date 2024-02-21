@@ -82,5 +82,7 @@ namespace Ched.UI.Shortcuts
         public static string SelectGuideStep => "editor.selectGuideStep";
         public static string SelectTap2 => "editor.selectTap2";
         public static string SelectExTap2 => "editor.selectExTap2";
+        public static string SelectFlick2 => "editor.selectFlick2";
+        public static string SelectDamage2 => "editor.selectDamage2";
     }
 }

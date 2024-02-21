@@ -705,6 +705,9 @@
     <None Include="Resources\airother.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\guideblack.png" />
+    <None Include="Resources\flick1.png" />
+    <None Include="Resources\damage1.png" />
     <Content Include="Sounds\exflick.mp3">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

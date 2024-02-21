@@ -61,6 +61,15 @@ namespace Ched.Components.Exporter
 
             int guideDefType = ApplicationSettings.Default.GuideDefaultFade;
 
+            bool judgeAccurate = ApplicationSettings.Default.IsAccurateOverlap;
+
+
+
+
+
+
+
+
             var bpmchange = new List<USCObject>();
             var timescalechange = new List<USCObject>();
 
@@ -341,7 +350,7 @@ namespace Ched.Components.Exporter
                 usc.objects.Add(air);
             }
 
-
+            
             foreach(var note in notes.Slides)
             {
                 bool isCritical = false;
@@ -353,21 +362,7 @@ namespace Ched.Components.Exporter
                 int endDirection = 3;
                 var endNote = note.StepNotes.OrderBy(p => p.TickOffset).Last();
 
-                var isTapEraceStart = ApplicationSettings.Default.IsTapEraseStart;
-                var isExTapEraceStart = ApplicationSettings.Default.IsExTapEraseStart;
-                var isTap2EraceStart = ApplicationSettings.Default.IsTap2EraseStart;
-                var isExTap2EraceStart = ApplicationSettings.Default.IsExTap2EraseStart;
-                var isDamageEraceStart = ApplicationSettings.Default.IsDamageEraseStart;
-
-
-                var isTapEraceEnd = ApplicationSettings.Default.IsTapEraseEnd;
-                var isExTapEraceEnd = ApplicationSettings.Default.IsExTapEraseEnd;
-                var isTap2EraceEnd = ApplicationSettings.Default.IsTap2EraseEnd;
-                var isExTap2EraceEnd = ApplicationSettings.Default.IsExTap2EraseEnd;
-                var isDamageEraceEnd = ApplicationSettings.Default.IsDamageEraseEnd;
-
-                var isFlickTraceStart = ApplicationSettings.Default.IsFlickSlideStartTrace;
-                var isFlickTraceEnd = ApplicationSettings.Default.IsFlickSlideEndTrace;
+               
 
                 var slideStartDefType = ApplicationSettings.Default.SlideStartDefaultType;
                 var slideEndDefType = ApplicationSettings.Default.SlideEndDefaultType;
@@ -393,58 +388,334 @@ namespace Ched.Components.Exporter
 
 
 
-
-
-                foreach (var note2 in notes.ExTaps)
-                {
-                    if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex) isCritical = true;
-                    if ((endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex) || isCritical ) isEndCritical = true;
-                }
-                foreach (var note2 in notes.Flicks)
-                {
-                    if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex && isFlickTraceStart) startJudge = "trace";
-                    if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && isFlickTraceEnd) endJudge = "trace";
-                }
+                
                 foreach (var note2 in notes.Taps)
                 {
-                    if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex && isTapEraceStart && note2.IsStart == false) startJudge = "none";
-                    if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex && isTap2EraceStart && note2.IsStart == true) startJudge = "none";
-                    if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && isTapEraceEnd && note2.IsStart == false) endJudge = "none";
-                    if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && isTap2EraceEnd && note2.IsStart == true) endJudge = "none";
-                }
-                foreach (var note2 in notes.ExTaps)
-                {
-                    if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex && isExTapEraceStart && note2.IsStart == false) startJudge = "none";
-                    if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex && isExTap2EraceStart && note2.IsStart == true) startJudge = "none";
-                    if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && isExTapEraceEnd && note2.IsStart == false) endJudge = "none";
-                    if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && isExTap2EraceEnd && note2.IsStart == true) endJudge = "none";
-
-                }
-                foreach (var note2 in notes.Damages)
-                {
-                    if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex && isDamageEraceStart) startJudge = "none";
-                    if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && isDamageEraceEnd) endJudge = "none";
-                }
-                foreach (var note2 in notes.Airs)
-                {
-                    if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex && note2.VerticalDirection == VerticalAirDirection.Down)
+                    if (judgeAccurate)
                     {
-                        switch(note2.HorizontalDirection)
+                        if (note.Tick == note2.Tick && note.LaneIndex == note2.LaneIndex && note.Width == note2.Width && note.Channel == note2.Channel)
                         {
-                            case HorizontalAirDirection.Center:
-                                startEase = "in";
-                                break;
-                            case HorizontalAirDirection.Left:
-                            case HorizontalAirDirection.Right:
-                                startEase = "out";
-                                break;
+                            if (ApplicationSettings.Default.SSIsTapCritical && !note2.IsStart) isCritical = true;
+                            if (ApplicationSettings.Default.SSIsTap2Critical && note2.IsStart) isCritical = true;
+
+                            if (ApplicationSettings.Default.SSIsTapChangeTraceS && !note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsTap2ChangeTraceS && note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsTapChangeTraceE && !note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsTap2ChangeTraceE && note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsTapDeleteS && !note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SSIsTap2DeleteS && note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SSIsTapDeleteE && !note2.IsStart) endJudge = "none";
+                            if (ApplicationSettings.Default.SSIsTap2DeleteE && note2.IsStart) endJudge = "none";
+                        }
+                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && endNote.Width == note2.Width && endNote.Channel == note2.Channel)
+                        {
+                            if (ApplicationSettings.Default.SEIsTapCritical && !note2.IsStart) isCritical = true;
+                            if (ApplicationSettings.Default.SEIsTap2Critical && note2.IsStart) isCritical = true;
+                            if (ApplicationSettings.Default.SEIsTapCriticalE && !note2.IsStart) isEndCritical = true;
+                            if (ApplicationSettings.Default.SEIsTap2CriticalE && note2.IsStart) isEndCritical = true;
+
+                            if (ApplicationSettings.Default.SEIsTapChangeTraceS && !note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsTap2ChangeTraceS && note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsTapChangeTraceE && !note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsTap2ChangeTraceE && note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsTapDeleteS && !note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SEIsTap2DeleteS && note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SEIsTapDeleteE && !note2.IsStart) endJudge = "none";
+                            if (ApplicationSettings.Default.SEIsTap2DeleteE && note2.IsStart) endJudge = "none";
                         }
                     }
-                    if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && note2.VerticalDirection == VerticalAirDirection.Up)
+                    else
                     {
-                        endDirection = (int)note2.HorizontalDirection;
+                        if (note.Tick == note2.Tick && note.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel)
+                        {
+                            if (ApplicationSettings.Default.SSIsTapCritical && !note2.IsStart) isCritical = true;
+                            if (ApplicationSettings.Default.SSIsTap2Critical && note2.IsStart) isCritical = true;
+
+                            if (ApplicationSettings.Default.SSIsTapChangeTraceS && !note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsTap2ChangeTraceS && note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsTapChangeTraceE && !note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsTap2ChangeTraceE && note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsTapDeleteS && !note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SSIsTap2DeleteS && note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SSIsTapDeleteE && !note2.IsStart) endJudge = "none";
+                            if (ApplicationSettings.Default.SSIsTap2DeleteE && note2.IsStart) endJudge = "none";
+                        }
+                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex  && endNote.Channel == note2.Channel)
+                        {
+                            if (ApplicationSettings.Default.SEIsTapCritical && !note2.IsStart) isCritical = true;
+                            if (ApplicationSettings.Default.SEIsTap2Critical && note2.IsStart) isCritical = true;
+                            if (ApplicationSettings.Default.SEIsTapCriticalE && !note2.IsStart) isEndCritical = true;
+                            if (ApplicationSettings.Default.SEIsTap2CriticalE && note2.IsStart) isEndCritical = true;
+
+                            if (ApplicationSettings.Default.SEIsTapChangeTraceS && !note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsTap2ChangeTraceS && note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsTapChangeTraceE && !note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsTap2ChangeTraceE && note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsTapDeleteS && !note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SEIsTap2DeleteS && note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SEIsTapDeleteE && !note2.IsStart) endJudge = "none";
+                            if (ApplicationSettings.Default.SEIsTap2DeleteE && note2.IsStart) endJudge = "none";
+                        }
                     }
                 }
+
+                
+                foreach (var note2 in notes.ExTaps)
+                {
+                    if (judgeAccurate)
+                    {
+                        if (note.Tick == note2.Tick && note.LaneIndex == note2.LaneIndex && note.Width == note2.Width && note.Channel == note2.Channel)
+                        {
+                            if (ApplicationSettings.Default.SSIsExTapCritical && !note2.IsStart) isCritical = true;
+                            if (ApplicationSettings.Default.SSIsExTap2Critical && note2.IsStart) isCritical = true;
+
+                            if (ApplicationSettings.Default.SSIsExTapChangeTraceS && !note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsExTap2ChangeTraceS && note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsExTapChangeTraceE && !note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsExTap2ChangeTraceE && note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsExTapDeleteS && !note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SSIsExTap2DeleteS && note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SSIsExTapDeleteE && !note2.IsStart) endJudge = "none";
+                            if (ApplicationSettings.Default.SSIsExTap2DeleteE && note2.IsStart) endJudge = "none";
+                        }
+                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && endNote.Width == note2.Width && endNote.Channel == note2.Channel)
+                        {
+                            if (ApplicationSettings.Default.SEIsExTapCritical && !note2.IsStart) isCritical = true;
+                            if (ApplicationSettings.Default.SEIsExTap2Critical && note2.IsStart) isCritical = true;
+                            if (ApplicationSettings.Default.SEIsExTapCriticalE && !note2.IsStart) isEndCritical = true;
+                            if (ApplicationSettings.Default.SEIsExTap2CriticalE && note2.IsStart) isEndCritical = true;
+
+                            if (ApplicationSettings.Default.SEIsExTapChangeTraceS && !note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsExTap2ChangeTraceS && note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsExTapChangeTraceE && !note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsExTap2ChangeTraceE && note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsExTapDeleteS && !note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SEIsExTap2DeleteS && note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SEIsExTapDeleteE && !note2.IsStart) endJudge = "none";
+                            if (ApplicationSettings.Default.SEIsExTap2DeleteE && note2.IsStart) endJudge = "none";
+                        }
+                    }
+                    else
+                    {
+                        if (note.Tick == note2.Tick && note.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel)
+                        {
+                            if (ApplicationSettings.Default.SSIsExTapCritical && !note2.IsStart) isCritical = true;
+                            if (ApplicationSettings.Default.SSIsExTap2Critical && note2.IsStart) isCritical = true;
+
+                            if (ApplicationSettings.Default.SSIsExTapChangeTraceS && !note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsExTap2ChangeTraceS && note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsExTapChangeTraceE && !note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsExTap2ChangeTraceE && note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsExTapDeleteS && !note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SSIsExTap2DeleteS && note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SSIsExTapDeleteE && !note2.IsStart) endJudge = "none";
+                            if (ApplicationSettings.Default.SSIsExTap2DeleteE && note2.IsStart) endJudge = "none";
+                        }
+                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && endNote.Channel == note2.Channel)
+                        {
+                            if (ApplicationSettings.Default.SEIsExTapCritical && !note2.IsStart) isCritical = true;
+                            if (ApplicationSettings.Default.SEIsExTap2Critical && note2.IsStart) isCritical = true;
+                            if (ApplicationSettings.Default.SEIsExTapCriticalE && !note2.IsStart) isEndCritical = true;
+                            if (ApplicationSettings.Default.SEIsExTap2CriticalE && note2.IsStart) isEndCritical = true;
+
+                            if (ApplicationSettings.Default.SEIsExTapChangeTraceS && !note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsExTap2ChangeTraceS && note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsExTapChangeTraceE && !note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsExTap2ChangeTraceE && note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsExTapDeleteS && !note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SEIsExTap2DeleteS && note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SEIsExTapDeleteE && !note2.IsStart) endJudge = "none";
+                            if (ApplicationSettings.Default.SEIsExTap2DeleteE && note2.IsStart) endJudge = "none";
+                        }
+                    }
+                }
+
+                foreach (var note2 in notes.Flicks)
+                {
+                    if (judgeAccurate)
+                    {
+                        if (note.Tick == note2.Tick && note.LaneIndex == note2.LaneIndex && note.Width == note2.Width && note.Channel == note2.Channel)
+                        {
+                            if (ApplicationSettings.Default.SSIsFlickCritical && !note2.IsStart) isCritical = true;
+                            if (ApplicationSettings.Default.SSIsFlick2Critical && note2.IsStart) isCritical = true;
+
+                            if (ApplicationSettings.Default.SSIsFlickChangeTraceS && !note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsFlick2ChangeTraceS && note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsFlickChangeTraceE && !note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsFlick2ChangeTraceE && note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsFlickDeleteS && !note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SSIsFlick2DeleteS && note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SSIsFlickDeleteE && !note2.IsStart) endJudge = "none";
+                            if (ApplicationSettings.Default.SSIsFlick2DeleteE && note2.IsStart) endJudge = "none";
+                        }
+                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && endNote.Width == note2.Width && endNote.Channel == note2.Channel)
+                        {
+                            if (ApplicationSettings.Default.SEIsFlickCritical && !note2.IsStart) isCritical = true;
+                            if (ApplicationSettings.Default.SEIsFlick2Critical && note2.IsStart) isCritical = true;
+                            if (ApplicationSettings.Default.SEIsFlickCriticalE && !note2.IsStart) isEndCritical = true;
+                            if (ApplicationSettings.Default.SEIsFlick2CriticalE && note2.IsStart) isEndCritical = true;
+
+                            if (ApplicationSettings.Default.SEIsFlickChangeTraceS && !note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsFlick2ChangeTraceS && note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsFlickChangeTraceE && !note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsFlick2ChangeTraceE && note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsFlickDeleteS && !note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SEIsFlick2DeleteS && note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SEIsFlickDeleteE && !note2.IsStart) endJudge = "none";
+                            if (ApplicationSettings.Default.SEIsFlick2DeleteE && note2.IsStart) endJudge = "none";
+                        }
+                    }
+                    else
+                    {
+                        if (note.Tick == note2.Tick && note.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel)
+                        {
+                            if (ApplicationSettings.Default.SSIsFlickCritical && !note2.IsStart) isCritical = true;
+                            if (ApplicationSettings.Default.SSIsFlick2Critical && note2.IsStart) isCritical = true;
+
+                            if (ApplicationSettings.Default.SSIsFlickChangeTraceS && !note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsFlick2ChangeTraceS && note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsFlickChangeTraceE && !note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsFlick2ChangeTraceE && note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsFlickDeleteS && !note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SSIsFlick2DeleteS && note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SSIsFlickDeleteE && !note2.IsStart) endJudge = "none";
+                            if (ApplicationSettings.Default.SSIsFlick2DeleteE && note2.IsStart) endJudge = "none";
+                        }
+                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && endNote.Channel == note2.Channel)
+                        {
+                            if (ApplicationSettings.Default.SEIsFlickCritical && !note2.IsStart) isCritical = true;
+                            if (ApplicationSettings.Default.SEIsFlick2Critical && note2.IsStart) isCritical = true;
+                            if (ApplicationSettings.Default.SEIsFlickCriticalE && !note2.IsStart) isEndCritical = true;
+                            if (ApplicationSettings.Default.SEIsFlick2CriticalE && note2.IsStart) isEndCritical = true;
+
+                            if (ApplicationSettings.Default.SEIsFlickChangeTraceS && !note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsFlick2ChangeTraceS && note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsFlickChangeTraceE && !note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsFlick2ChangeTraceE && note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsFlickDeleteS && !note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SEIsFlick2DeleteS && note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SEIsFlickDeleteE && !note2.IsStart) endJudge = "none";
+                            if (ApplicationSettings.Default.SEIsFlick2DeleteE && note2.IsStart) endJudge = "none";
+                        }
+                    }
+                }
+
+                foreach (var note2 in notes.Damages)
+                {
+                    if (judgeAccurate)
+                    {
+                        if (note.Tick == note2.Tick && note.LaneIndex == note2.LaneIndex && note.Width == note2.Width && note.Channel == note2.Channel)
+                        {
+                            if (ApplicationSettings.Default.SSIsDamageCritical && !note2.IsStart) isCritical = true;
+                            if (ApplicationSettings.Default.SSIsDamage2Critical && note2.IsStart) isCritical = true;
+
+                            if (ApplicationSettings.Default.SSIsDamageChangeTraceS && !note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsDamage2ChangeTraceS && note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsDamageChangeTraceE && !note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsDamage2ChangeTraceE && note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsDamageDeleteS && !note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SSIsDamage2DeleteS && note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SSIsDamageDeleteE && !note2.IsStart) endJudge = "none";
+                            if (ApplicationSettings.Default.SSIsDamage2DeleteE && note2.IsStart) endJudge = "none";
+                        }
+                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && endNote.Width == note2.Width && endNote.Channel == note2.Channel)
+                        {
+                            if (ApplicationSettings.Default.SEIsDamageCritical && !note2.IsStart) isCritical = true;
+                            if (ApplicationSettings.Default.SEIsDamage2Critical && note2.IsStart) isCritical = true;
+                            if (ApplicationSettings.Default.SEIsDamageCriticalE && !note2.IsStart) isEndCritical = true;
+                            if (ApplicationSettings.Default.SEIsDamage2CriticalE && note2.IsStart) isEndCritical = true;
+
+                            if (ApplicationSettings.Default.SEIsDamageChangeTraceS && !note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsDamage2ChangeTraceS && note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsDamageChangeTraceE && !note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsDamage2ChangeTraceE && note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsDamageDeleteS && !note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SEIsDamage2DeleteS && note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SEIsDamageDeleteE && !note2.IsStart) endJudge = "none";
+                            if (ApplicationSettings.Default.SEIsDamage2DeleteE && note2.IsStart) endJudge = "none";
+                        }
+                    }
+                    else
+                    {
+                        if (note.Tick == note2.Tick && note.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel)
+                        {
+                            if (ApplicationSettings.Default.SSIsDamageCritical && !note2.IsStart) isCritical = true;
+                            if (ApplicationSettings.Default.SSIsDamage2Critical && note2.IsStart) isCritical = true;
+
+                            if (ApplicationSettings.Default.SSIsDamageChangeTraceS && !note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsDamage2ChangeTraceS && note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsDamageChangeTraceE && !note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsDamage2ChangeTraceE && note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SSIsDamageDeleteS && !note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SSIsDamage2DeleteS && note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SSIsDamageDeleteE && !note2.IsStart) endJudge = "none";
+                            if (ApplicationSettings.Default.SSIsDamage2DeleteE && note2.IsStart) endJudge = "none";
+                        }
+                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && endNote.Channel == note2.Channel)
+                        {
+                            if (ApplicationSettings.Default.SEIsDamageCritical && !note2.IsStart) isCritical = true;
+                            if (ApplicationSettings.Default.SEIsDamage2Critical && note2.IsStart) isCritical = true;
+                            if (ApplicationSettings.Default.SEIsDamageCriticalE && !note2.IsStart) isEndCritical = true;
+                            if (ApplicationSettings.Default.SEIsDamage2CriticalE && note2.IsStart) isEndCritical = true;
+
+                            if (ApplicationSettings.Default.SEIsDamageChangeTraceS && !note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsDamage2ChangeTraceS && note2.IsStart) startJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsDamageChangeTraceE && !note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsDamage2ChangeTraceE && note2.IsStart) endJudge = "trace";
+                            if (ApplicationSettings.Default.SEIsDamageDeleteS && !note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SEIsDamage2DeleteS && note2.IsStart) startJudge = "none";
+                            if (ApplicationSettings.Default.SEIsDamageDeleteE && !note2.IsStart) endJudge = "none";
+                            if (ApplicationSettings.Default.SEIsDamage2DeleteE && note2.IsStart) endJudge = "none";
+                        }
+                    }
+                }
+                
+                
+                foreach (var note2 in notes.Airs)
+                {
+                    if (judgeAccurate)
+                    {
+                        if (note.Tick == note2.Tick && note.LaneIndex == note2.LaneIndex && note.Width == note2.Width && note.Channel == note2.Channel && note2.VerticalDirection == VerticalAirDirection.Down)
+                        {
+                            switch (note2.HorizontalDirection)
+                            {
+                                case HorizontalAirDirection.Center:
+                                    startEase = "in";
+                                    break;
+                                case HorizontalAirDirection.Left:
+                                case HorizontalAirDirection.Right:
+                                    startEase = "out";
+                                    break;
+                            }
+                        }
+                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && endNote.Width == note2.Width && endNote.Channel == note2.Channel && note2.VerticalDirection == VerticalAirDirection.Up)
+                        {
+                            endDirection = (int)note2.HorizontalDirection;
+                        }
+                    }
+                    else
+                    {
+                        if (note.Tick == note2.Tick && note.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel && note2.VerticalDirection == VerticalAirDirection.Down)
+                        {
+                            switch (note2.HorizontalDirection)
+                            {
+                                case HorizontalAirDirection.Center:
+                                    startEase = "in";
+                                    break;
+                                case HorizontalAirDirection.Left:
+                                case HorizontalAirDirection.Right:
+                                    startEase = "out";
+                                    break;
+                            }
+                        }
+                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && endNote.Channel == note2.Channel && note2.VerticalDirection == VerticalAirDirection.Up)
+                        {
+                            endDirection = (int)note2.HorizontalDirection;
+                        }
+                    }
+                    
+                }
+                
 
                 List<USCConnectionTickNote> ticknotes = new List<USCConnectionTickNote>();
                 List<USCConnectionVisibleTickNote> visibleticknotes = new List<USCConnectionVisibleTickNote>();
@@ -461,29 +732,136 @@ namespace Ched.Components.Exporter
                     var visiblestepnote = new USCConnectionVisibleTickNote((double)step.Tick / 480, step.Channel, steplaneIndex, step.Width / 2, isStepCritical , stepEase);
                     var attachnote = new USCConnectionAttachNote((double)step.Tick / 480, step.Channel, steplaneIndex, step.Width / 2, isStepCritical);
 
-                    foreach (var note2 in notes.Flicks) 
+                    foreach (var note2 in notes.Taps)
                     {
-                        if (step.Tick == note2.Tick && step.LaneIndex == note2.LaneIndex) isAttach = true;
-                    }
-                    foreach(var note2 in notes.ExTaps)
-                    {
-                        if ((step.Tick == note2.Tick && step.LaneIndex == note2.LaneIndex) || isCritical) isStepCritical = true;
-                    }
-                    foreach( var note2 in notes.Airs)
-                    {
-                        if (step.Tick == note2.Tick && step.LaneIndex == note2.LaneIndex && note2.VerticalDirection == VerticalAirDirection.Down)
+                        if (judgeAccurate)
                         {
-                            switch (note2.HorizontalDirection)
+                            if(step.Tick == note2.Tick && step.LaneIndex == note2.LaneIndex && step.Width == note2.Width && step.Channel == note2.Channel)
                             {
-                                case HorizontalAirDirection.Center:
-                                    stepEase = "in";
-                                    break;
-                                case HorizontalAirDirection.Left:
-                                case HorizontalAirDirection.Right:
-                                    stepEase = "out";
-                                    break;
+                                if ((ApplicationSettings.Default.STEIsTapCritical && !note2.IsStart && step.IsVisible) || isCritical) isStepCritical = true;
+                                if ((ApplicationSettings.Default.STEIsTap2Critical && note2.IsStart && step.IsVisible) || isCritical) isStepCritical = true;
+                                if (ApplicationSettings.Default.STEIsTapAttach && !note2.IsStart && step.IsVisible) isAttach = true;
+                                if (ApplicationSettings.Default.STEIsTap2Attach && note2.IsStart && step.IsVisible) isAttach = true;
                             }
-                        };
+                        }
+                        else
+                        {
+                            if(step.Tick == note2.Tick && step.LaneIndex == note2.LaneIndex && step.Channel == note2.Channel)
+                            {
+                                if ((ApplicationSettings.Default.STEIsTapCritical && !note2.IsStart && step.IsVisible) || isCritical) isStepCritical = true;
+                                if ((ApplicationSettings.Default.STEIsTap2Critical && note2.IsStart && step.IsVisible) || isCritical) isStepCritical = true;
+                                if (ApplicationSettings.Default.STEIsTapAttach && !note2.IsStart && step.IsVisible) isAttach = true;
+                                if (ApplicationSettings.Default.STEIsTap2Attach && note2.IsStart && step.IsVisible) isAttach = true;
+                            }
+                        }
+                    }
+                    foreach (var note2 in notes.ExTaps)
+                    {
+                        if (judgeAccurate)
+                        {
+                            if (step.Tick == note2.Tick && step.LaneIndex == note2.LaneIndex && step.Width == note2.Width && step.Channel == note2.Channel)
+                            {
+                                if ((ApplicationSettings.Default.STEIsExTapCritical && !note2.IsStart && step.IsVisible) || isCritical) isStepCritical = true;
+                                if ((ApplicationSettings.Default.STEIsExTap2Critical && note2.IsStart && step.IsVisible) || isCritical) isStepCritical = true;
+                                if (ApplicationSettings.Default.STEIsExTapAttach && !note2.IsStart && step.IsVisible) isAttach = true;
+                                if (ApplicationSettings.Default.STEIsExTap2Attach && note2.IsStart && step.IsVisible) isAttach = true;
+                            }
+                        }
+                        else
+                        {
+                            if (step.Tick == note2.Tick && step.LaneIndex == note2.LaneIndex && step.Channel == note2.Channel)
+                            {
+                                if ((ApplicationSettings.Default.STEIsExTapCritical && !note2.IsStart && step.IsVisible) || isCritical) isStepCritical = true;
+                                if ((ApplicationSettings.Default.STEIsExTap2Critical && note2.IsStart && step.IsVisible) || isCritical) isStepCritical = true;
+                                if (ApplicationSettings.Default.STEIsExTapAttach && !note2.IsStart && step.IsVisible) isAttach = true;
+                                if (ApplicationSettings.Default.STEIsExTap2Attach && note2.IsStart && step.IsVisible) isAttach = true;
+                            }
+                        }
+                    }
+                    foreach (var note2 in notes.Flicks)
+                    {
+                        if (judgeAccurate)
+                        {
+                            if (step.Tick == note2.Tick && step.LaneIndex == note2.LaneIndex && step.Width == note2.Width && step.Channel == note2.Channel)
+                            {
+                                if ((ApplicationSettings.Default.STEIsFlickCritical && !note2.IsStart && step.IsVisible) || isCritical) isStepCritical = true;
+                                if ((ApplicationSettings.Default.STEIsFlick2Critical && note2.IsStart && step.IsVisible) || isCritical) isStepCritical = true;
+                                if (ApplicationSettings.Default.STEIsFlickAttach && !note2.IsStart && step.IsVisible) isAttach = true;
+                                if (ApplicationSettings.Default.STEIsFlick2Attach && note2.IsStart && step.IsVisible) isAttach = true;
+                            }
+                        }
+                        else
+                        {
+                            if (step.Tick == note2.Tick && step.LaneIndex == note2.LaneIndex && step.Channel == note2.Channel)
+                            {
+                                if ((ApplicationSettings.Default.STEIsFlickCritical && !note2.IsStart && step.IsVisible) || isCritical) isStepCritical = true;
+                                if ((ApplicationSettings.Default.STEIsFlick2Critical && note2.IsStart && step.IsVisible) || isCritical) isStepCritical = true;
+                                if (ApplicationSettings.Default.STEIsFlickAttach && !note2.IsStart && step.IsVisible) isAttach = true;
+                                if (ApplicationSettings.Default.STEIsFlick2Attach && note2.IsStart && step.IsVisible) isAttach = true;
+                            }
+                        }
+                    }
+                    foreach (var note2 in notes.Damages)
+                    {
+                        if (judgeAccurate)
+                        {
+                            if (step.Tick == note2.Tick && step.LaneIndex == note2.LaneIndex && step.Width == note2.Width && step.Channel == note2.Channel)
+                            {
+                                if ((ApplicationSettings.Default.STEIsDamageCritical && !note2.IsStart && step.IsVisible) || isCritical) isStepCritical = true;
+                                if ((ApplicationSettings.Default.STEIsDamage2Critical && note2.IsStart && step.IsVisible) || isCritical) isStepCritical = true;
+                                if (ApplicationSettings.Default.STEIsDamageAttach && !note2.IsStart && step.IsVisible) isAttach = true;
+                                if (ApplicationSettings.Default.STEIsDamage2Attach && note2.IsStart && step.IsVisible) isAttach = true;
+                            }
+                        }
+                        else
+                        {
+                            if (step.Tick == note2.Tick && step.LaneIndex == note2.LaneIndex && step.Channel == note2.Channel)
+                            {
+                                if ((ApplicationSettings.Default.STEIsDamageCritical && !note2.IsStart && step.IsVisible) || isCritical) isStepCritical = true;
+                                if ((ApplicationSettings.Default.STEIsDamage2Critical && note2.IsStart && step.IsVisible) || isCritical) isStepCritical = true;
+                                if (ApplicationSettings.Default.STEIsDamageAttach && !note2.IsStart && step.IsVisible) isAttach = true;
+                                if (ApplicationSettings.Default.STEIsDamage2Attach && note2.IsStart && step.IsVisible) isAttach = true;
+                            }
+                        }
+                    }
+                    foreach ( var note2 in notes.Airs)
+                    {
+                        if (judgeAccurate)
+                        {
+                            if(step.Tick == note2.Tick && step.LaneIndex == note2.LaneIndex && step.Width == note2.Width && step.Channel == note2.Channel && note2.VerticalDirection == VerticalAirDirection.Down)
+                            {
+                                switch (note2.HorizontalDirection)
+                                {
+                                    case HorizontalAirDirection.Center:
+                                        stepEase = "in";
+                                        break;
+                                    case HorizontalAirDirection.Left:
+                                    case HorizontalAirDirection.Right:
+                                        stepEase = "out";
+                                        break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (step.Tick == note2.Tick && step.LaneIndex == note2.LaneIndex && step.Channel == note2.Channel && note2.VerticalDirection == VerticalAirDirection.Down)
+                            {
+                                switch (note2.HorizontalDirection)
+                                {
+                                    case HorizontalAirDirection.Center:
+                                        stepEase = "in";
+                                        break;
+                                    case HorizontalAirDirection.Left:
+                                    case HorizontalAirDirection.Right:
+                                        stepEase = "out";
+                                        break;
+                                }
+                            }
+                        }
+                    }
+                    if (!isStepCritical)
+                    {
+                        isStepCritical = isCritical;
                     }
                     if (isAttach)
                     {
@@ -508,6 +886,13 @@ namespace Ched.Components.Exporter
 
 
                 }
+                
+                
+
+                if (!isEndCritical)
+                {
+                    isEndCritical = isCritical;
+                }
 
                 var startlaneIndex = note.StartNote.LaneIndex - 8 + (float)book.LaneOffset + note.StartNote.Width / 2;
                 var endlaneIndex = endNote.LaneIndex - 8 + (float)book.LaneOffset + endNote.Width / 2;
@@ -530,7 +915,7 @@ namespace Ched.Components.Exporter
 
                 usc.objects.Add(slidenote);
             }
-
+            
 
             foreach(var note in notes.Guides)
             {
@@ -890,6 +1275,9 @@ namespace Ched.Components.Exporter
             }
 
         }
+
+       
+
 
     }
 }

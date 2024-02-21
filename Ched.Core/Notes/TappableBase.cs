@@ -97,6 +97,12 @@ namespace Ched.Core.Notes
             this.laneIndex = laneIndex;
             this.width = width;
         }
+        public void SetPosition(int laneIndex, int width)
+        {
+            CheckPosition(laneIndex, width);
+            this.laneIndex = laneIndex;
+            this.width = width;
+        }
         public void SetChannel(int channel)
         {
 

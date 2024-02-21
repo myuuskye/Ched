@@ -70,6 +70,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   正確な重なり判定 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Accuratejudge {
+            get {
+                return ResourceManager.GetString("Accuratejudge", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   自由記述欄 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string AdditionalData {
@@ -313,6 +322,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   ブラック に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ColorBlack {
+            get {
+                return ResourceManager.GetString("ColorBlack", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   ブルー に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string ColorBlue {
@@ -448,11 +466,29 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   スライド終点を削除する に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string DeleteEnd {
+            get {
+                return ResourceManager.GetString("DeleteEnd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   イベント削除 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string DeleteEvent {
             get {
                 return ResourceManager.GetString("DeleteEvent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   スライド始点を削除する に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string DeleteStart {
+            get {
+                return ResourceManager.GetString("DeleteStart", resourceCulture);
             }
         }
         
@@ -691,6 +727,33 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   スライド終点と重なった時 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string isOnSlideEnd {
+            get {
+                return ResourceManager.GetString("isOnSlideEnd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   スライド始点と重なった時 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string isOnSlideStart {
+            get {
+                return ResourceManager.GetString("isOnSlideStart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   スライド中継点と重なった時 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string isOnSlideStep {
+            get {
+                return ResourceManager.GetString("isOnSlideStep", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   昇格試験用の譜面 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string isSiken {
@@ -772,7 +835,7 @@ namespace Ched.Localization {
         }
         
         /// <summary>
-        ///   ChartCyanvas限定の拡張仕様です。(susのみ) に類似しているローカライズされた文字列を検索します。
+        ///   ChartCyanvas限定の拡張仕様です。 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string LaneOffsetdis {
             get {
@@ -795,6 +858,42 @@ namespace Ched.Localization {
         public static string Level {
             get {
                 return ResourceManager.GetString("Level", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   無視中継点にする に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string MakeAttachStep {
+            get {
+                return ResourceManager.GetString("MakeAttachStep", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   クリティカルスライドにする に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string MakeCriticalSlide {
+            get {
+                return ResourceManager.GetString("MakeCriticalSlide", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   クリティカルスライド終点にする に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string MakeCriticalSlideEnd {
+            get {
+                return ResourceManager.GetString("MakeCriticalSlideEnd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   クリティカルステップにする に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string MakeCriticalSlideStep {
+            get {
+                return ResourceManager.GetString("MakeCriticalSlideStep", resourceCulture);
             }
         }
         
@@ -1074,6 +1173,24 @@ namespace Ched.Localization {
         public static string SelectToEnd {
             get {
                 return ResourceManager.GetString("SelectToEnd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   スライド終点をトレースにする に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SetTraceEnd {
+            get {
+                return ResourceManager.GetString("SetTraceEnd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   スライド始点をトレースにする に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SetTraceStart {
+            get {
+                return ResourceManager.GetString("SetTraceStart", resourceCulture);
             }
         }
         

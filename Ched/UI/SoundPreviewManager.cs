@@ -568,6 +568,7 @@ namespace Ched.UI
                 bool isAir = false;
                 bool onTrace = false;
                 bool onSlide = false;
+                bool onStep = false;
                 foreach (var note2 in notes.Airs)
                 {
                     if (note.Tick == note2.Tick && note.Channel == note2.Channel && note.LaneIndex == note2.LaneIndex) isAir = true;
@@ -578,6 +579,11 @@ namespace Ched.UI
                     if (note.Tick == note2.Tick && note.Channel == note2.Channel && note.LaneIndex == note2.LaneIndex) onTrace = true;
                 }
                 if (onTrace) continue;
+                foreach (var note2 in notes.StepNoteTaps)
+                {
+                    if (note.Tick == note2.Tick && note.Channel == note2.Channel && note.LaneIndex == note2.LaneIndex) onStep = true;
+                }
+                if (onStep) continue;
                 foreach (var note2 in notes.Slides)
                 {
                     if (note.Tick == note2.StartTick && note.Channel == note2.Channel && note.LaneIndex == note2.StartLaneIndex) onSlide = true;
@@ -787,6 +793,7 @@ namespace Ched.UI
         {
 
             var tapList = new List<Slide>();
+            var tapList2 = new List<StepNoteTap>();
 
             foreach (var note in notes.Slides)
             {
@@ -803,12 +810,26 @@ namespace Ched.UI
 
             }
 
-            var stepNotesTick = tapList.SelectMany(p => p.StepNotes.Where(s => s.IsVisible && p.StepNotes.OrderBy(o => o.Tick).Last() != s).Select(q => q.Tick));
+            foreach(var note in notes.StepNoteTaps)
+            {
+                bool isEx2 = false;
+                foreach (var note2 in notes.ExTaps)
+                {
+                    if (note.Tick == note2.Tick && note.Channel == note2.Channel && note.LaneIndex == note2.LaneIndex) isEx2 = true;
+                }
+                if (!isEx2)
+                {
+                    tapList2.Add(note);
+                }
+            }
+
+
+            var stepNotesTick = tapList.SelectMany(p => p.StepNotes.Where(s => s.IsVisible && p.StepNotes.OrderBy(o => o.Tick).Last() != s).Select(q => q.Tick)).Concat(tapList2.Select(q => q.Tick));
 
             var allch = noteview.ViewChannel == -1;
             if (noteview.SoundbyCh)
             {
-                stepNotesTick = tapList.Where(p => p.Channel == noteview.ViewChannel || allch).SelectMany(p => p.StepNotes.Where(s => s.IsVisible && p.StepNotes.OrderBy(o => o.Tick).Last() != s).Select(q => q.Tick));
+                stepNotesTick = tapList.Where(p => p.Channel == noteview.ViewChannel || allch).SelectMany(p => p.StepNotes.Where(s => s.IsVisible && p.StepNotes.OrderBy(o => o.Tick).Last() != s).Select(q => q.Tick)).Concat(tapList2.Where(p => p.Channel == noteview.ViewChannel || allch).Select(q => q.Tick));
             }
 
 
@@ -821,6 +842,7 @@ namespace Ched.UI
         {
 
             var tapList = new List<Slide>();
+            var tapList2 = new List<StepNoteTap>();
 
             foreach (var note in notes.Slides)
             {
@@ -834,13 +856,25 @@ namespace Ched.UI
                     tapList.Add(note);
                 }
             }
+            foreach (var note in notes.StepNoteTaps)
+            {
+                bool isEx2 = false;
+                foreach (var note2 in notes.ExTaps)
+                {
+                    if (note.Tick == note2.Tick && note.Channel == note2.Channel && note.LaneIndex == note2.LaneIndex) isEx2 = true;
+                }
+                if (isEx2)
+                {
+                    tapList2.Add(note);
+                }
+            }
 
-            var stepNotesTick = tapList.SelectMany(p => p.StepNotes.Where(s => s.IsVisible && p.StepNotes.OrderBy(o => o.Tick).Last() != s)).Select(q => q.Tick);
+            var stepNotesTick = tapList.SelectMany(p => p.StepNotes.Where(s => s.IsVisible && p.StepNotes.OrderBy(o => o.Tick).Last() != s)).Select(q => q.Tick).Concat(tapList2.Select(q => q.Tick));
 
             var allch = noteview.ViewChannel == -1;
             if (noteview.SoundbyCh)
             {
-                stepNotesTick = tapList.Where(p => p.Channel == noteview.ViewChannel || allch).SelectMany(p => p.StepNotes.Where(s => s.IsVisible && p.StepNotes.OrderBy(o => o.Tick).Last() != s).Select(q => q.Tick));
+                stepNotesTick = tapList.Where(p => p.Channel == noteview.ViewChannel || allch).SelectMany(p => p.StepNotes.Where(s => s.IsVisible && p.StepNotes.OrderBy(o => o.Tick).Last() != s).Select(q => q.Tick)).Concat(tapList2.Where(p => p.Channel == noteview.ViewChannel || allch).Select(q => q.Tick));
             }
 
 

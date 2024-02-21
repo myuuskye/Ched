@@ -48,16 +48,7 @@ namespace Ched.UI.Windows
             }
         }
 
-        public int NoteChannel
-        {
-            get => noteChannel;
-            set
-            {
-                if (value == noteChannel) return;
-                noteChannel = value;
-                NotifyPropertyChanged();
-            }
-        }
+        
         public float NoteLaneIndex
         {
             get => noteLaneIndex;
@@ -79,6 +70,17 @@ namespace Ched.UI.Windows
             }
         }
 
+        public int NoteChannel
+        {
+            get => noteChannel;
+            set
+            {
+                if (value == noteChannel) return;
+                noteChannel = value;
+                NotifyPropertyChanged();
+            }
+        }
+
 
         public SlideNotePropertiesWindowViewModel()
         {
@@ -92,18 +94,18 @@ namespace Ched.UI.Windows
         public void BeginEdit()
         {
             NoteTick = Note.StartTick;
-            NoteChannel = Note.Channel;
             NoteLaneIndex = Note.StartLaneIndex;
             NoteWidth = Note.StartWidth;
+            NoteChannel = Note.StartNote.Channel;
 
         }
 
         public void CommitEdit()
         {
             Note.StartTick = NoteTick;
-            Note.Channel = NoteChannel;
             Note.StartLaneIndex = NoteLaneIndex;
             Note.StartWidth = NoteWidth;
+            Note.StartNote.Channel = NoteChannel;
         }
     }
 }

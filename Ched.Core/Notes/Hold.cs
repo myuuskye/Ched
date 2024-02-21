@@ -32,7 +32,7 @@ namespace Ched.Core.Notes
             set
             {
                 CheckPosition(value, Width);
-                laneIndex = value;
+                laneIndex = (float)value;
             }
         }
 
@@ -45,7 +45,7 @@ namespace Ched.Core.Notes
             set
             {
                 CheckPosition(LaneIndex, value);
-                width = value;
+                width = (float)value;
             }
         }
 
@@ -89,6 +89,12 @@ namespace Ched.Core.Notes
             this.laneIndex = laneIndex;
             this.width = width;
         }
+        public void SetPosition(int laneIndex, int width)
+        {
+            CheckPosition(laneIndex, width);
+            this.laneIndex = laneIndex;
+            this.width = width;
+        }
 
         public StartTap StartNote { get { return startNote; } }
         public EndTap EndNote { get { return endNote; } }
@@ -126,6 +132,8 @@ namespace Ched.Core.Notes
             public override int Channel { get { return parent.Channel; } set { parent.Channel = value; } }
 
             public override bool IsTap { get { return true; } }
+            public override float LaneIndex { get { return parent.LaneIndex; } }
+            public override float Width { get { return parent.Width; } }
 
             public StartTap(Hold parent) : base(parent)
             {
@@ -139,6 +147,8 @@ namespace Ched.Core.Notes
             public override int Channel { get { return parent.Channel; } set { parent.Channel = value; } }
 
             public override int Tick { get { return parent.StartTick + parent.Duration; } }
+            public override float LaneIndex { get { return parent.LaneIndex; } }
+            public override float Width { get { return parent.Width; } }
 
             public EndTap(Hold parent) : base(parent)
             {

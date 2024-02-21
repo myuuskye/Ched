@@ -346,7 +346,7 @@
     <value>レーンオフセット</value>
   </data>
   <data name="LaneOffsetdis" xml:space="preserve">
-    <value>ChartCyanvas限定の拡張仕様です。(susのみ)</value>
+    <value>ChartCyanvas限定の拡張仕様です。</value>
   </data>
   <data name="All" xml:space="preserve">
     <value>全部</value>
@@ -539,5 +539,44 @@
   </data>
   <data name="PasteEvents" xml:space="preserve">
     <value>選択範囲内のイベントをペースト</value>
+  </data>
+  <data name="ColorBlack" xml:space="preserve">
+    <value>ブラック</value>
+  </data>
+  <data name="MakeCriticalSlide" xml:space="preserve">
+    <value>クリティカルスライドにする</value>
+  </data>
+  <data name="MakeCriticalSlideEnd" xml:space="preserve">
+    <value>クリティカルスライド終点にする</value>
+  </data>
+  <data name="Accuratejudge" xml:space="preserve">
+    <value>正確な重なり判定</value>
+  </data>
+  <data name="DeleteEnd" xml:space="preserve">
+    <value>スライド終点を削除する</value>
+  </data>
+  <data name="DeleteStart" xml:space="preserve">
+    <value>スライド始点を削除する</value>
+  </data>
+  <data name="isOnSlideEnd" xml:space="preserve">
+    <value>スライド終点と重なった時</value>
+  </data>
+  <data name="isOnSlideStart" xml:space="preserve">
+    <value>スライド始点と重なった時</value>
+  </data>
+  <data name="isOnSlideStep" xml:space="preserve">
+    <value>スライド中継点と重なった時</value>
+  </data>
+  <data name="MakeAttachStep" xml:space="preserve">
+    <value>無視中継点にする</value>
+  </data>
+  <data name="MakeCriticalSlideStep" xml:space="preserve">
+    <value>クリティカルステップにする</value>
+  </data>
+  <data name="SetTraceEnd" xml:space="preserve">
+    <value>スライド終点をトレースにする</value>
+  </data>
+  <data name="SetTraceStart" xml:space="preserve">
+    <value>スライド始点をトレースにする</value>
   </data>
 </root>

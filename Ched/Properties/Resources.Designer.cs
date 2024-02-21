@@ -183,6 +183,16 @@ namespace Ched.Properties {
         /// <summary>
         ///   型 System.Drawing.Bitmap のローカライズされたリソースを検索します。
         /// </summary>
+        public static System.Drawing.Bitmap DamgeIcon2 {
+            get {
+                object obj = ResourceManager.GetObject("DamgeIcon2", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   型 System.Drawing.Bitmap のローカライズされたリソースを検索します。
+        /// </summary>
         public static System.Drawing.Bitmap EditIcon {
             get {
                 object obj = ResourceManager.GetObject("EditIcon", resourceCulture);
@@ -246,6 +256,26 @@ namespace Ched.Properties {
         public static System.Drawing.Bitmap FlickIcon {
             get {
                 object obj = ResourceManager.GetObject("FlickIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   型 System.Drawing.Bitmap のローカライズされたリソースを検索します。
+        /// </summary>
+        public static System.Drawing.Bitmap FlickIcon2 {
+            get {
+                object obj = ResourceManager.GetObject("FlickIcon2", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   型 System.Drawing.Bitmap のローカライズされたリソースを検索します。
+        /// </summary>
+        public static System.Drawing.Bitmap GuideBlack {
+            get {
+                object obj = ResourceManager.GetObject("GuideBlack", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

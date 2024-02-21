@@ -346,7 +346,7 @@
     <value>Lane Offset</value>
   </data>
   <data name="LaneOffsetdis" xml:space="preserve">
-    <value>This is an extended specification limited to ChartCyanvas. (sus only)</value>
+    <value>This is an extended specification limited to ChartCyanvas. </value>
   </data>
   <data name="All" xml:space="preserve">
     <value>All</value>
@@ -521,5 +521,44 @@
   </data>
   <data name="PasteEvents" xml:space="preserve">
     <value>Paste Selected Events</value>
+  </data>
+  <data name="ColorBlack" xml:space="preserve">
+    <value>Black</value>
+  </data>
+  <data name="MakeCriticalSlide" xml:space="preserve">
+    <value>Make a Critical Slide</value>
+  </data>
+  <data name="MakeCriticalSlideEnd" xml:space="preserve">
+    <value>Make a Critical SlideEnd</value>
+  </data>
+  <data name="Accuratejudge" xml:space="preserve">
+    <value>Accurate Overlap Judgment</value>
+  </data>
+  <data name="DeleteEnd" xml:space="preserve">
+    <value>Delete the Slide End</value>
+  </data>
+  <data name="DeleteStart" xml:space="preserve">
+    <value>Delete the Slide Start</value>
+  </data>
+  <data name="isOnSlideEnd" xml:space="preserve">
+    <value>If on SlideNoteEnd</value>
+  </data>
+  <data name="isOnSlideStart" xml:space="preserve">
+    <value>If on SlideNoteStart</value>
+  </data>
+  <data name="isOnSlideStep" xml:space="preserve">
+    <value>If on SlideNoteStep</value>
+  </data>
+  <data name="SetTraceEnd" xml:space="preserve">
+    <value>Set the Slide End to Trace</value>
+  </data>
+  <data name="SetTraceStart" xml:space="preserve">
+    <value>Set the Slide Start to Trace</value>
+  </data>
+  <data name="MakeCriticalSlideStep" xml:space="preserve">
+    <value>Make a Critical Slide Step</value>
+  </data>
+  <data name="MakeAttachStep" xml:space="preserve">
+    <value>Make Attach Step</value>
   </data>
 </root>

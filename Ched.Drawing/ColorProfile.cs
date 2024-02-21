@@ -51,6 +51,7 @@ namespace Ched.Drawing
         public GradientColor GuideBackgroundYellowColor { get; set; }
         public GradientColor GuideBackgroundPurpleColor { get; set; }
         public GradientColor GuideBackgroundCyanColor { get; set; }
+        public GradientColor GuideBackgroundBlackColor { get; set; }
         public GradientColor GuideColor { get; set; }
         public GradientColor GuideNeutralColor { get; set; }
         public GradientColor GuideRedColor { get; set; }
@@ -58,6 +59,7 @@ namespace Ched.Drawing
         public GradientColor GuideYellowColor { get; set; }
         public GradientColor GuidePurpleColor { get; set; }
         public GradientColor GuideCyanColor { get; set; }
+        public GradientColor GuideBlackColor { get; set; }
 
 
         //ch別用
@@ -85,6 +87,7 @@ namespace Ched.Drawing
         public GradientColor InvGuideBackgroundYellowColor { get; set; }
         public GradientColor InvGuideBackgroundPurpleColor { get; set; }
         public GradientColor InvGuideBackgroundCyanColor { get; set; }
+        public GradientColor InvGuideBackgroundBlackColor { get; set; }
         public GradientColor InvGuideColor { get; set; }
         public GradientColor InvGuideNeutralColor { get; set; }
         public GradientColor InvGuideRedColor { get; set; }
@@ -92,6 +95,7 @@ namespace Ched.Drawing
         public GradientColor InvGuideYellowColor { get; set; }
         public GradientColor InvGuidePurpleColor { get; set; }
         public GradientColor InvGuideCyanColor { get; set; }
+        public GradientColor InvGuideBlackColor { get; set; }
 
     }
 }

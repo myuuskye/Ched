@@ -644,6 +644,9 @@ namespace Ched.UI
                 GuideBackgroundPurpleColor = new GradientColor(Color.FromArgb(100, 220, 30, 200), Color.FromArgb(100, 255, 50, 230)),
                 GuideCyanColor = new GradientColor(Color.FromArgb(60, 150, 240), Color.FromArgb(60, 220, 240)),
                 GuideBackgroundCyanColor = new GradientColor(Color.FromArgb(100, 60, 160, 240), Color.FromArgb(100, 60, 220, 220)),
+                GuideBlackColor = new GradientColor(Color.FromArgb(0, 0, 20), Color.FromArgb(0, 0, 50)),
+                GuideBackgroundBlackColor = new GradientColor(Color.FromArgb(160, 50, 50, 60), Color.FromArgb(160, 50, 50, 80)),
+
 
                 InvBorderColor = new GradientColor(Color.FromArgb(100, 100, 100, 200), Color.FromArgb(100, 120, 120, 200)),
                 InvTapColor = new GradientColor(Color.FromArgb( 80, 138, 0, 0), Color.FromArgb(80, 255, 128, 128)),
@@ -676,6 +679,8 @@ namespace Ched.UI
                 InvGuideBackgroundPurpleColor = new GradientColor(Color.FromArgb(40, 220, 30, 200), Color.FromArgb(40, 255, 50, 230)),
                 InvGuideCyanColor = new GradientColor(Color.FromArgb(80, 60, 150, 240), Color.FromArgb(80, 60, 220, 240)),
                 InvGuideBackgroundCyanColor = new GradientColor(Color.FromArgb(40, 60, 160, 240), Color.FromArgb(40, 60, 220, 220)),
+                InvGuideBlackColor = new GradientColor(Color.FromArgb(80, 0, 0, 20), Color.FromArgb(80, 0, 0, 50)),
+                InvGuideBackgroundBlackColor = new GradientColor(Color.FromArgb(40, 50, 50, 60), Color.FromArgb(40, 50, 50, 80)),
             };
 
 
@@ -2554,6 +2559,7 @@ namespace Ched.UI
                         return;
                     }
 
+
                     Matrix matrix = GetDrawingMatrix(new Matrix());
                     matrix.Invert();
                     PointF scorePos = matrix.TransformPoint(p.Pos);
@@ -2579,6 +2585,7 @@ namespace Ched.UI
                         RectangleF rect = NoteGraphics.GetAirRect(GetRectFromNotePosition(note.ParentNote.Tick, note.ParentNote.LaneIndex, note.ParentNote.Width));
                         if (rect.Contains(scorePos))
                         {
+                            if ((note.Channel != channel) && (editablebyCh == true)) return;
                             Notes.Remove(note);
                             OperationManager.Push(new RemoveAirOperation(Notes, note));
                             return;
@@ -2592,6 +2599,7 @@ namespace Ched.UI
                             RectangleF rect = GetClickableRectFromNotePosition(note.StartTick + action.Offset, note.ParentNote.LaneIndex, note.ParentNote.Width);
                             if (rect.Contains(scorePos))
                             {
+                                if ((note.Channel != channel) && (editablebyCh == true)) return;
                                 if (note.ActionNotes.Count == 1)
                                 {
                                     Notes.Remove(note);
@@ -2612,6 +2620,7 @@ namespace Ched.UI
                         RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
                         if (rect.Contains(scorePos))
                         {
+                            if ((note.Channel != channel) && (editablebyCh == true)) return;
                             var airOp = removeReferencedAirs(note).ToList();
                             var op = new RemoveDamageOperation(Notes, note);
                             Notes.Remove(note);
@@ -2632,6 +2641,7 @@ namespace Ched.UI
                         RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
                         if (rect.Contains(scorePos))
                         {
+                            if ((note.Channel != channel) && (editablebyCh == true)) return;
                             var airOp = removeReferencedAirs(note).ToList();
                             var op = new RemoveExTapOperation(Notes, note);
                             Notes.Remove(note);
@@ -2652,6 +2662,7 @@ namespace Ched.UI
                         RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
                         if (rect.Contains(scorePos))
                         {
+                            if ((note.Channel != channel) && (editablebyCh == true)) return;
                             var airOp = removeReferencedAirs(note).ToList();
                             var op = new RemoveTapOperation(Notes, note);
                             Notes.Remove(note);
@@ -2672,6 +2683,7 @@ namespace Ched.UI
                         RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
                         if (rect.Contains(scorePos))
                         {
+                            if ((note.Channel != channel) && (editablebyCh == true)) return;
                             var airOp = removeReferencedAirs(note).ToList();
                             var op = new RemoveFlickOperation(Notes, note);
                             Notes.Remove(note);
@@ -2692,6 +2704,7 @@ namespace Ched.UI
                         RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
                         if (rect.Contains(scorePos))
                         {
+                            if ((note.Channel != channel) && (editablebyCh == true)) return;
                             var op = new RemoveStepNoteTapOperation(Notes, note);
                             Notes.Remove(note);
 
@@ -2707,6 +2720,7 @@ namespace Ched.UI
                             RectangleF rect = GetClickableRectFromNotePosition(step.Tick, step.LaneIndex, step.Width);
                             if (rect.Contains(scorePos))
                             {
+                                if ((step.Channel != channel) && (editablebyCh == true)) return;
                                 var airOp = removeReferencedAirs(step).ToList();
                                 var op = new RemoveSlideStepNoteOperation(slide, step);
 
@@ -2726,6 +2740,7 @@ namespace Ched.UI
                         RectangleF startRect = GetClickableRectFromNotePosition(slide.StartTick, slide.StartLaneIndex, slide.StartWidth);
                         if (startRect.Contains(scorePos))
                         {
+                            if ((slide.Channel != channel) && (editablebyCh == true)) return;
                             var airOp = slide.StepNotes.SelectMany(q => removeReferencedAirs(q)).ToList();
                             var op = new RemoveSlideOperation(Notes, slide);
                             Notes.Remove(slide);
@@ -2746,6 +2761,7 @@ namespace Ched.UI
                         RectangleF rect = GetClickableRectFromNotePosition(hold.StartTick, hold.LaneIndex, hold.Width);
                         if (rect.Contains(scorePos))
                         {
+                            if ((hold.Channel != channel) && (editablebyCh == true)) return;
                             var airOp = removeReferencedAirs(hold.EndNote).ToList();
                             var op = new RemoveHoldOperation(Notes, hold);
                             Notes.Remove(hold);
@@ -2768,6 +2784,7 @@ namespace Ched.UI
                             RectangleF rect = GetClickableRectFromNotePosition(step.Tick, step.LaneIndex, step.Width);
                             if (rect.Contains(scorePos))
                             {
+                                if ((step.Channel != channel) && (editablebyCh == true)) return;
                                 var airOp = removeReferencedAirs(step).ToList();
                                 var op = new RemoveGuideStepNoteOperation(guide, step);
                                 guide.StepNotes.Remove(step);
@@ -2787,6 +2804,7 @@ namespace Ched.UI
                         RectangleF startRect = GetClickableRectFromNotePosition(guide.StartTick, guide.StartLaneIndex, guide.StartWidth);
                         if (startRect.Contains(scorePos))
                         {
+                            if ((guide.Channel != channel) && (editablebyCh == true)) return;
                             var airOp = guide.StepNotes.SelectMany(q => removeReferencedAirs(q)).ToList();
                             var op = new RemoveGuideOperation(Notes, guide);
                             Notes.Remove(guide);
@@ -3065,22 +3083,33 @@ namespace Ched.UI
                     {
                         RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
                         if (rect.Contains(scorePos))
+                        
                         {
-                            var tapnote = new Tap() { Tick = note.Tick, Channel = note.Channel, LaneIndex = note.LaneIndex, Width = note.Width };
-                            var airOp = resetReferencedAirs(note, tapnote).ToList();
-                            var op = new ChangeExTapOperation(Notes, note, tapnote);
-                            Notes.Remove(note);
-                            Notes.Add(tapnote);
-
-                            if(airOp.Count < 0)
+                            if (note.IsStart)
                             {
-                                OperationManager.Push(op);
+                                var tapnote = new Tap() { Tick = note.Tick, Channel = note.Channel, LaneIndex = note.LaneIndex, Width = note.Width, IsStart = false };
+                                var airOp = resetReferencedAirs(note, tapnote).ToList();
+                                var op = new ChangeExTapOperation(Notes, note, tapnote);
+                                Notes.Remove(note);
+                                Notes.Add(tapnote);
+
+                                if (airOp.Count < 0)
+                                {
+                                    OperationManager.Push(op);
+                                }
+                                else
+                                {
+                                    OperationManager.Push(new CompositeOperation(op.Description, new IOperation[] { op }.Concat(airOp)));
+                                }
                             }
                             else
                             {
-                                OperationManager.Push(new CompositeOperation(op.Description, new IOperation[] { op }.Concat(airOp)));
+
+                                var op = new ChangeStartOperation(Notes, note);
+                                note.IsStart = true;
+                                OperationManager.Push(op);
                             }
-                            
+
 
 
                             return;
@@ -3092,22 +3121,76 @@ namespace Ched.UI
                         RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
                         if (rect.Contains(scorePos))
                         {
-                            var extapnote = new ExTap() { Tick = note.Tick, Channel = note.Channel, LaneIndex = note.LaneIndex, Width = note.Width };
-                            var airOp = resetReferencedAirs(note, extapnote).ToList();
-                            var op = new ChangeTapOperation(Notes, note, extapnote);
-                            Notes.Remove(note);
-                            Notes.Add(extapnote);
-                            if (airOp.Count < 0)
+                            if (note.IsStart)
                             {
-                                OperationManager.Push(op);
+                                var extapnote = new ExTap() { Tick = note.Tick, Channel = note.Channel, LaneIndex = note.LaneIndex, Width = note.Width, IsStart = false };
+                                var airOp = resetReferencedAirs(note, extapnote).ToList();
+                                var op = new ChangeTapOperation(Notes, note, extapnote);
+                                Notes.Remove(note);
+                                Notes.Add(extapnote);
+                                if (airOp.Count < 0)
+                                {
+                                    OperationManager.Push(op);
+                                }
+                                else
+                                {
+                                    OperationManager.Push(new CompositeOperation(op.Description, new IOperation[] { op }.Concat(airOp)));
+                                }
                             }
                             else
                             {
-                                OperationManager.Push(new CompositeOperation(op.Description, new IOperation[] { op }.Concat(airOp)));
+                                var op = new ChangeStartOperation(Notes, note);
+                                note.IsStart = true;
+                                OperationManager.Push(op);
                             }
 
                             return;
                         }
+                    }
+
+                    foreach (var note in Notes.Flicks.Reverse())
+                    {
+                        RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
+                        if (rect.Contains(scorePos))
+                        {
+                            var op = new ChangeStartOperation(Notes, note);
+                            note.IsStart = !note.IsStart;
+                            OperationManager.Push(op);
+
+                            return;
+                        }
+                    }
+                    foreach (var note in Notes.Damages.Reverse())
+                    {
+                        RectangleF rect = GetClickableRectFromNotePosition(note.Tick, note.LaneIndex, note.Width);
+                        if (rect.Contains(scorePos))
+                        {
+                            var op = new ChangeStartOperation(Notes, note);
+                            note.IsStart = !note.IsStart;
+                            OperationManager.Push(op);
+
+                            return;
+                        }
+                    }
+
+
+                    foreach (var note in Notes.Slides.Reverse())
+                    {
+                        foreach (var step in note.StepNotes)
+                        {
+                            RectangleF rect = GetClickableRectFromNotePosition(step.Tick, step.LaneIndex, step.Width);
+                            if (rect.Contains(scorePos))
+                            {
+
+                                var op = new ChangeVisibleOperation(Notes, step);
+
+                                step.IsVisible = !step.IsVisible;
+
+                                OperationManager.Push(op);
+                                return;
+                            }
+                        }
+                        
                     }
 
 
@@ -3609,7 +3692,7 @@ namespace Ched.UI
                     for (decimal i = -laneOffset + 2; i <= -laneOffset + 14; i++)
                     {
                         float x = (float)i * (UnitLaneWidth + BorderThickness);
-                        pe.Graphics.DrawLine(i % 8 == 0 ? lightPen : darkPen, x, GetYPositionFromTick(HeadTick), x, GetYPositionFromTick(tailTick));
+                        pe.Graphics.DrawLine((i + 1) % 2 == 0 ? lightPen : darkPen, x, GetYPositionFromTick(HeadTick), x, GetYPositionFromTick(tailTick));
                     }
                 }
             }
@@ -3839,7 +3922,14 @@ namespace Ched.UI
             foreach (var note in Notes.Flicks.Where(p => p.Tick >= HeadTick && p.Tick <= tailTick))
             {
                 bool isch = ((note.Channel == viewchannel) || viewchannel == -1);
-                dc.DrawFlick(GetRectFromNotePosition(note.Tick, note.LaneIndex, note.Width), isch, noteVisualMode);
+                if (note.IsStart)
+                {
+                    dc.DrawBorder(GetRectFromNotePosition(note.Tick, note.LaneIndex, note.Width), isch, noteVisualMode, new GradientColor(Color.FromArgb(0, 96, 138), Color.FromArgb(122, 216, 252)), new GradientColor(Color.FromArgb(80, 0, 96, 138), Color.FromArgb(80, 122, 216, 252)));
+                }
+                else
+                {
+                    dc.DrawFlick(GetRectFromNotePosition(note.Tick, note.LaneIndex, note.Width), isch, noteVisualMode);
+                }
                 
                     
             }
@@ -3878,7 +3968,14 @@ namespace Ched.UI
             foreach (var note in Notes.Damages.Where(p => p.Tick >= HeadTick && p.Tick <= tailTick))
             {
                 bool isch = ((note.Channel == viewchannel) || viewchannel == -1);
-                dc.DrawDamage(GetRectFromNotePosition(note.Tick, note.LaneIndex, note.Width), isch, noteVisualMode);     
+                if (note.IsStart)
+                {
+                    dc.DrawBorder(GetRectFromNotePosition(note.Tick, note.LaneIndex, note.Width), isch, noteVisualMode, colorProfile.DamageColor, colorProfile.InvDamageColor);
+                }
+                else
+                {
+                    dc.DrawDamage(GetRectFromNotePosition(note.Tick, note.LaneIndex, note.Width), isch, noteVisualMode);
+                }
             }
 
             foreach (var note in Notes.StepNoteTaps.Where(p => p.Tick >= HeadTick && p.Tick <= tailTick))

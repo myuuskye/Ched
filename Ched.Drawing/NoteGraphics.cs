@@ -277,7 +277,7 @@ namespace Ched.Drawing
 
                 var orderedSteps = steps.OrderBy(p => p.Point.Y).ToList();
                 var orderedVisibleSteps = visibleSteps.OrderBy(p => p).ToList();
-                switch (mode)
+                switch (mode)//0 非表示 1 半透明 2 表示
                 {
                     case 0:
                         break;
@@ -318,7 +318,7 @@ namespace Ched.Drawing
                             }
                         }
 
-                        using (var pen = new Pen(dc.ColorProfile.SlideLineColor, noteHeight * 0.4f))
+                        using (var pen = new Pen(dc.ColorProfile.InvSlideLineColor, noteHeight * 0.4f))
                         {
                             dc.Graphics.DrawLines(pen, orderedSteps.Select(p => new PointF(p.Point.X + p.Width / 2, p.Point.Y)).ToArray());
                         }
@@ -426,6 +426,10 @@ namespace Ched.Drawing
                     guidecolor = dc.ColorProfile.GuideCyanColor;
                     invguidecolor = dc.ColorProfile.InvGuideCyanColor;
                     break;
+                case USCGuideColor.black:
+                    guidecolor = dc.ColorProfile.GuideBlackColor;
+                    invguidecolor = dc.ColorProfile.InvGuideBlackColor;
+                    break;
             }
 
             if (isch)
@@ -497,6 +501,10 @@ namespace Ched.Drawing
                     case USCGuideColor.cyan:
                         BackgroundEdgeColor = dc.ColorProfile.GuideBackgroundCyanColor.DarkColor;
                         BackgroundMiddleColor = dc.ColorProfile.GuideBackgroundCyanColor.LightColor;
+                        break;
+                    case USCGuideColor.black:
+                        BackgroundEdgeColor = dc.ColorProfile.GuideBackgroundBlackColor.DarkColor;
+                        BackgroundMiddleColor = dc.ColorProfile.GuideBackgroundBlackColor.LightColor;
                         break;
                 }
 
@@ -574,6 +582,10 @@ namespace Ched.Drawing
                         BackgroundEdgeColor = dc.ColorProfile.InvGuideBackgroundCyanColor.DarkColor;
                         BackgroundMiddleColor = dc.ColorProfile.InvGuideBackgroundCyanColor.LightColor;
                         break;
+                    case USCGuideColor.black:
+                        BackgroundEdgeColor = dc.ColorProfile.InvGuideBackgroundBlackColor.DarkColor;
+                        BackgroundMiddleColor = dc.ColorProfile.InvGuideBackgroundBlackColor.LightColor;
+                        break;
                 }
 
                 var orderedSteps = steps.OrderBy(p => p.Point.Y).ToList();
@@ -612,7 +624,7 @@ namespace Ched.Drawing
                             }
                         }
 
-                        using (var pen = new Pen(dc.ColorProfile.SlideLineColor, noteHeight * 0.4f))
+                        using (var pen = new Pen(dc.ColorProfile.InvSlideLineColor, noteHeight * 0.4f))
                         {
                             dc.Graphics.DrawLines(pen, orderedSteps.Select(p => new PointF(p.Point.X + p.Width / 2, p.Point.Y)).ToArray());
                         }

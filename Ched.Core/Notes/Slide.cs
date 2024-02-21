@@ -96,6 +96,12 @@ namespace Ched.Core.Notes
             this.startLaneIndex = startLaneIndex;
             this.startWidth = startWidth;
         }
+        public void SetPosition(int startLaneIndex, int startWidth)
+        {
+            CheckPosition(startLaneIndex, startWidth);
+            this.startLaneIndex = startLaneIndex;
+            this.startWidth = startWidth;
+        }
 
         public void SetChannel(int Channel)
         {
@@ -139,9 +145,9 @@ namespace Ched.Core.Notes
 
             public override int Tick { get { return ParentNote.StartTick; } }
 
-            public override float LaneIndex { get { return ParentNote.StartLaneIndex; } }
+            public override float LaneIndex { get { return ParentNote.StartLaneIndex; }  }
 
-            public override float Width { get { return ParentNote.StartWidth; } }
+            public override float Width { get { return ParentNote.StartWidth; }  }
 
             public override int Channel { get { return ParentNote.Channel; } set { ParentNote.Channel = value; } }
 
