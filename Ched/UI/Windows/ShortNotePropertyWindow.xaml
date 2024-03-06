@@ -75,7 +75,7 @@
                         </Grid.ColumnDefinitions>
 
                         <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.LaneIndex}" />
-                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding NoteLaneIndex}" DecimalPlaces="1" Increment="1" Minimum="-10000" Maximum="10000" />
+                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding NoteLaneIndex}" DecimalPlaces="3" Increment="1" Minimum="-1000000" Maximum="1000000" />
                     </Grid>
 
                     <Grid Style="{StaticResource ResourceKey=InputFieldRow}">
@@ -85,7 +85,7 @@
                         </Grid.ColumnDefinitions>
 
                         <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.Width}" />
-                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding NoteWidth}" DecimalPlaces="1" Increment="1" Minimum="0.1"  Maximum="10000"/>
+                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding NoteWidth}" DecimalPlaces="3" Increment="1" Minimum="0.0"  Maximum="1000000"/>
                     </Grid>
 
 

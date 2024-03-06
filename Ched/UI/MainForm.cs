@@ -86,7 +86,7 @@ namespace Ched.UI
             }
         }
 
-        private bool CanWidenLaneWidth => !IsPreviewMode && NoteView.UnitLaneWidth < 24;
+        private bool CanWidenLaneWidth => !IsPreviewMode && NoteView.UnitLaneWidth < 60;
         private bool CanNarrowLaneWidth => !IsPreviewMode && NoteView.UnitLaneWidth > 4;
         private bool CanZoomIn => !IsPreviewMode && NoteView.UnitBeatHeight < 9600;
         private bool CanZoomOut => !IsPreviewMode && NoteView.UnitBeatHeight > 30;
@@ -2813,16 +2813,16 @@ namespace Ched.UI
             };
             var damageNoteMenu = new ToolStripMenuItem[]
             {
-                slideHideDamage2,
-                guideHideDamage2,
+                slideHideDamage,
+                guideHideDamage,
                 SSDamageNoteItem,
                 STEDamageNoteItem,
                 SEDamageNoteItem
             };
             var damage2NoteMenu = new ToolStripMenuItem[]
             {
-                slideHideDamage,
-                guideHideDamage,
+                slideHideDamage2,
+                guideHideDamage2,
                 SSDamage2NoteItem,
                 STEDamage2NoteItem,
                 SEDamage2NoteItem

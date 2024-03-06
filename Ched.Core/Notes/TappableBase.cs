@@ -86,8 +86,8 @@ namespace Ched.Core.Notes
 
         protected void CheckPosition(float laneIndex, float width)
         {
-            if (width < 0.1 )
-                throw new ArgumentOutOfRangeException("width", "Invalid width.");
+            //if (width < 0.1 )
+                //throw new ArgumentOutOfRangeException("width", "Invalid width.");
             
         }
 
