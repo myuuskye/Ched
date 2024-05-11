@@ -361,6 +361,66 @@ namespace Ched.Configuration
             set => this["IsFlickSlideEndTrace"] = value;
         }
 
+
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool IsTapEraseDown
+        {
+            get => (bool)this["IsTapEraseDown"];
+            set => this["IsTapEraseDown"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool IsTap2EraseDown
+        {
+            get => (bool)this["IsTap2EraseDown"];
+            set => this["IsTap2EraseDown"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool IsExTapEraseDown
+        {
+            get => (bool)this["IsExTapEraseDown"];
+            set => this["IsExTapEraseDown"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool IsExTap2EraseDown
+        {
+            get => (bool)this["IsExTap2EraseDown"];
+            set => this["IsExTap2EraseDown"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool IsFlickEraseDown
+        {
+            get => (bool)this["IsFlickEraseDown"];
+            set => this["IsFlickEraseDown"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool IsFlick2EraseDown
+        {
+            get => (bool)this["IsFlick2EraseDown"];
+            set => this["IsFlick2EraseDown"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool IsDamageEraseDown
+        {
+            get => (bool)this["IsDamageEraseDown"];
+            set => this["IsDamageEraseDown"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool IsDamage2EraseDown
+        {
+            get => (bool)this["IsDamage2EraseDown"];
+            set => this["IsDamage2EraseDown"] = value;
+        }
+
+
+
         //New
         //スライド始点に置いて
 
@@ -486,6 +546,45 @@ namespace Ched.Configuration
             get => (bool)this["GSIsTapFadeI"];
             set => this["GSIsTapFadeI"] = value;
         }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GSIsTapFadeChange // フェードをチェンジする
+        {
+            get => (bool)this["GSIsTapFadeChange"];
+            set => this["GSIsTapFadeChange"] = value;
+        }
+        //ガイド終点に置いて
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsTapFadeN // GuideStart  フェードを無にする
+        {
+            get => (bool)this["GEIsTapFadeN"];
+            set => this["GEIsTapFadeN"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsTapFadeO // フェードをアウトにする
+        {
+            get => (bool)this["GEIsTapFadeO"];
+            set => this["GEIsTapFadeO"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsTapFadeI // フェードをインにする
+        {
+            get => (bool)this["GEIsTapFadeI"];
+            set => this["GEIsTapFadeI"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsTapFadeChange // フェードをチェンジする
+        {
+            get => (bool)this["GEIsTapFadeChange"];
+            set => this["GEIsTapFadeChange"] = value;
+        }
+
+
+
 
 
         [UserScopedSetting]
@@ -607,6 +706,43 @@ namespace Ched.Configuration
             set => this["GSIsExTapFadeI"] = value;
         }
 
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GSIsExTapFadeChange // フェードをチェンジする
+        {
+            get => (bool)this["GSIsExTapFadeChange"];
+            set => this["GSIsExTapFadeChange"] = value;
+        }
+        //ガイド終点に置いて
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsExTapFadeN // GuideStart  フェードを無にする
+        {
+            get => (bool)this["GEIsExTapFadeN"];
+            set => this["GEIsExTapFadeN"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsExTapFadeO // フェードをアウトにする
+        {
+            get => (bool)this["GEIsExTapFadeO"];
+            set => this["GEIsExTapFadeO"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsExTapFadeI // フェードをインにする
+        {
+            get => (bool)this["GEIsExTapFadeI"];
+            set => this["GEIsExTapFadeI"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsExTapFadeChange // フェードをチェンジする
+        {
+            get => (bool)this["GEIsExTapFadeChange"];
+            set => this["GEIsExTapFadeChange"] = value;
+        }
+
 
         [UserScopedSetting]
         [DefaultSettingValue("False")]
@@ -726,6 +862,42 @@ namespace Ched.Configuration
             get => (bool)this["GSIsTap2FadeI"];
             set => this["GSIsTap2FadeI"] = value;
         }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GSIsTap2FadeChange // フェードをチェンジする
+        {
+            get => (bool)this["GSIsTap2FadeChange"];
+            set => this["GSIsTap2FadeChange"] = value;
+        }
+        //ガイド終点に置いて
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsTap2FadeN // GuideStart  フェードを無にする
+        {
+            get => (bool)this["GEIsTap2FadeN"];
+            set => this["GEIsTap2FadeN"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsTap2FadeO // フェードをアウトにする
+        {
+            get => (bool)this["GEIsTap2FadeO"];
+            set => this["GEIsTap2FadeO"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsTap2FadeI // フェードをインにする
+        {
+            get => (bool)this["GEIsTap2FadeI"];
+            set => this["GEIsTap2FadeI"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsTap2FadeChange // フェードをチェンジする
+        {
+            get => (bool)this["GEIsTap2FadeChange"];
+            set => this["GEIsTap2FadeChange"] = value;
+        }
 
         [UserScopedSetting]
         [DefaultSettingValue("True")]
@@ -844,6 +1016,42 @@ namespace Ched.Configuration
         {
             get => (bool)this["GSIsExTap2FadeI"];
             set => this["GSIsExTap2FadeI"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GSIsExTap2FadeChange // フェードをチェンジする
+        {
+            get => (bool)this["GSIsExTap2FadeChange"];
+            set => this["GSIsExTap2FadeChange"] = value;
+        }
+        //ガイド終点に置いて
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsExTap2FadeN // GuideStart  フェードを無にする
+        {
+            get => (bool)this["GEIsExTap2FadeN"];
+            set => this["GEIsExTap2FadeN"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsExTap2FadeO // フェードをアウトにする
+        {
+            get => (bool)this["GEIsExTap2FadeO"];
+            set => this["GEIsExTap2FadeO"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsExTap2FadeI // フェードをインにする
+        {
+            get => (bool)this["GEIsExTap2FadeI"];
+            set => this["GEIsExTap2FadeI"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsExTap2FadeChange // フェードをチェンジする
+        {
+            get => (bool)this["GEIsExTap2FadeChange"];
+            set => this["GEIsExTap2FadeChange"] = value;
         }
 
 
@@ -966,6 +1174,42 @@ namespace Ched.Configuration
             get => (bool)this["GSIsFlickFadeI"];
             set => this["GSIsFlickFadeI"] = value;
         }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GSIsFlickFadeChange // フェードをチェンジする
+        {
+            get => (bool)this["GSIsFlickFadeChange"];
+            set => this["GSIsFlickFadeChange"] = value;
+        }
+        //ガイド終点に置いて
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsFlickFadeN // GuideStart  フェードを無にする
+        {
+            get => (bool)this["GEIsFlickFadeN"];
+            set => this["GEIsFlickFadeN"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsFlickFadeO // フェードをアウトにする
+        {
+            get => (bool)this["GEIsFlickFadeO"];
+            set => this["GEIsFlickFadeO"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsFlickFadeI // フェードをインにする
+        {
+            get => (bool)this["GEIsFlickFadeI"];
+            set => this["GEIsFlickFadeI"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsFlickFadeChange // フェードをチェンジする
+        {
+            get => (bool)this["GEIsFlickFadeChange"];
+            set => this["GEIsFlickFadeChange"] = value;
+        }
 
 
         [UserScopedSetting]
@@ -1087,6 +1331,44 @@ namespace Ched.Configuration
             set => this["GSIsDamageFadeI"] = value;
         }
 
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool GSIsDamageFadeChange // フェードをチェンジする
+        {
+            get => (bool)this["GSIsDamageFadeChange"];
+            set => this["GSIsDamageFadeChange"] = value;
+        }
+        //ガイド終点に置いて
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsDamageFadeN // GuideStart  フェードを無にする
+        {
+            get => (bool)this["GEIsDamageFadeN"];
+            set => this["GEIsDamageFadeN"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsDamageFadeO // フェードをアウトにする
+        {
+            get => (bool)this["GEIsDamageFadeO"];
+            set => this["GEIsDamageFadeO"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsDamageFadeI // フェードをインにする
+        {
+            get => (bool)this["GEIsDamageFadeI"];
+            set => this["GEIsDamageFadeI"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool GEIsDamageFadeChange // フェードをチェンジする
+        {
+            get => (bool)this["GEIsDamageFadeChange"];
+            set => this["GEIsDamageFadeChange"] = value;
+        }
+
+
 
         [UserScopedSetting]
         [DefaultSettingValue("False")]
@@ -1206,6 +1488,42 @@ namespace Ched.Configuration
         {
             get => (bool)this["GSIsFlick2FadeI"];
             set => this["GSIsFlick2FadeI"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GSIsFlick2FadeChange // フェードをチェンジする
+        {
+            get => (bool)this["GSIsFlick2FadeChange"];
+            set => this["GSIsFlick2FadeChange"] = value;
+        }
+        //ガイド終点に置いて
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsFlick2FadeN // GuideStart  フェードを無にする
+        {
+            get => (bool)this["GEIsFlick2FadeN"];
+            set => this["GEIsFlick2FadeN"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsFlick2FadeO // フェードをアウトにする
+        {
+            get => (bool)this["GEIsFlick2FadeO"];
+            set => this["GEIsFlick2FadeO"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsFlick2FadeI // フェードをインにする
+        {
+            get => (bool)this["GEIsFlick2FadeI"];
+            set => this["GEIsFlick2FadeI"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsFlick2FadeChange // フェードをチェンジする
+        {
+            get => (bool)this["GEIsFlick2FadeChange"];
+            set => this["GEIsFlick2FadeChange"] = value;
         }
 
 
@@ -1328,7 +1646,74 @@ namespace Ched.Configuration
             get => (bool)this["GSIsDamage2FadeI"];
             set => this["GSIsDamage2FadeI"] = value;
         }
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool GSIsDamage2FadeChange // フェードをチェンジする
+        {
+            get => (bool)this["GSIsDamage2FadeChange"];
+            set => this["GSIsDamage2FadeChange"] = value;
+        }
+        //ガイド終点に置いて
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsDamage2FadeN // GuideStart  フェードを無にする
+        {
+            get => (bool)this["GEIsDamage2FadeN"];
+            set => this["GEIsDamage2FadeN"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsDamage2FadeO // フェードをアウトにする
+        {
+            get => (bool)this["GEIsDamage2FadeO"];
+            set => this["GEIsDamage2FadeO"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GEIsDamage2FadeI // フェードをインにする
+        {
+            get => (bool)this["GEIsDamage2FadeI"];
+            set => this["GEIsDamage2FadeI"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool GEIsDamage2FadeChange // フェードをチェンジする
+        {
+            get => (bool)this["GEIsDamage2FadeChange"];
+            set => this["GEIsDamage2FadeChange"] = value;
+        }
 
+
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GSTIsTap // ガイド可視中継点にTAPを設置するか
+        {
+            get => (bool)this["GSTIsTap"];
+            set => this["GSTIsTap"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GSTIsExTap // ガイド可視中継点にExTAPを設置するか
+        {
+            get => (bool)this["GSTIsExTap"];
+            set => this["GSTIsExTap"] = value;
+        }
+
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool GSTIsFlick // ガイド可視中継点にFlickを設置するか
+        {
+            get => (bool)this["GSTIsFlick"];
+            set => this["GSTIsFlick"] = value;
+        }
+
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool GSTIsDamage// ガイド可視中継点にDamageを設置するか
+        {
+            get => (bool)this["GSTIsDamage"];
+            set => this["GSTIsDamage"] = value;
+        }
 
 
 
@@ -1363,6 +1748,13 @@ namespace Ched.Configuration
         {
             get => (bool)this["IsAccurateOverlap"];
             set => this["IsAccurateOverlap"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("True")]
+        public bool IsVisibleOverlap
+        {
+            get => (bool)this["IsVisibleOverlap"];
+            set => this["IsVisibleOverlap"] = value;
         }
 
     }

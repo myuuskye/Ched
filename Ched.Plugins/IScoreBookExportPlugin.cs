@@ -20,6 +20,11 @@ namespace Ched.Plugins
         string FileFilter { get; }
 
         /// <summary>
+        /// エクスポートプラグインを管理するIDを取得します。
+        /// </summary>
+        int ID { get; }
+
+        /// <summary>
         /// エクスポート処理を実行します。
         /// </summary>
         /// <param name="args">エクスポート時の情報を取得する<see cref="IScoreBookExportPluginArgs"/></param>

@@ -206,6 +206,7 @@ namespace Ched.UI
 
             while (BpmElement.Next != null && BpmElement.Next.Value.Tick <= CurrentTick) BpmElement = BpmElement.Next;
 
+
             if (CurrentTick >= EndTick + PreviewContext.TicksPerBeat)
             {
                 Stop();
@@ -236,7 +237,6 @@ namespace Ched.UI
 
             while (BpmElement.Next != null && BpmElement.Next.Value.Tick <= CurrentTick) BpmElement = BpmElement.Next;
 
-
             int latencyTick = GetLatencyTick(PreviewContext.ClapSourceExTap.Latency, BpmElement.Value.Bpm);
             if (ExTapTickElement == null || ExTapTickElement.Value - latencyTick > CurrentTick) return;
             while (ExTapTickElement != null && ExTapTickElement.Value - latencyTick <= CurrentTick)
@@ -261,6 +261,7 @@ namespace Ched.UI
                 TickUpdated?.Invoke(this, new TickUpdatedEventArgs(Math.Max(CurrentTick, 0)));
 
             while (BpmElement.Next != null && BpmElement.Next.Value.Tick <= CurrentTick) BpmElement = BpmElement.Next;
+
 
             int latencyTick = GetLatencyTick(PreviewContext.ClapSourceExAir.Latency, BpmElement.Value.Bpm);
             if (AirTickElement == null || AirTickElement.Value - latencyTick > CurrentTick) return;
@@ -312,7 +313,6 @@ namespace Ched.UI
 
             while (BpmElement.Next != null && BpmElement.Next.Value.Tick <= CurrentTick) BpmElement = BpmElement.Next;
 
-
             int latencyTick = GetLatencyTick(PreviewContext.ClapSourceTrace.Latency, BpmElement.Value.Bpm);
             if (FlickTickElement == null || FlickTickElement.Value - latencyTick > CurrentTick) return;
             while (FlickTickElement != null && FlickTickElement.Value - latencyTick <= CurrentTick)
@@ -337,7 +337,6 @@ namespace Ched.UI
                 TickUpdated?.Invoke(this, new TickUpdatedEventArgs(Math.Max(CurrentTick, 0)));
 
             while (BpmElement.Next != null && BpmElement.Next.Value.Tick <= CurrentTick) BpmElement = BpmElement.Next;
-
 
             int latencyTick = GetLatencyTick(PreviewContext.ClapSourceExTrace.Latency, BpmElement.Value.Bpm);
             if (ExFlickTickElement == null || ExFlickTickElement.Value - latencyTick > CurrentTick) return;

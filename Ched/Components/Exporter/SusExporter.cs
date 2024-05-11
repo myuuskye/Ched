@@ -55,7 +55,7 @@ namespace Ched.Components.Exporter
                 writer.WriteLine("#PLAYLEVEL {0}", args.PlayLevel);
                 writer.WriteLine("#SONGID \"{0}\"", args.SongId);
                 writer.WriteLine("#WAVE \"{0}\"", args.SoundFileName);
-                writer.WriteLine("#WAVEOFFSET {0}", args.SoundOffset.ToString(CultureInfo.InvariantCulture));
+                writer.WriteLine("#WAVEOFFSET {0}", -book.Offset);
                 writer.WriteLine("#JACKET \"{0}\"", args.JacketFilePath);
                 writer.WriteLine();
 

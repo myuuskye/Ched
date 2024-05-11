@@ -579,4 +579,40 @@
   <data name="SetTraceStart" xml:space="preserve">
     <value>スライド始点をトレースにする</value>
   </data>
+  <data name="FadeChange" xml:space="preserve">
+    <value>フェードを切り替える</value>
+  </data>
+  <data name="FadeI" xml:space="preserve">
+    <value>フェードインにする</value>
+  </data>
+  <data name="FadeN" xml:space="preserve">
+    <value>フェード無にする</value>
+  </data>
+  <data name="FadeO" xml:space="preserve">
+    <value>フェードアウトにする</value>
+  </data>
+  <data name="GuideStepNote" xml:space="preserve">
+    <value>ガイドの可視中継点</value>
+  </data>
+  <data name="isOnGuideEnd" xml:space="preserve">
+    <value>ガイド終点と重なった時</value>
+  </data>
+  <data name="isOnGuideStart" xml:space="preserve">
+    <value>ガイド始点と重なった時</value>
+  </data>
+  <data name="isOnGuideStep" xml:space="preserve">
+    <value>ガイド中継点と重なった時</value>
+  </data>
+  <data name="VisibleOverlap" xml:space="preserve">
+    <value>重なりの可視化</value>
+  </data>
+  <data name="ChannelReload" xml:space="preserve">
+    <value>チャンネル欄のリロード</value>
+  </data>
+  <data name="ChannelSetName" xml:space="preserve">
+    <value>チャンネルに名前を付ける</value>
+  </data>
+  <data name="isOnDownAir" xml:space="preserve">
+    <value>下向きエアーと重なった時</value>
+  </data>
 </root>

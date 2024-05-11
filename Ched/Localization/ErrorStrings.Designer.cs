@@ -61,6 +61,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   ※AirActionによるガイドの透明度調整は0幅を使って疑似再現しているだけなので、試験譜面など、小数点が禁止されている場合の使用はおやめください。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string AirActionInfo {
+            get {
+                return ResourceManager.GetString("AirActionInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   エクスポートが完了しました。 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string ExportComplete {
@@ -167,6 +176,15 @@ namespace Ched.Localization {
         public static string NotExported {
             get {
                 return ResourceManager.GetString("NotExported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   11個以上のチャンネルに名前を付けることは出来ません。 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotNameChannel {
+            get {
+                return ResourceManager.GetString("NotNameChannel", resourceCulture);
             }
         }
         

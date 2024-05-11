@@ -561,4 +561,43 @@
   <data name="MakeAttachStep" xml:space="preserve">
     <value>Make Attach Step</value>
   </data>
+  <data name="FadeChange" xml:space="preserve">
+    <value>Change Guide Fade</value>
+  </data>
+  <data name="FadeI" xml:space="preserve">
+    <value>Fade In Guide</value>
+  </data>
+  <data name="FadeN" xml:space="preserve">
+    <value>Non Fade Guide</value>
+  </data>
+  <data name="FadeO" xml:space="preserve">
+    <value>Fade Out Guide</value>
+  </data>
+  <data name="GuideStepNote" xml:space="preserve">
+    <value>Guide Visible Step</value>
+  </data>
+  <data name="isOnGuideEnd" xml:space="preserve">
+    <value>If on SlideNoteEnd</value>
+  </data>
+  <data name="isOnGuideStart" xml:space="preserve">
+    <value>If on SlideNoteStart</value>
+  </data>
+  <data name="isOnGuideStep" xml:space="preserve">
+    <value>If on SlideNoteStep</value>
+  </data>
+  <data name="VisibleOverlap" xml:space="preserve">
+    <value>Overlap Visible</value>
+  </data>
+  <data name="ChannelReload" xml:space="preserve">
+    <value>Reload Channel Field</value>
+  </data>
+  <data name="ChannelSetName" xml:space="preserve">
+    <value>Name This Channel</value>
+  </data>
+  <data name="isOnDownAir" xml:space="preserve">
+    <value>Overlapped with downward air</value>
+  </data>
+  <data name="String1" xml:space="preserve">
+    <value />
+  </data>
 </root>

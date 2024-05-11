@@ -916,6 +916,29 @@ namespace Ched.Drawing
             }
 
         }
+        public static void DrawHighlight(this DrawingContext dc, RectangleF rect, bool isch, int mode, GradientColor color, GradientColor invcolor, float dx, float dy)
+        {
+            if (isch)
+            {
+                dc.Graphics.DrawBorder(rect.Expand(dx, dy), color, 0.4f);
+            }
+            else
+            {
+                switch (mode)
+                {
+                    case 0:
+                        break;
+                    case 1:
+                        dc.Graphics.DrawBorder(rect, invcolor);
+                        break;
+                    case 2:
+                        dc.Graphics.DrawBorder(rect, invcolor);
+                        break;
+                }
+
+            }
+
+        }
 
         public static void DrawTapBorder(this DrawingContext dc, RectangleF rect, bool isch, int mode)
         {

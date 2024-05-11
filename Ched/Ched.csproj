@@ -185,6 +185,7 @@
     <Compile Include="Plugins\SlideMerger.cs" />
     <Compile Include="Plugins\SlideReverser.cs" />
     <Compile Include="Plugins\SlideSplitter.cs" />
+    <Compile Include="Plugins\SusImportPlugin.cs" />
     <Compile Include="Plugins\UscImportPlugin.cs" />
     <Compile Include="Plugins\UscExportPlugin.cs" />
     <Compile Include="Plugins\SusExportPlugin.cs" />
@@ -194,6 +195,12 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="RadixConvert.cs" />
+    <Compile Include="UI\NameChannelForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\NameChannelForm.Designer.cs">
+      <DependentUpon>NameChannelForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="UI\NoteCollectionForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -385,6 +392,12 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\NameChannelForm.en.resx">
+      <DependentUpon>NameChannelForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\NameChannelForm.resx">
+      <DependentUpon>NameChannelForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\NoteCollectionForm.en.resx">
       <DependentUpon>NoteCollectionForm.cs</DependentUpon>

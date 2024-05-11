@@ -97,5 +97,16 @@ namespace Ched.Drawing
         public GradientColor InvGuideCyanColor { get; set; }
         public GradientColor InvGuideBlackColor { get; set; }
 
+
+        public GradientColor TapHighlightColor { get; set; }
+        public GradientColor InvTapHighlightColor { get; set; }
+        public GradientColor ExTapHighlightColor { get; set; }
+        public GradientColor InvExTapHighlightColor { get; set; }
+        public GradientColor FlickHighlightColor { get; set; }
+        public GradientColor InvFlickHighlightColor { get; set; }
+        public GradientColor DamageHighlightColor { get; set; }
+        public GradientColor InvDamageHighlightColor { get; set; }
+
+
     }
 }

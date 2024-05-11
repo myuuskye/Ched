@@ -16,6 +16,7 @@ namespace Ched.Plugins
         public string DisplayName => "Sliding Universal Score (*.sus)";
 
         public string FileFilter => "Sliding Universal Score (*.sus)|*.sus";
+        public int ID => 0;
 
         public void Export(IScoreBookExportPluginArgs args)
         {

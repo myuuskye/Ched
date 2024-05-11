@@ -11,9 +11,11 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Markup;
+using System.Windows.Media.Effects;
 
 namespace Ched.Components.Exporter
 {
@@ -139,7 +141,8 @@ namespace Ched.Components.Exporter
                 }
                 if(isAir) continue; //Airと重なってたらスキップ
                
-                if (isAirDown && !isOnGuide) continue; //AirDownと重なっていて、Guideと重なっていなかったらスキップ
+                if (isAirDown && !isOnGuide && ApplicationSettings.Default.IsTapEraseDown && !note.IsStart) continue; //AirDownと重なっていて、Guideと重なっていなかったらスキップ
+                if (isAirDown && !isOnGuide && ApplicationSettings.Default.IsTap2EraseDown && note.IsStart) continue;
 
                 foreach (var note2 in notes.Flicks)
                 {
@@ -188,11 +191,12 @@ namespace Ched.Components.Exporter
                 if (isOnGuide && ApplicationSettings.Default.IsExTapHideOnGuide) continue;
                 foreach (var note2 in notes.Airs)
                 {
-                    if ((note.LaneIndex == note2.LaneIndex) && (note.Tick == note2.Tick)) isAir = true;
+                    if ((note.LaneIndex == note2.LaneIndex) && (note.Tick == note2.Tick) && (note2.VerticalDirection == VerticalAirDirection.Up)) isAir = true;
                     if ((note.LaneIndex == note2.LaneIndex) && (note.Tick == note2.Tick) && (note2.VerticalDirection == VerticalAirDirection.Down)) isAirDown = true;
                 }
                 if (isAir) continue; //Airと重なってたらスキップ
-                if (isAirDown && !isOnGuide) continue; //AirDownと重なっていて、Guideと重なっていなかったらスキップ
+                if (isAirDown && !isOnGuide && ApplicationSettings.Default.IsExTapEraseDown && !note.IsStart) continue; //AirDownと重なっていて、Guideと重なっていなかったらスキップ
+                if (isAirDown && !isOnGuide && ApplicationSettings.Default.IsExTap2EraseDown && note.IsStart) continue;
                 foreach (var note2 in notes.Flicks)
                 {
                     if ((note.LaneIndex == note2.LaneIndex) && (note.Tick == note2.Tick)) isOnFlick = true;
@@ -229,7 +233,8 @@ namespace Ched.Components.Exporter
                         if ((note.LaneIndex == note3.LaneIndex) && (note.Tick == note3.Tick)) isOnSlide = true;
                     }
                 }
-                if (isOnSlide && ApplicationSettings.Default.IsFlickHideOnSlide) continue; //Slideと重なってたらスキップ
+                if (isOnSlide && ApplicationSettings.Default.IsFlickHideOnSlide && !note.IsStart) continue; //Slideと重なってたらスキップ
+                if (isOnSlide && ApplicationSettings.Default.IsFlick2HideOnSlide && note.IsStart) continue;
                 foreach (var note2 in notes.Guides)
                 {
                     if ((note.LaneIndex == note2.StartNote.LaneIndex) && (note.Tick == note2.StartNote.Tick)) isOnGuide = true;
@@ -238,7 +243,8 @@ namespace Ched.Components.Exporter
                         if ((note.LaneIndex == note3.LaneIndex) && (note.Tick == note3.Tick)) isOnGuide = true;
                     }
                 }
-                if (isOnGuide && ApplicationSettings.Default.IsFlickHideOnGuide) continue; //Slideと重なってたらスキップ
+                if (isOnGuide && ApplicationSettings.Default.IsFlickHideOnGuide && !note.IsStart) continue; //Slideと重なってたらスキップ
+                if (isOnGuide && ApplicationSettings.Default.IsFlick2HideOnGuide && note.IsStart) continue;
                 foreach (var note2 in notes.Airs)
                 {
                     if ((note.LaneIndex == note2.LaneIndex) && (note.Tick == note2.Tick)) isAir = true;
@@ -268,7 +274,8 @@ namespace Ched.Components.Exporter
                     if ((note.LaneIndex == endNote.LaneIndex) && (note.Tick == endNote.Tick)) isOnSlide = true;
 
                 }
-                if (isOnSlide && ApplicationSettings.Default.IsDamageHideOnSlide) continue; //Slideと重なってたらスキップ
+                if (isOnSlide && ApplicationSettings.Default.IsDamageHideOnSlide && !note.IsStart) continue; //Slideと重なってたらスキップ
+                if (isOnSlide && ApplicationSettings.Default.IsDamage2HideOnSlide && note.IsStart) continue;
                 foreach (var note2 in notes.Guides)
                 {
                     var endNote = note2.StepNotes.OrderBy(p => p.TickOffset).Last();
@@ -276,7 +283,8 @@ namespace Ched.Components.Exporter
                     if ((note.LaneIndex == endNote.LaneIndex) && (note.Tick == endNote.Tick)) isOnGuide = true;
 
                 }
-                if (isOnGuide && ApplicationSettings.Default.IsDamageHideOnGuide) continue; //Slideと重なってたらスキップ
+                if (isOnGuide && ApplicationSettings.Default.IsDamageHideOnGuide && !note.IsStart) continue; //Slideと重なってたらスキップ
+                if (isOnGuide && ApplicationSettings.Default.IsDamage2HideOnGuide && note.IsStart) continue; //Slideと重なってたらスキップ
 
                 var laneIndex = note.LaneIndex - 8 + (float)book.LaneOffset + note.Width / 2;
                 var singlenote = new USCDamageNote((double)note.Tick / 480, note.Channel, laneIndex, note.Width / 2);
@@ -921,15 +929,10 @@ namespace Ched.Components.Exporter
             {
                 string color = "green";
                 string fade = "none";
+                string scfade = "in";
+                string ecfade = "out";
                 string startEase = "linear";
                 var endNote = note.StepNotes.OrderBy(p => p.TickOffset).Last();
-
-                var isTapChangeFade = ApplicationSettings.Default.IsTapChangeFade;
-                var isExTapChangeFade = ApplicationSettings.Default.IsExTapChangeFade;
-                var isTap2ChangeFade = ApplicationSettings.Default.IsTap2ChangeFade;
-                var isExTap2ChangeFade = ApplicationSettings.Default.IsExTap2ChangeFade;
-                var isFlickChangeFade = ApplicationSettings.Default.IsFlickChangeFade;
-                var isDamageChangeFade = ApplicationSettings.Default.IsDamageChangeFade;
 
 
                 switch (guideDefType)
@@ -937,237 +940,389 @@ namespace Ched.Components.Exporter
                     case 0:
                     default:
                         fade = "none";
+                        scfade = "in";
+                        ecfade = "out";
                         break;
                     case 1:
                         fade = "out";
+                        scfade = "in";
+                        ecfade = "none";
                         break;
                     case 2:
                         fade = "in";
+                        scfade = "out";
+                        ecfade = "none";
                         break;
                 }
 
 
                 foreach (var note2 in notes.Taps) {
-                    
-                        if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex) {
-                        if (isTapChangeFade && !note2.IsStart)
-                        {
-                            switch (guideDefType)
-                            {
-                                case 0:
-                                    fade = "in";
-                                    break;
-                                case 1:
-                                    fade = "in";
-                                    break;
-                                case 2:
-                                    fade = "out";
-                                    break;
-                            }
-                        }
-                        else if(isTap2ChangeFade && note2.IsStart)
-                        {
-                            switch (guideDefType)
-                            {
-                                case 0:
-                                    fade = "in";
-                                    break;
-                                case 1:
-                                    fade = "in";
-                                    break;
-                                case 2:
-                                    fade = "out";
-                                    break;
-                            }
-                        }
-                            
-                        }
-                    if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex)
+                    if (judgeAccurate)
                     {
-                        if (isTapChangeFade && !note2.IsStart)
+
+                        if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel && note.StartNote.Width == note2.Width)
                         {
-                            switch (guideDefType)
+                            if (!note2.IsStart)
                             {
-                                case 0:
-                                    fade = "out";
-                                    break;
-                                case 1:
-                                    fade = "none";
-                                    break;
-                                case 2:
-                                    fade = "none";
-                                    break;
+                                //通常
+                                if (ApplicationSettings.Default.GSIsTapFadeChange) fade = scfade;
+                                if (ApplicationSettings.Default.GSIsTapFadeN) fade = "none";
+                                if (ApplicationSettings.Default.GSIsTapFadeO) fade = "out";
+                                if (ApplicationSettings.Default.GSIsTapFadeI) fade = "in";
+                            }
+                            else
+                            {
+                                //TAP2
+                                if (ApplicationSettings.Default.GSIsTap2FadeChange) fade = scfade;
+                                if (ApplicationSettings.Default.GSIsTap2FadeN) fade = "none";
+                                if (ApplicationSettings.Default.GSIsTap2FadeO) fade = "out";
+                                if (ApplicationSettings.Default.GSIsTap2FadeI) fade = "in";
+                            }
+
+                        }
+                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel && endNote.Width == note2.Width)
+                        {
+                            if (!note2.IsStart)
+                            {
+                                //通常
+                                if (ApplicationSettings.Default.GEIsTapFadeChange) fade = ecfade;
+                                if (ApplicationSettings.Default.GEIsTapFadeN) fade = "none";
+                                if (ApplicationSettings.Default.GEIsTapFadeO) fade = "out";
+                                if (ApplicationSettings.Default.GEIsTapFadeI) fade = "in";
+                            }
+                            else
+                            {
+                                //TAP2
+                                if (ApplicationSettings.Default.GEIsTap2FadeChange) fade = ecfade;
+                                if (ApplicationSettings.Default.GEIsTap2FadeN) fade = "none";
+                                if (ApplicationSettings.Default.GEIsTap2FadeO) fade = "out";
+                                if (ApplicationSettings.Default.GEIsTap2FadeI) fade = "in";
                             }
                         }
-                        else if (isTap2ChangeFade && note2.IsStart)
+                    }
+                    else
+                    {
+                        if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel)
                         {
-                            switch (guideDefType)
+                            if (!note2.IsStart)
                             {
-                                case 0:
-                                    fade = "out";
-                                    break;
-                                case 1:
-                                    fade = "none";
-                                    break;
-                                case 2:
-                                    fade = "none";
-                                    break;
+                                //通常
+                                if (ApplicationSettings.Default.GSIsTapFadeChange) fade = scfade;
+                                if (ApplicationSettings.Default.GSIsTapFadeN) fade = "none";
+                                if (ApplicationSettings.Default.GSIsTapFadeO) fade = "out";
+                                if (ApplicationSettings.Default.GSIsTapFadeI) fade = "in";
+                            }
+                            else
+                            {
+                                //TAP2
+                                if (ApplicationSettings.Default.GSIsTap2FadeChange) fade = scfade;
+                                if (ApplicationSettings.Default.GSIsTap2FadeN) fade = "none";
+                                if (ApplicationSettings.Default.GSIsTap2FadeO) fade = "out";
+                                if (ApplicationSettings.Default.GSIsTap2FadeI) fade = "in";
+                            }
+
+                        }
+                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel)
+                        {
+                            
+                            if (!note2.IsStart)
+                            {
+                                //通常
+                                if (ApplicationSettings.Default.GEIsTapFadeChange) fade = ecfade;
+                                if (ApplicationSettings.Default.GEIsTapFadeN) fade = "none";
+                                if (ApplicationSettings.Default.GEIsTapFadeO) fade = "out";
+                                if (ApplicationSettings.Default.GEIsTapFadeI) fade = "in";
+                                Console.WriteLine(ApplicationSettings.Default.GEIsTapFadeChange);
+                                Console.WriteLine(ApplicationSettings.Default.GEIsTapFadeN);
+                                Console.WriteLine(ApplicationSettings.Default.GEIsTapFadeO);
+                                Console.WriteLine(ApplicationSettings.Default.GEIsTapFadeI);
+                            }
+                            else
+                            {
+                                //TAP2
+                                if (ApplicationSettings.Default.GEIsTap2FadeChange) fade = ecfade;
+                                if (ApplicationSettings.Default.GEIsTap2FadeN) fade = "none";
+                                if (ApplicationSettings.Default.GEIsTap2FadeO) fade = "out";
+                                if (ApplicationSettings.Default.GEIsTap2FadeI) fade = "in";
                             }
                         }
                     }
                     
+                    
                 }
+                Console.WriteLine("tap " + fade);
 
                 foreach (var note2 in notes.ExTaps)
                 {
 
-                    if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex)
+                    if (judgeAccurate)
                     {
-                        if (isExTapChangeFade && !note2.IsStart)
-                        {
-                            switch (guideDefType)
-                            {
-                                case 0:
-                                    fade = "in";
-                                    break;
-                                case 1:
-                                    fade = "in";
-                                    break;
-                                case 2:
-                                    fade = "out";
-                                    break;
-                            }
-                        }
-                        else if (isExTap2ChangeFade && note2.IsStart)
-                        {
-                            switch (guideDefType)
-                            {
-                                case 0:
-                                    fade = "in";
-                                    break;
-                                case 1:
-                                    fade = "in";
-                                    break;
-                                case 2:
-                                    fade = "out";
-                                    break;
-                            }
-                        }
 
-                    }
-                    if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex)
-                    {
-                        if (isExTapChangeFade && !note2.IsStart)
+                        if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel && note.StartNote.Width == note2.Width)
                         {
-                            switch (guideDefType)
+                            if (!note2.IsStart)
                             {
-                                case 0:
-                                    fade = "out";
-                                    break;
-                                case 1:
-                                    fade = "none";
-                                    break;
-                                case 2:
-                                    fade = "none";
-                                    break;
+                                //通常
+                                if (ApplicationSettings.Default.GSIsExTapFadeChange) fade = scfade;
+                                if (ApplicationSettings.Default.GSIsExTapFadeN) fade = "none";
+                                if (ApplicationSettings.Default.GSIsExTapFadeO) fade = "out";
+                                if (ApplicationSettings.Default.GSIsExTapFadeI) fade = "in";
+                            }
+                            else
+                            {
+                                //TAP2
+                                if (ApplicationSettings.Default.GSIsExTap2FadeChange) fade = scfade;
+                                if (ApplicationSettings.Default.GSIsExTap2FadeN) fade = "none";
+                                if (ApplicationSettings.Default.GSIsExTap2FadeO) fade = "out";
+                                if (ApplicationSettings.Default.GSIsExTap2FadeI) fade = "in";
+                            }
+
+                        }
+                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel && endNote.Width == note2.Width)
+                        {
+                            if (!note2.IsStart)
+                            {
+                                //通常
+                                if (ApplicationSettings.Default.GEIsExTapFadeChange) fade = ecfade;
+                                if (ApplicationSettings.Default.GEIsExTapFadeN) fade = "none";
+                                if (ApplicationSettings.Default.GEIsExTapFadeO) fade = "out";
+                                if (ApplicationSettings.Default.GEIsExTapFadeI) fade = "in";
+                            }
+                            else
+                            {
+                                //TAP2
+                                if (ApplicationSettings.Default.GEIsExTap2FadeChange) fade = ecfade;
+                                if (ApplicationSettings.Default.GEIsExTap2FadeN) fade = "none";
+                                if (ApplicationSettings.Default.GEIsExTap2FadeO) fade = "out";
+                                if (ApplicationSettings.Default.GEIsExTap2FadeI) fade = "in";
                             }
                         }
-                        else if (isExTap2ChangeFade && note2.IsStart)
+                    }
+                    else
+                    {
+                        if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel)
                         {
-                            switch (guideDefType)
+                            if (!note2.IsStart)
                             {
-                                case 0:
-                                    fade = "out";
-                                    break;
-                                case 1:
-                                    fade = "none";
-                                    break;
-                                case 2:
-                                    fade = "none";
-                                    break;
+                                //通常
+                                if (ApplicationSettings.Default.GSIsExTapFadeChange) fade = scfade;
+                                if (ApplicationSettings.Default.GSIsExTapFadeN) fade = "none";
+                                if (ApplicationSettings.Default.GSIsExTapFadeO) fade = "out";
+                                if (ApplicationSettings.Default.GSIsExTapFadeI) fade = "in";
+                            }
+                            else
+                            {
+                                //TAP2
+                                if (ApplicationSettings.Default.GSIsExTap2FadeChange) fade = scfade;
+                                if (ApplicationSettings.Default.GSIsExTap2FadeN) fade = "none";
+                                if (ApplicationSettings.Default.GSIsExTap2FadeO) fade = "out";
+                                if (ApplicationSettings.Default.GSIsExTap2FadeI) fade = "in";
+                            }
+
+                        }
+                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel)
+                        {
+                            if (!note2.IsStart)
+                            {
+                                //通常
+                                if (ApplicationSettings.Default.GEIsExTapFadeChange) fade = ecfade;
+                                if (ApplicationSettings.Default.GEIsExTapFadeN) fade = "none";
+                                if (ApplicationSettings.Default.GEIsExTapFadeO) fade = "out";
+                                if (ApplicationSettings.Default.GEIsExTapFadeI) fade = "in";
+                            }
+                            else
+                            {
+                                //TAP2
+                                if (ApplicationSettings.Default.GEIsExTap2FadeChange) fade = ecfade;
+                                if (ApplicationSettings.Default.GEIsExTap2FadeN) fade = "none";
+                                if (ApplicationSettings.Default.GEIsExTap2FadeO) fade = "out";
+                                if (ApplicationSettings.Default.GEIsExTap2FadeI) fade = "in";
                             }
                         }
                     }
 
                 }
+                Console.WriteLine("Extap " + fade);
 
 
                 foreach (var note2 in notes.Flicks)
                 {
-                    if (isFlickChangeFade == true)
+                    if (judgeAccurate)
                     {
-                        if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex)
+
+                        if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel && note.StartNote.Width == note2.Width)
                         {
-                            switch (guideDefType)
+                            if (!note2.IsStart)
                             {
-                                case 0:
-                                    fade = "in";
-                                    break;
-                                case 1:
-                                    fade = "in";
-                                    break;
-                                case 2:
-                                    fade = "out";
-                                    break;
+                                //通常
+                                if (ApplicationSettings.Default.GSIsFlickFadeChange) fade = scfade;
+                                if (ApplicationSettings.Default.GSIsFlickFadeN) fade = "none";
+                                if (ApplicationSettings.Default.GSIsFlickFadeO) fade = "out";
+                                if (ApplicationSettings.Default.GSIsFlickFadeI) fade = "in";
                             }
-                        }
-                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex)
-                        {
-                            switch (guideDefType)
+                            else
                             {
-                                case 0:
-                                    fade = "out";
-                                    break;
-                                case 1:
-                                    fade = "none";
-                                    break;
-                                case 2:
-                                    fade = "none";
-                                    break;
+                                //TAP2
+                                if (ApplicationSettings.Default.GSIsFlick2FadeChange) fade = scfade;
+                                if (ApplicationSettings.Default.GSIsFlick2FadeN) fade = "none";
+                                if (ApplicationSettings.Default.GSIsFlick2FadeO) fade = "out";
+                                if (ApplicationSettings.Default.GSIsFlick2FadeI) fade = "in";
                             }
 
+                        }
+                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel && endNote.Width == note2.Width)
+                        {
+                            if (!note2.IsStart)
+                            {
+                                //通常
+                                if (ApplicationSettings.Default.GEIsFlickFadeChange) fade = ecfade;
+                                if (ApplicationSettings.Default.GEIsFlickFadeN) fade = "none";
+                                if (ApplicationSettings.Default.GEIsFlickFadeO) fade = "out";
+                                if (ApplicationSettings.Default.GEIsFlickFadeI) fade = "in";
+                            }
+                            else
+                            {
+                                //TAP2
+                                if (ApplicationSettings.Default.GEIsFlick2FadeChange) fade = ecfade;
+                                if (ApplicationSettings.Default.GEIsFlick2FadeN) fade = "none";
+                                if (ApplicationSettings.Default.GEIsFlick2FadeO) fade = "out";
+                                if (ApplicationSettings.Default.GEIsFlick2FadeI) fade = "in";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel)
+                        {
+                            if (!note2.IsStart)
+                            {
+                                //通常
+                                if (ApplicationSettings.Default.GSIsFlickFadeChange) fade = scfade;
+                                if (ApplicationSettings.Default.GSIsFlickFadeN) fade = "none";
+                                if (ApplicationSettings.Default.GSIsFlickFadeO) fade = "out";
+                                if (ApplicationSettings.Default.GSIsFlickFadeI) fade = "in";
+                            }
+                            else
+                            {
+                                //TAP2
+                                if (ApplicationSettings.Default.GSIsFlick2FadeChange) fade = scfade;
+                                if (ApplicationSettings.Default.GSIsFlick2FadeN) fade = "none";
+                                if (ApplicationSettings.Default.GSIsFlick2FadeO) fade = "out";
+                                if (ApplicationSettings.Default.GSIsFlick2FadeI) fade = "in";
+                            }
+
+                        }
+                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel)
+                        {
+                            if (!note2.IsStart)
+                            {
+                                //通常
+                                if (ApplicationSettings.Default.GEIsFlickFadeChange) fade = ecfade;
+                                if (ApplicationSettings.Default.GEIsFlickFadeN) fade = "none";
+                                if (ApplicationSettings.Default.GEIsFlickFadeO) fade = "out";
+                                if (ApplicationSettings.Default.GEIsFlickFadeI) fade = "in";
+                            }
+                            else
+                            {
+                                //TAP2
+                                if (ApplicationSettings.Default.GEIsFlick2FadeChange) fade = ecfade;
+                                if (ApplicationSettings.Default.GEIsFlick2FadeN) fade = "none";
+                                if (ApplicationSettings.Default.GEIsFlick2FadeO) fade = "out";
+                                if (ApplicationSettings.Default.GEIsFlick2FadeI) fade = "in";
+                            }
                         }
                     }
                 }
-
+                Console.WriteLine("flick " + fade);
                 foreach (var note2 in notes.Damages)
                 {
-                    if (isDamageChangeFade == true)
+                    if (judgeAccurate)
                     {
-                        if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex)
+
+                        if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel && note.StartNote.Width == note2.Width)
                         {
-                            switch (guideDefType)
+                            if (!note2.IsStart)
                             {
-                                case 0:
-                                    fade = "in";
-                                    break;
-                                case 1:
-                                    fade = "in";
-                                    break;
-                                case 2:
-                                    fade = "out";
-                                    break;
+                                //通常
+                                if (ApplicationSettings.Default.GSIsDamageFadeChange) fade = scfade;
+                                if (ApplicationSettings.Default.GSIsDamageFadeN) fade = "none";
+                                if (ApplicationSettings.Default.GSIsDamageFadeO) fade = "out";
+                                if (ApplicationSettings.Default.GSIsDamageFadeI) fade = "in";
                             }
-                        }
-                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex)
-                        {
-                            switch (guideDefType)
+                            else
                             {
-                                case 0:
-                                    fade = "out";
-                                    break;
-                                case 1:
-                                    fade = "none";
-                                    break;
-                                case 2:
-                                    fade = "none";
-                                    break;
+                                //TAP2
+                                if (ApplicationSettings.Default.GSIsDamage2FadeChange) fade = scfade;
+                                if (ApplicationSettings.Default.GSIsDamage2FadeN) fade = "none";
+                                if (ApplicationSettings.Default.GSIsDamage2FadeO) fade = "out";
+                                if (ApplicationSettings.Default.GSIsDamage2FadeI) fade = "in";
                             }
 
+                        }
+                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel && endNote.Width == note2.Width)
+                        {
+                            if (!note2.IsStart)
+                            {
+                                //通常
+                                if (ApplicationSettings.Default.GEIsDamageFadeChange) fade = ecfade;
+                                if (ApplicationSettings.Default.GEIsDamageFadeN) fade = "none";
+                                if (ApplicationSettings.Default.GEIsDamageFadeO) fade = "out";
+                                if (ApplicationSettings.Default.GEIsDamageFadeI) fade = "in";
+                            }
+                            else
+                            {
+                                //TAP2
+                                if (ApplicationSettings.Default.GEIsDamage2FadeChange) fade = ecfade;
+                                if (ApplicationSettings.Default.GEIsDamage2FadeN) fade = "none";
+                                if (ApplicationSettings.Default.GEIsDamage2FadeO) fade = "out";
+                                if (ApplicationSettings.Default.GEIsDamage2FadeI) fade = "in";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel)
+                        {
+                            if (!note2.IsStart)
+                            {
+                                //通常
+                                if (ApplicationSettings.Default.GSIsDamageFadeChange) fade = scfade;
+                                if (ApplicationSettings.Default.GSIsDamageFadeN) fade = "none";
+                                if (ApplicationSettings.Default.GSIsDamageFadeO) fade = "out";
+                                if (ApplicationSettings.Default.GSIsDamageFadeI) fade = "in";
+                            }
+                            else
+                            {
+                                //TAP2
+                                if (ApplicationSettings.Default.GSIsDamage2FadeChange) fade = scfade;
+                                if (ApplicationSettings.Default.GSIsDamage2FadeN) fade = "none";
+                                if (ApplicationSettings.Default.GSIsDamage2FadeO) fade = "out";
+                                if (ApplicationSettings.Default.GSIsDamage2FadeI) fade = "in";
+                            }
+
+                        }
+                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel)
+                        {
+                            if (!note2.IsStart)
+                            {
+                                //通常
+                                if (ApplicationSettings.Default.GEIsDamageFadeChange) fade = ecfade;
+                                if (ApplicationSettings.Default.GEIsDamageFadeN) fade = "none";
+                                if (ApplicationSettings.Default.GEIsDamageFadeO) fade = "out";
+                                if (ApplicationSettings.Default.GEIsDamageFadeI) fade = "in";
+                            }
+                            else
+                            {
+                                //TAP2
+                                if (ApplicationSettings.Default.GEIsDamage2FadeChange) fade = ecfade;
+                                if (ApplicationSettings.Default.GEIsDamage2FadeN) fade = "none";
+                                if (ApplicationSettings.Default.GEIsDamage2FadeO) fade = "out";
+                                if (ApplicationSettings.Default.GEIsDamage2FadeI) fade = "in";
+                            }
                         }
                     }
                 }
-
+                Console.WriteLine("damage " + fade);
 
 
 
@@ -1240,19 +1395,98 @@ namespace Ched.Components.Exporter
                     if (step.IsVisible)
                     {
                         if (step == endNote) continue;
-                        bool isTraceCritical = false;
+                        bool isStepCritical = false;
                         foreach (var note2 in notes.ExTaps)
                         {
-                            if (step.Tick == note2.Tick && step.LaneIndex == note2.LaneIndex) isTraceCritical = true;
+                            if (step.Tick == note2.Tick && step.LaneIndex == note2.LaneIndex) isStepCritical = true;
                         }
-                        var trace = new USCSingleNote((double)step.Tick / 480, step.Channel, steplaneIndex, step.Width / 2, isTraceCritical, true);
-                        usc.objects.Add(trace);
+                        
+                        if (ApplicationSettings.Default.GSTIsTap)
+                        {
+                            usc.objects.Add(new USCSingleNote((double)step.Tick / 480, step.Channel, steplaneIndex, step.Width / 2, false, false));
+                        }
+                        if (ApplicationSettings.Default.GSTIsExTap)
+                        {
+                            usc.objects.Add(new USCSingleNote((double)step.Tick / 480, step.Channel, steplaneIndex, step.Width / 2, true, false));
+                        }
+                        if (ApplicationSettings.Default.GSTIsFlick)
+                        {
+                            usc.objects.Add(new USCSingleNote((double)step.Tick / 480, step.Channel, steplaneIndex, step.Width / 2, isStepCritical, true));
+                        }
+                        if (ApplicationSettings.Default.GSTIsDamage)
+                        {
+                            usc.objects.Add(new USCDamageNote((double)step.Tick / 480, step.Channel, steplaneIndex, step.Width / 2));
+                        }
+
+
                     }
                 }
 
+
+                foreach(var note2 in notes.AirActions)
+                {
+                    
+                    if(note2.ParentNote == endNote)
+                    {
+                        var actionlast = note2.ActionNotes.OrderBy(p => p.Offset).LastOrDefault();
+                        var actionlast2tick = 0;
+                        var notelaneIndex = endNote.LaneIndex - 8 + (float)book.LaneOffset + endNote.Width / 2;
+                        var notelaneIndex2 = note.StartLaneIndex - 8 + (float)book.LaneOffset + note.StartWidth / 2;
+                        if(note2.ActionNotes.Count > 2)
+                        {
+                            actionlast2tick = note2.ActionNotes.OrderBy(p => p.Offset).ElementAt(note2.ActionNotes.Count - 2).Offset;
+                        }
+                        
+                        switch (note2.ActionNotes.Count)
+                        {
+                            case 2:
+                                var midpoint3 = new USCGuideMidpointNote((double)(note.StartTick - 0.1) / 480, note.Channel, notelaneIndex2, 0, "linear");
+                                var midpoint4 = new USCGuideMidpointNote((double)(note.StartTick - actionlast.Offset) / 480, note.Channel, notelaneIndex2, 0, "linear");
+                                midpointnotes.Add(midpoint3);
+                                midpointnotes.Add(midpoint4);
+                                break;
+                            case 3:
+                                var mp5 = new USCGuideMidpointNote((double)(note.StartTick - 0.1) / 480, note.Channel, notelaneIndex2, 0, "linear");
+                                var mp6 = new USCGuideMidpointNote((double)(note.StartTick - actionlast2tick) / 480, note.Channel, notelaneIndex2, 0, "linear");
+                                midpointnotes.Add(mp5);
+                                midpointnotes.Add(mp6);
+
+                                var mp7 = new USCGuideMidpointNote((double)(endNote.Tick + 0.1) / 480, endNote.Channel, notelaneIndex, 0, "linear");
+                                var mp8 = new USCGuideMidpointNote((double)(actionlast.Offset + note2.StartTick) / 480, endNote.Channel, notelaneIndex, 0, "linear");
+                                midpointnotes.Add(mp7);
+                                midpointnotes.Add(mp8);
+
+                                break;
+                            case 4:
+                                var mp1 = new USCGuideMidpointNote((double)(note.StartTick - 0.1) / 480, note.Channel, notelaneIndex2, 0, "linear");
+                                var mp2 = new USCGuideMidpointNote((double)(note.StartTick - actionlast.Offset) / 480, note.Channel, notelaneIndex2, 0, "linear");
+                                midpointnotes.Add(mp1);
+                                midpointnotes.Add(mp2);
+
+                                var mp3 = new USCGuideMidpointNote((double)(endNote.Tick + 0.1) / 480, endNote.Channel, notelaneIndex, 0, "linear");
+                                var mp4 = new USCGuideMidpointNote((double)(actionlast2tick + note2.StartTick) / 480, endNote.Channel, notelaneIndex, 0, "linear");
+                                midpointnotes.Add(mp3);
+                                midpointnotes.Add(mp4);
+
+                                break;
+                            default:
+                                
+
+                                var midpoint = new USCGuideMidpointNote((double)(endNote.Tick + 0.1) / 480, endNote.Channel, notelaneIndex, 0, "linear");
+                                var midpoint2 = new USCGuideMidpointNote((double)(actionlast.Offset + note2.StartTick) / 480, endNote.Channel, notelaneIndex, 0, "linear");
+                                midpointnotes.Add(midpoint);
+                                midpointnotes.Add(midpoint2);
+                                break;
+                        }
+
+                        
+                    }
+                }
+
+
                 
 
-                var guidenote = new USCGuideNote(color, fade, midpointnotes.ToArray());
+                var guidenote = new USCGuideNote(color, fade, midpointnotes.OrderBy(p => p.beat).ToArray());
                 usc.objects.Add(guidenote);
 
             }

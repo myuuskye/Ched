@@ -17,6 +17,7 @@ namespace Ched.Plugins
         public string DisplayName => "Universal Sekai Chart (*.usc)";
 
         public string FileFilter => "Universal Sekai Chart (*.usc)|*.usc";
+        public int ID => 1;
 
         public void Export(IScoreBookExportPluginArgs args)
         {

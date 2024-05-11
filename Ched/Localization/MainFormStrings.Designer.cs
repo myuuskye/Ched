@@ -286,6 +286,24 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   チャンネル欄のリロード に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ChannelReload {
+            get {
+                return ResourceManager.GetString("ChannelReload", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   チャンネルに名前を付ける に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ChannelSetName {
+            get {
+                return ResourceManager.GetString("ChannelSetName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   チャンネル別ガイド音 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string ChannelSounds {
@@ -574,6 +592,42 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   フェードを切り替える に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string FadeChange {
+            get {
+                return ResourceManager.GetString("FadeChange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   フェードインにする に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string FadeI {
+            get {
+                return ResourceManager.GetString("FadeI", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   フェード無にする に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string FadeN {
+            get {
+                return ResourceManager.GetString("FadeN", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   フェードアウトにする に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string FadeO {
+            get {
+                return ResourceManager.GetString("FadeO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   ファイル(&amp;F) に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string FileMenu {
@@ -624,6 +678,15 @@ namespace Ched.Localization {
         public static string GuideOut {
             get {
                 return ResourceManager.GetString("GuideOut", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ガイドの可視中継点 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string GuideStepNote {
+            get {
+                return ResourceManager.GetString("GuideStepNote", resourceCulture);
             }
         }
         
@@ -709,11 +772,47 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   下向きエアーと重なった時 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string isOnDownAir {
+            get {
+                return ResourceManager.GetString("isOnDownAir", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   ガイドと重なった時 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string isOnGuide {
             get {
                 return ResourceManager.GetString("isOnGuide", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ガイド終点と重なった時 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string isOnGuideEnd {
+            get {
+                return ResourceManager.GetString("isOnGuideEnd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ガイド始点と重なった時 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string isOnGuideStart {
+            get {
+                return ResourceManager.GetString("isOnGuideStart", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ガイド中継点と重なった時 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string isOnGuideStep {
+            get {
+                return ResourceManager.GetString("isOnGuideStep", resourceCulture);
             }
         }
         
@@ -1380,6 +1479,15 @@ namespace Ched.Localization {
         public static string ViewMenu {
             get {
                 return ResourceManager.GetString("ViewMenu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   重なりの可視化 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string VisibleOverlap {
+            get {
+                return ResourceManager.GetString("VisibleOverlap", resourceCulture);
             }
         }
         

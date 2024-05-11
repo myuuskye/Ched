@@ -101,45 +101,77 @@ namespace Ched.Plugins
                         switch (obj.Value<string>("direction"))
                         {
                             case "left":
-                                if (obj.Value<bool>("critical"))
+                                if (isTrace)
                                 {
-                                    result.Score.Notes.Airs.Add(new Air(exnote) { HorizontalDirection = HorizontalAirDirection.Left, VerticalDirection = VerticalAirDirection.Up });
+                                    result.Score.Notes.Airs.Add(new Air(tracenote) { HorizontalDirection = HorizontalAirDirection.Left, VerticalDirection = VerticalAirDirection.Up });
                                 }
                                 else
                                 {
-                                    result.Score.Notes.Airs.Add(new Air(tapnote) { HorizontalDirection = HorizontalAirDirection.Left, VerticalDirection = VerticalAirDirection.Up });
+                                    if (obj.Value<bool>("critical"))
+                                    {
+                                        result.Score.Notes.Airs.Add(new Air(exnote) { HorizontalDirection = HorizontalAirDirection.Left, VerticalDirection = VerticalAirDirection.Up });
+                                    }
+                                    else
+                                    {
+                                        result.Score.Notes.Airs.Add(new Air(tapnote) { HorizontalDirection = HorizontalAirDirection.Left, VerticalDirection = VerticalAirDirection.Up });
+                                    }
                                 }
+                                
 
                                 break;
                             case "up":
-                                if (obj.Value<bool>("critical"))
+                                if (isTrace)
                                 {
-                                    result.Score.Notes.Airs.Add(new Air(exnote) { HorizontalDirection = HorizontalAirDirection.Center, VerticalDirection = VerticalAirDirection.Up });
+                                    result.Score.Notes.Airs.Add(new Air(tracenote) { HorizontalDirection = HorizontalAirDirection.Center, VerticalDirection = VerticalAirDirection.Up });
                                 }
                                 else
                                 {
-                                    result.Score.Notes.Airs.Add(new Air(tapnote) { HorizontalDirection = HorizontalAirDirection.Center, VerticalDirection = VerticalAirDirection.Up });
+                                    if (obj.Value<bool>("critical"))
+                                    {
+                                        result.Score.Notes.Airs.Add(new Air(exnote) { HorizontalDirection = HorizontalAirDirection.Center, VerticalDirection = VerticalAirDirection.Up });
+                                    }
+                                    else
+                                    {
+                                        result.Score.Notes.Airs.Add(new Air(tapnote) { HorizontalDirection = HorizontalAirDirection.Center, VerticalDirection = VerticalAirDirection.Up });
+                                    }
                                 }
+                                
                                 break;
                             case "right":
-                                if (obj.Value<bool>("critical"))
+                                if (isTrace)
                                 {
-                                    result.Score.Notes.Airs.Add(new Air(exnote) { HorizontalDirection = HorizontalAirDirection.Right, VerticalDirection = VerticalAirDirection.Up });
+                                    result.Score.Notes.Airs.Add(new Air(tracenote) { HorizontalDirection = HorizontalAirDirection.Right, VerticalDirection = VerticalAirDirection.Up });
                                 }
                                 else
                                 {
-                                    result.Score.Notes.Airs.Add(new Air(tapnote) { HorizontalDirection = HorizontalAirDirection.Right, VerticalDirection = VerticalAirDirection.Up });
+                                    if (obj.Value<bool>("critical"))
+                                    {
+                                        result.Score.Notes.Airs.Add(new Air(exnote) { HorizontalDirection = HorizontalAirDirection.Right, VerticalDirection = VerticalAirDirection.Up });
+                                    }
+                                    else
+                                    {
+                                        result.Score.Notes.Airs.Add(new Air(tapnote) { HorizontalDirection = HorizontalAirDirection.Right, VerticalDirection = VerticalAirDirection.Up });
+                                    }
                                 }
+                                
                                 break;
                             case "none":
-                                if (obj.Value<bool>("critical"))
+                                if (isTrace)
                                 {
                                     result.Score.Notes.Airs.Add(new Air(tracenote) { HorizontalDirection = HorizontalAirDirection.Center, VerticalDirection = VerticalAirDirection.Down });
                                 }
                                 else
                                 {
-                                    result.Score.Notes.Airs.Add(new Air(tracenote) { HorizontalDirection = HorizontalAirDirection.Center, VerticalDirection = VerticalAirDirection.Down });
+                                    if (obj.Value<bool>("critical"))
+                                    {
+                                        result.Score.Notes.Airs.Add(new Air(exnote) { HorizontalDirection = HorizontalAirDirection.Center, VerticalDirection = VerticalAirDirection.Down });
+                                    }
+                                    else
+                                    {
+                                        result.Score.Notes.Airs.Add(new Air(tapnote) { HorizontalDirection = HorizontalAirDirection.Center, VerticalDirection = VerticalAirDirection.Down });
+                                    }
                                 }
+                                
                                 break;
                             default:
                                 break;
@@ -365,7 +397,7 @@ namespace Ched.Plugins
                             if (guideStepTap.Tick == guideStepTap.ParentNote.StartTick && guideStepTap.LaneIndex == guideStepTap.ParentNote.StartLaneIndex && guideStepTap.Width == guideStepTap.ParentNote.StartWidth) continue;
 
                             guide.StepNotes.Add(guideStepTap);
-                            var stepairedNote = new Tap() { Channel = gm.Value<int>("timeScaleGroup"), Tick = (int)(gm.Value<double>("beat") * 480), LaneIndex = gm.Value<float>("lane") + 8 - gm.Value<float>("size"), Width = gm.Value<float>("size") * 2 };
+                            var stepairedNote = new Tap() { Channel = gm.Value<int>("timeScaleGroup"), Tick = (int)(gm.Value<double>("beat") * 480), LaneIndex = gm.Value<float>("lane") + 8 - gm.Value<float>("size"), Width = gm.Value<float>("size") * 2, IsStart = true };
 
                             switch (gm.Value<string>("ease"))
                             {
