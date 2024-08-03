@@ -26,6 +26,8 @@ namespace Ched.Core
         [Newtonsoft.Json.JsonProperty]
         private List<Guide> guides;
         [Newtonsoft.Json.JsonProperty]
+        private List<Marker> markers;
+        [Newtonsoft.Json.JsonProperty]
         private List<Flick> flicks;
         [Newtonsoft.Json.JsonProperty]
         private List<Damage> damages;
@@ -55,6 +57,11 @@ namespace Ched.Core
             set { holds = value; }
         }
 
+        public List<Marker> Markers
+        {
+            get { return markers; }
+            set { markers = value; }
+        }
         public List<Slide> Slides
         {
             get { return slides; }
@@ -103,6 +110,7 @@ namespace Ched.Core
             Taps = new List<Tap>();
             ExTaps = new List<ExTap>();
             Holds = new List<Hold>();
+            Markers = new List<Marker>();
             Slides = new List<Slide>();
             Guides = new List<Guide>();
             Airs = new List<Air>();
@@ -117,6 +125,7 @@ namespace Ched.Core
             Taps = collection.Taps.ToList();
             ExTaps = collection.ExTaps.ToList();
             Holds = collection.Holds.ToList();
+            Markers = collection.Markers.ToList();
             Slides = collection.Slides.ToList();
             Guides = collection.Guides.ToList();
             Airs = collection.Airs.ToList();
@@ -140,6 +149,11 @@ namespace Ched.Core
             {
                 hold.StartTick = (int)(hold.StartTick * factor);
                 hold.Duration = (int)(hold.Duration * factor);
+            }
+            foreach (var marker in Markers)
+            {
+                marker.StartTick = (int)(marker.StartTick * factor);
+                marker.Duration = (int)(marker.Duration * factor);
             }
 
             foreach (var slide in Slides)

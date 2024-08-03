@@ -181,11 +181,14 @@
     <Compile Include="Plugins\ScoreBookImportPluginArgs.cs" />
     <Compile Include="Plugins\ScorePluginArgs.cs" />
     <Compile Include="Plugins\ShiftEvent.cs" />
+    <Compile Include="Plugins\GuideKnitter.cs" />
     <Compile Include="Plugins\SlideKnitter.cs" />
+    <Compile Include="Plugins\GuideMerger.cs" />
     <Compile Include="Plugins\SlideMerger.cs" />
+    <Compile Include="Plugins\GuideReverser.cs" />
     <Compile Include="Plugins\SlideReverser.cs" />
+    <Compile Include="Plugins\GuideSplitter.cs" />
     <Compile Include="Plugins\SlideSplitter.cs" />
-    <Compile Include="Plugins\SusImportPlugin.cs" />
     <Compile Include="Plugins\UscImportPlugin.cs" />
     <Compile Include="Plugins\UscExportPlugin.cs" />
     <Compile Include="Plugins\SusExportPlugin.cs" />
@@ -195,6 +198,12 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="RadixConvert.cs" />
+    <Compile Include="UI\MarkerInsertForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\MarkerInsertForm.Designer.cs">
+      <DependentUpon>MarkerInsertForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="UI\NameChannelForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -392,6 +401,12 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\MarkerInsertForm.en.resx">
+      <DependentUpon>MarkerInsertForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\MarkerInsertForm.resx">
+      <DependentUpon>MarkerInsertForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\NameChannelForm.en.resx">
       <DependentUpon>NameChannelForm.cs</DependentUpon>
@@ -721,6 +736,7 @@
     <None Include="Resources\guideblack.png" />
     <None Include="Resources\flick1.png" />
     <None Include="Resources\damage1.png" />
+    <None Include="Resources\pencil1.png" />
     <Content Include="Sounds\exflick.mp3">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

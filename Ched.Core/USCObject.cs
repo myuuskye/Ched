@@ -229,14 +229,16 @@ namespace Ched.Core
     {
         public string type = "attach";
         public bool critical { get; set; }
+        public string ease { get; set; }
 
-        public USCConnectionAttachNote(double beat, int timeScaleGroup, float lane, float size, bool critical) : base(beat, timeScaleGroup, lane, size)
+        public USCConnectionAttachNote(double beat, int timeScaleGroup, float lane, float size, bool critical, string ease) : base(beat, timeScaleGroup, lane, size)
         {
             this.beat = beat;
             this.timeScaleGroup = timeScaleGroup;
             this.critical = critical;
             this.lane = lane;
             this.size = size;
+            this.ease = ease;
         }
     }
 

@@ -38,6 +38,7 @@ namespace Ched.UI.Shortcuts
         public static string CopyEvents => "editor.action.clipboardCopyEvents";
         public static string CutEvents => "editor.action.clipboardCutEvents";
         public static string PasteEvents => "editor.action.clipboardPasteEvents";
+        public static string PasteChEvents => "editor.action.clipboardPasteChEvents";
         public static string RemoveSelectedEvents => "editor.action.removeSelectedEvents";
 
         public static string SwitchScorePreviewMode => "editor.view.switchScorePreviewMode";
@@ -49,6 +50,7 @@ namespace Ched.UI.Shortcuts
         public static string InsertTimeSignatureChange => "editor.action.insertTimeSignatureChange";
         public static string InsertHighSpeedChange => "editor.action.insertHighSpeedChange";
         public static string InsertComment => "editor.action.insertComment";
+        public static string InsertMarker => "editor.action.insertMarker";
 
         public static string PlayPreview => "editor.view.playPreview";
 
@@ -62,6 +64,7 @@ namespace Ched.UI.Shortcuts
         public static string SelectEraser => "editor.selectEraser";
         public static string SelectPaint => "editor.selectPaint";
         public static string SelectProperty => "editor.selectProperty";
+        public static string SelectMarker => "editor.selectMarker";
 
         public static string ZoomIn => "editor.view.zoomIn";
         public static string ZoomOut => "editor.view.zoomOut";

@@ -224,6 +224,7 @@ namespace Ched.Components.Exporter
                 bool isOnSlide = false;
                 bool isOnGuide = false;
                 bool isAir = false;
+                bool isAirDown = false;
                 bool isCritical = false;
                 foreach (var note2 in notes.Slides)
                 {
@@ -247,9 +248,16 @@ namespace Ched.Components.Exporter
                 if (isOnGuide && ApplicationSettings.Default.IsFlick2HideOnGuide && note.IsStart) continue;
                 foreach (var note2 in notes.Airs)
                 {
-                    if ((note.LaneIndex == note2.LaneIndex) && (note.Tick == note2.Tick)) isAir = true;
+                    if ((note.LaneIndex == note2.LaneIndex) && (note.Tick == note2.Tick) && (note2.VerticalDirection == VerticalAirDirection.Up)) isAir = true;
+                    if ((note.LaneIndex == note2.LaneIndex) && (note.Tick == note2.Tick) && (note2.VerticalDirection == VerticalAirDirection.Down)) isAirDown = true;
                 }
                 if (isAir) continue; //Airと重なってたらスキップ
+
+
+                if (isAirDown && ApplicationSettings.Default.IsFlickEraseDown && !note.IsStart) continue; //AirDownと重なっていて、スキップ可能だったらスキップ
+                if (isAirDown && ApplicationSettings.Default.IsFlick2EraseDown && note.IsStart) continue;
+
+                if (isAirDown && !(isOnSlide || isOnGuide)) continue; //AirDownと重なっていて、だったらスキップ
 
                 foreach (var note2 in notes.ExTaps)
                 {
@@ -266,6 +274,8 @@ namespace Ched.Components.Exporter
             {
                 bool isOnSlide = false;
                 bool isOnGuide = false;
+                bool isAir = false;
+                bool isAirDown = false;
 
                 foreach (var note2 in notes.Slides)
                 {
@@ -285,6 +295,15 @@ namespace Ched.Components.Exporter
                 }
                 if (isOnGuide && ApplicationSettings.Default.IsDamageHideOnGuide && !note.IsStart) continue; //Slideと重なってたらスキップ
                 if (isOnGuide && ApplicationSettings.Default.IsDamage2HideOnGuide && note.IsStart) continue; //Slideと重なってたらスキップ
+
+                foreach (var note2 in notes.Airs)
+                {
+                    if ((note.LaneIndex == note2.LaneIndex) && (note.Tick == note2.Tick) && (note2.VerticalDirection == VerticalAirDirection.Up)) isAir = true;
+                    if ((note.LaneIndex == note2.LaneIndex) && (note.Tick == note2.Tick) && (note2.VerticalDirection == VerticalAirDirection.Down)) isAirDown = true;
+                }
+                if (isAirDown && ApplicationSettings.Default.IsDamageEraseDown && !note.IsStart) continue; //AirDownと重なっていて、Guideと重なっていなかったらスキップ
+                if (isAirDown && ApplicationSettings.Default.IsDamage2EraseDown && note.IsStart) continue;
+
 
                 var laneIndex = note.LaneIndex - 8 + (float)book.LaneOffset + note.Width / 2;
                 var singlenote = new USCDamageNote((double)note.Tick / 480, note.Channel, laneIndex, note.Width / 2);
@@ -317,25 +336,16 @@ namespace Ched.Components.Exporter
                 bool isCritical = false;
                 bool isTrace = false;
                 bool isOnSlide = false;
+                bool isOnGuide = false;
+                bool flicktype = false;
                 int direction = (int)note.HorizontalDirection;
 
                 foreach (var note2 in notes.ExTaps)
                 {
                     if (note.Tick == note2.Tick && note.LaneIndex == note2.LaneIndex) isCritical = true;
                 }
-                foreach (var note2 in notes.Flicks)
-                {
-                    if (note.Tick == note2.Tick && note.LaneIndex == note2.LaneIndex)
-                    {
-                        isTrace = true;
-                        if(note.VerticalDirection == VerticalAirDirection.Down)
-                        {
-                            direction = 3;
-                        }
-                    }
-                    
-                }
-                if (direction != 3 && note.VerticalDirection == VerticalAirDirection.Down) continue;
+                
+                
                 foreach (var note2 in notes.Slides)
                 {
                     var endNote = note2.StepNotes.OrderBy(p => p.TickOffset).Last();
@@ -349,8 +359,40 @@ namespace Ched.Components.Exporter
                         }
                     }
                 }
-
                 if (isOnSlide) continue;
+                foreach (var note2 in notes.Guides)
+                {
+                    var endNote = note2.StepNotes.OrderBy(p => p.TickOffset).Last();
+                    if ((note.Tick == note2.StartNote.Tick && note.LaneIndex == note2.StartNote.LaneIndex) ||
+                        (note.Tick == endNote.Tick && note.LaneIndex == endNote.LaneIndex)) isOnGuide = true;
+                    else
+                    {
+                        foreach (var note3 in note2.StepNotes)
+                        {
+                            if (note.Tick == note3.Tick && note.LaneIndex == note3.LaneIndex) isOnGuide = true;
+                        }
+                    }
+                }
+                foreach (var note2 in notes.Flicks)
+                {
+                    if (note.Tick == note2.Tick && note.LaneIndex == note2.LaneIndex)
+                    {
+                        isTrace = true;
+                        if (note.VerticalDirection == VerticalAirDirection.Down)
+                        {
+                            direction = 3;
+                            flicktype = note2.IsStart;
+                            
+                        }
+                    }
+
+                }
+                if (direction != 3 && note.VerticalDirection == VerticalAirDirection.Down) continue;
+
+                if (isOnGuide && isTrace && direction == 3 && !ApplicationSettings.Default.IsFlickEraseDown && !flicktype) continue;
+                if (isOnGuide && isTrace && direction == 3 && !ApplicationSettings.Default.IsFlick2EraseDown && flicktype) continue;
+
+
 
                 var laneIndex = note.LaneIndex - 8 + (float)book.LaneOffset + note.Width / 2;
                 var air = new USCAirNote((double)note.Tick / 480, note.Channel, laneIndex, note.Width / 2, isCritical, isTrace, direction);
@@ -738,7 +780,7 @@ namespace Ched.Components.Exporter
                     var steplaneIndex = step.LaneIndex - 8 + (float)book.LaneOffset + step.Width / 2;
                     var stepnote = new USCConnectionTickNote((double)step.Tick / 480, step.Channel, steplaneIndex, step.Width / 2, stepEase);
                     var visiblestepnote = new USCConnectionVisibleTickNote((double)step.Tick / 480, step.Channel, steplaneIndex, step.Width / 2, isStepCritical , stepEase);
-                    var attachnote = new USCConnectionAttachNote((double)step.Tick / 480, step.Channel, steplaneIndex, step.Width / 2, isStepCritical);
+                    var attachnote = new USCConnectionAttachNote((double)step.Tick / 480, step.Channel, steplaneIndex, step.Width / 2, isStepCritical, stepEase);
 
                     foreach (var note2 in notes.Taps)
                     {
@@ -873,7 +915,7 @@ namespace Ched.Components.Exporter
                     }
                     if (isAttach)
                     {
-                        attachnote = new USCConnectionAttachNote((double)step.Tick / 480, step.Channel, steplaneIndex, step.Width / 2, isStepCritical);
+                        attachnote = new USCConnectionAttachNote((double)step.Tick / 480, step.Channel, steplaneIndex, step.Width / 2, isStepCritical, stepEase);
                         attachnotes.Add(attachnote);
                     }
                     else

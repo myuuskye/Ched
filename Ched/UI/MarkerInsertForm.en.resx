@@ -117,34 +117,19 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ComboCalculator" xml:space="preserve">
-    <value>コンボ計算</value>
+  <data name="buttonCancel.Text" xml:space="preserve">
+    <value>Cancel</value>
   </data>
-  <data name="GuideKnitter" xml:space="preserve">
-    <value>ガイド編み込み</value>
+  <data name="$this.Text" xml:space="preserve">
+    <value>Set Marker</value>
   </data>
-  <data name="GuideMerger" xml:space="preserve">
-    <value>ガイド結合</value>
+  <data name="label1.Text" xml:space="preserve">
+    <value>Name</value>
   </data>
-  <data name="GuideReverser" xml:space="preserve">
-    <value>ガイド時間軸反転</value>
+  <data name="label2.Text" xml:space="preserve">
+    <value>Color</value>
   </data>
-  <data name="GuideSplitter" xml:space="preserve">
-    <value>ガイド分割</value>
-  </data>
-  <data name="PJsekaiComboCalculator" xml:space="preserve">
-    <value>プロセカ式コンボ計算</value>
-  </data>
-  <data name="SlideKnitter" xml:space="preserve">
-    <value>スライド編み込み</value>
-  </data>
-  <data name="SlideMerger" xml:space="preserve">
-    <value>スライド結合</value>
-  </data>
-  <data name="SlideReverser" xml:space="preserve">
-    <value>スライド時間軸反転</value>
-  </data>
-  <data name="SlideSplitter" xml:space="preserve">
-    <value>スライド分割</value>
+  <data name="label3.Text" xml:space="preserve">
+    <value>Width</value>
   </data>
 </root>

@@ -448,6 +448,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   現在のチャンネルへ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string CurrentChannel {
+            get {
+                return ResourceManager.GetString("CurrentChannel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   カスタム に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Custom {
@@ -997,6 +1006,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   マーカー に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Marker {
+            get {
+                return ResourceManager.GetString("Marker", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   音源情報 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string MusicInformation {
@@ -1101,6 +1119,15 @@ namespace Ched.Localization {
         public static string Paste {
             get {
                 return ResourceManager.GetString("Paste", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   選択範囲内のイベントをペースト(現在のチャンネルへ) に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string PasteChEvents {
+            get {
+                return ResourceManager.GetString("PasteChEvents", resourceCulture);
             }
         }
         

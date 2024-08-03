@@ -649,6 +649,7 @@ namespace Ched.UI
             commandSource.RegisterCommand(Commands.CutEvents, MainFormStrings.Event + MainFormStrings.Cut, () => NoteView.CutSelectedEvents());
             commandSource.RegisterCommand(Commands.CopyEvents, MainFormStrings.Event + MainFormStrings.Copy, () => NoteView.CopySelectedEvents());
             commandSource.RegisterCommand(Commands.PasteEvents, MainFormStrings.Event + MainFormStrings.Paste, () => NoteView.PasteEvents());
+            commandSource.RegisterCommand(Commands.PasteChEvents, MainFormStrings.Event + MainFormStrings.Paste + "(" + MainFormStrings.CurrentChannel + ")", () => NoteView.PasteChEvents());
 
             commandSource.RegisterCommand(Commands.SelectAll, MainFormStrings.SelectAll, () => NoteView.SelectAll());
             commandSource.RegisterCommand(Commands.SelectToBegin, MainFormStrings.SelectToBeginning, () => NoteView.SelectToBeginning());
@@ -749,6 +750,17 @@ namespace Ched.UI
                 };
                 UpdateEvent(NoteView.ScoreEvents.CommentEvents, item);
             });
+            commandSource.RegisterCommand(Commands.InsertMarker, MainFormStrings.Marker, () =>
+            {
+                var form = new MarkerInsertForm()
+                {
+                    Name = NoteView.Notes.Markers.OrderBy(p => p.StartTick).LastOrDefault(p => p.StartTick == NoteView.CurrentTick)?.Name ?? "コメント",
+                    MarkerWidth = (decimal)(NoteView.Notes.Markers.OrderBy(p => p.StartTick).LastOrDefault(p => p.StartTick == NoteView.CurrentTick)?.StartWidth ?? 9),
+                    Color = (NoteView.Notes.Markers.OrderBy(p => p.StartTick).LastOrDefault(p => p.StartTick == NoteView.CurrentTick)?.MarkerColorB ?? 0),
+                };
+                if (form.ShowDialog(this) != DialogResult.OK) return;
+
+            });
 
 
             void UpdateEvent<T>(List<T> list, T item) where T : EventBase
@@ -822,7 +834,8 @@ namespace Ched.UI
                     return new MoveGuideOperation(p.Key, p.Value, after);
                 });
 
-                foreach (var note in NoteView.Notes.Taps.Where(p => (p.Tick >= BpmTick1) && (p.Tick < BpmTick2))){
+                foreach (var note in NoteView.Notes.Taps.Where(p => (p.Tick >= BpmTick1) && (p.Tick < BpmTick2)))
+                {
 
                     note.Tick = (int)(note.Tick * (AfterBpm / BeforeBpm));
                 }
@@ -844,9 +857,9 @@ namespace Ched.UI
                 foreach (var note in NoteView.Notes.Slides.Where(p => (p.StartTick >= BpmTick1) && (p.StartTick < BpmTick2)))
                 {
 
-                    note.StartTick = (int)(note.StartTick * (AfterBpm / BeforeBpm)) ;
+                    note.StartTick = (int)(note.StartTick * (AfterBpm / BeforeBpm));
 
-                    foreach(var step in note.StepNotes)
+                    foreach (var step in note.StepNotes)
                     {
                         step.TickOffset = (int)(step.TickOffset * (AfterBpm / BeforeBpm));
                     }
@@ -861,7 +874,7 @@ namespace Ched.UI
                         step.TickOffset = (int)(step.TickOffset * (AfterBpm / BeforeBpm));
                     }
                 }
-                foreach(var @event in NoteView.ScoreEvents.HighSpeedChangeEvents)
+                foreach (var @event in NoteView.ScoreEvents.HighSpeedChangeEvents)
                 {
                     @event.Tick = (int)(@event.Tick * (AfterBpm / BeforeBpm));
                 }
@@ -879,7 +892,6 @@ namespace Ched.UI
 
             });
 
-
             commandSource.RegisterCommand(Commands.PlayPreview, MainFormStrings.Play, () => PlayPreview());
 
             commandSource.RegisterCommand(Commands.ShowHelp, MainFormStrings.Help, () => System.Diagnostics.Process.Start("https://github.com/myuuskye/Ched/wiki"));
@@ -889,6 +901,7 @@ namespace Ched.UI
             commandSource.RegisterCommand(Commands.SelectEraser, MainFormStrings.Eraser, () => NoteView.EditMode = EditMode.Erase);
             commandSource.RegisterCommand(Commands.SelectPaint, MainFormStrings.Paint, () => NoteView.EditMode = EditMode.Paint);
             commandSource.RegisterCommand(Commands.SelectProperty, MainFormStrings.Property, () => NoteView.EditMode = EditMode.Property);
+            commandSource.RegisterCommand(Commands.SelectMarker, MainFormStrings.Marker, () => NoteView.EditMode = EditMode.Marker);
 
             commandSource.RegisterCommand(Commands.ZoomIn, MainFormStrings.ZoomIn, () =>
             {
@@ -1083,6 +1096,7 @@ namespace Ched.UI
             var copyEventsItem = shortcutItemBuilder.BuildItem(Commands.CopyEvents, MainFormStrings.CopyEvents);
             var cutEventsItem = shortcutItemBuilder.BuildItem(Commands.CutEvents, MainFormStrings.CutEvents);
             var pasteEventsItem = shortcutItemBuilder.BuildItem(Commands.PasteEvents, MainFormStrings.PasteEvents);
+            var pasteChEventsItem = shortcutItemBuilder.BuildItem(Commands.PasteChEvents, MainFormStrings.PasteChEvents);
             var removeEventsItem = shortcutItemBuilder.BuildItem(Commands.RemoveSelectedEvents, MainFormStrings.RemoveEvents);
             var changeChannelSelectedNotesItem = shortcutItemBuilder.BuildItem(Commands.ChangeChannelSelectedNotes, MainFormStrings.ChangeChannelSelectedNotes);
             var noteCollectionItem = shortcutItemBuilder.BuildItem(Commands.NoteCollection, "NoteCollection");
@@ -1140,9 +1154,8 @@ namespace Ched.UI
                 cutItem, copyItem, pasteItem, pasteFlippedItem, new ToolStripSeparator(),
                 selectAllItem, selectToEndItem, selectoToBeginningItem, new ToolStripSeparator(),
                 flipSelectedNotesItem, removeSelectedNotesItem,  new ToolStripSeparator(),
-                copyEventsItem, cutEventsItem, pasteEventsItem,removeEventsItem, new ToolStripSeparator(),
+                copyEventsItem, cutEventsItem, pasteEventsItem, pasteChEventsItem,removeEventsItem, new ToolStripSeparator(),
                 insertAirWithAirActionItem, allowStepChItem, new ToolStripSeparator(),
-                noteCollectionItem, new ToolStripSeparator(),
                 pluginItem
             };
 
@@ -3876,6 +3889,7 @@ namespace Ched.UI
             var eraserButton = shortcutItemBuilder.BuildItem(Commands.SelectEraser, MainFormStrings.Eraser, Resources.EraserIcon);
             var paintButton = shortcutItemBuilder.BuildItem(Commands.SelectPaint, MainFormStrings.Paint, Resources.PaintIcon);
             var propertyButton = shortcutItemBuilder.BuildItem(Commands.SelectProperty, MainFormStrings.Property, Resources.PropertyIcon);
+            var markerButton = shortcutItemBuilder.BuildItem(Commands.SelectMarker, MainFormStrings.Marker, Resources.MarkerIcon);
 
             var zoomInButton = shortcutItemBuilder.BuildItem(Commands.ZoomIn, MainFormStrings.ZoomIn, Resources.ZoomInIcon);
             zoomInButton.Enabled = CanZoomIn;
@@ -3915,6 +3929,7 @@ namespace Ched.UI
                 eraserButton.Checked = noteView.EditMode == EditMode.Erase;
                 paintButton.Checked = noteView.EditMode == EditMode.Paint;
                 propertyButton.Checked = noteView.EditMode == EditMode.Property;
+                markerButton.Checked = noteView.EditMode == EditMode.Marker;
             };
 
 
@@ -4262,7 +4277,7 @@ namespace Ched.UI
 
             var widthAmountCounts = new float[]
             {
-                1, 0.9f, 0.8f, 0.7f, 0.6f, 0.5f, 0.4f, 0.3f, 0.2f, 0.1f
+                2, 1, 0.9f, 0.8f, 0.7f, 0.6f, 0.5f, 0.4f, 0.3f, 0.2f, 0.1f, 0.05f, 0.01f
             };
 
 
@@ -4282,7 +4297,7 @@ namespace Ched.UI
                 noteView.Update();
                 noteView.Focus();
             };
-            widthAmountBox.SelectedIndex = 0;
+            widthAmountBox.SelectedIndex = 1;
 
             ToolStripMenuItem laneVisible = new ToolStripMenuItem(MainFormStrings.LaneVisual, null, (s, e) =>
             {

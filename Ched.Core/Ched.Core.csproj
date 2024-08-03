@@ -78,6 +78,7 @@
     <Compile Include="Notes\Air.cs" />
     <Compile Include="Notes\AirAction.cs" />
     <Compile Include="Notes\Damage.cs" />
+    <Compile Include="Notes\Marker.cs" />
     <Compile Include="Notes\StepNoteTap.cs" />
     <Compile Include="Notes\ExTap.cs" />
     <Compile Include="Notes\Flick.cs" />

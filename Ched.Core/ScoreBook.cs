@@ -93,7 +93,7 @@ namespace Ched.Core
         }
 
         /// <summary>
-        /// レーンオフセット(CCの拡張機能)を設定します。
+        /// オフセットを設定します。
         /// </summary>
         public double Offset
         {

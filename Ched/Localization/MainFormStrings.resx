@@ -615,4 +615,13 @@
   <data name="isOnDownAir" xml:space="preserve">
     <value>下向きエアーと重なった時</value>
   </data>
+  <data name="Marker" xml:space="preserve">
+    <value>マーカー</value>
+  </data>
+  <data name="PasteChEvents" xml:space="preserve">
+    <value>選択範囲内のイベントをペースト(現在のチャンネルへ)</value>
+  </data>
+  <data name="CurrentChannel" xml:space="preserve">
+    <value>現在のチャンネルへ</value>
+  </data>
 </root>

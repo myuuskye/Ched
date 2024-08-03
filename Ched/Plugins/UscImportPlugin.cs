@@ -32,7 +32,7 @@ namespace Ched.Plugins
 
         ScoreBook IScoreBookImportPlugin.Import(IScoreBookImportPluginArgs args)
         {
-            Console.WriteLine(args.Path);
+            //Console.WriteLine(args.Path);
             ScoreBook result = new ScoreBook();
 
             string data = null;
@@ -57,7 +57,7 @@ namespace Ched.Plugins
             foreach (var obj in objects)
             {
                 count++;
-                Console.WriteLine(obj.Value<string>("type"));
+                //Console.WriteLine(obj.Value<string>("type"));
                 switch (obj.Value<string>("type"))
                 {
                     case "bpm":
@@ -199,7 +199,7 @@ namespace Ched.Plugins
                         };
                         foreach (var slideconnection in slideconnections)
                         {
-                            Console.WriteLine(slideconnection);
+                            //Console.WriteLine(slideconnection);
                             switch (slideconnection.Value<string>("type"))
                             {
                                 case "start":
@@ -394,7 +394,36 @@ namespace Ched.Plugins
                             };
                             guideStepTap.SetPosition(gm.Value<float>("lane") + 8 - gm.Value<float>("size") - guide.StartLaneIndex, gm.Value<float>("size") * 2 - guide.StartWidth);
 
-                            if (guideStepTap.Tick == guideStepTap.ParentNote.StartTick && guideStepTap.LaneIndex == guideStepTap.ParentNote.StartLaneIndex && guideStepTap.Width == guideStepTap.ParentNote.StartWidth) continue;
+                            if (guideStepTap.Tick == guideStepTap.ParentNote.StartTick && guideStepTap.LaneIndex == guideStepTap.ParentNote.StartLaneIndex && guideStepTap.Width == guideStepTap.ParentNote.StartWidth)
+                            {
+                                var airedNote = new Tap() { Channel = gm.Value<int>("timeScaleGroup"), Tick = (int)(gm.Value<double>("beat") * 480), LaneIndex = gm.Value<float>("lane") + 8 - gm.Value<float>("size"), Width = gm.Value<float>("size") * 2, IsStart = true };
+                                bool isexist = false;
+                                switch (gm.Value<string>("ease"))
+                                {
+                                    case "out":
+                                        foreach(var tap in result.Score.Notes.Taps.Concat(result.Score.Notes.ExTaps).Where(p => p.Tick == guideStepTap.Tick && p.LaneIndex == guideStepTap.LaneIndex && p.Width == guideStepTap.Width))
+                                        {
+                                            airedNote = tap; 
+                                            isexist = true;
+                                            break;
+                                        }
+                                        if (!isexist) result.Score.Notes.Taps.Add(airedNote);
+                                        result.Score.Notes.Airs.Add(new Air(airedNote) { HorizontalDirection = HorizontalAirDirection.Right, VerticalDirection = VerticalAirDirection.Down });
+
+                                        break;
+                                    case "in":
+                                        foreach (var tap in result.Score.Notes.Taps.Concat(result.Score.Notes.ExTaps).Where(p => p.Tick == guideStepTap.Tick && p.LaneIndex == guideStepTap.LaneIndex && p.Width == guideStepTap.Width))
+                                        {
+                                            airedNote = tap;
+                                            isexist = true;
+                                            break;
+                                        }
+                                        if (!isexist) result.Score.Notes.Taps.Add(airedNote);
+                                        result.Score.Notes.Airs.Add(new Air(airedNote) { HorizontalDirection = HorizontalAirDirection.Center, VerticalDirection = VerticalAirDirection.Down });
+                                        break;
+                                }
+                                continue;
+                            }
 
                             guide.StepNotes.Add(guideStepTap);
                             var stepairedNote = new Tap() { Channel = gm.Value<int>("timeScaleGroup"), Tick = (int)(gm.Value<double>("beat") * 480), LaneIndex = gm.Value<float>("lane") + 8 - gm.Value<float>("size"), Width = gm.Value<float>("size") * 2, IsStart = true };

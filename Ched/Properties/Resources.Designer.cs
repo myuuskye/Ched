@@ -393,6 +393,16 @@ namespace Ched.Properties {
         /// <summary>
         ///   型 System.Drawing.Bitmap のローカライズされたリソースを検索します。
         /// </summary>
+        public static System.Drawing.Bitmap MarkerIcon {
+            get {
+                object obj = ResourceManager.GetObject("MarkerIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   型 System.Drawing.Bitmap のローカライズされたリソースを検索します。
+        /// </summary>
         public static System.Drawing.Bitmap NewFileIcon {
             get {
                 object obj = ResourceManager.GetObject("NewFileIcon", resourceCulture);

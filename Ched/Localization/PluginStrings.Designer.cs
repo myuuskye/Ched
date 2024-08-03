@@ -70,6 +70,51 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   ガイド編み込み に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string GuideKnitter {
+            get {
+                return ResourceManager.GetString("GuideKnitter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ガイド結合 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string GuideMerger {
+            get {
+                return ResourceManager.GetString("GuideMerger", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ガイド時間軸反転 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string GuideReverser {
+            get {
+                return ResourceManager.GetString("GuideReverser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ガイド分割 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string GuideSplitter {
+            get {
+                return ResourceManager.GetString("GuideSplitter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   プロセカ式コンボ計算 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string PJsekaiComboCalculator {
+            get {
+                return ResourceManager.GetString("PJsekaiComboCalculator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   スライド編み込み に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string SlideKnitter {
