@@ -17,7 +17,7 @@
 
 ## ダウンロード
 
-現在の最新版は[v skye3.2.1.4](https://github.com/myuuskye/Ched/releases)です。
+現在の最新版は[v skye3.2.3.9](https://github.com/myuuskye/Ched/releases)です。
 
 ## 使い方
 
