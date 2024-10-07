@@ -4365,14 +4365,18 @@ namespace Ched.UI
                         .Select(p => new SlideStepElement()
                         {
                             Point = new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, GetYPositionFromTick(p.Tick)),
-                            Width = (UnitLaneWidth + BorderThickness) * p.Width - BorderThickness
+                            Tick = p.Tick,
+                            Width = (UnitLaneWidth + BorderThickness) * p.Width - BorderThickness,
+                            LaneIndex = p.LaneIndex,
+                            LaneWidth = p.Width,
+                            Skippable = false
                         });
                     var visibleStepPos = visibleSteps
                         .Where(p => p.Tick >= visibleHead && p.Tick <= visibleTail)
                         .Select(p => GetYPositionFromTick(p.Tick));
 
                     if (stepHead == stepTail) continue;
-                    dc.DrawSlideBackground(steps, visibleStepPos, ShortNoteHeight, isch, noteVisualMode);
+                    dc.DrawSlideBackground( steps, visibleStepPos, ShortNoteHeight, isch, noteVisualMode, ApplicationSettings.Default.IsUsingBezierCurves, Notes.Airs, Notes.Flicks);
                 
                 
             }
@@ -4397,14 +4401,17 @@ namespace Ched.UI
                     .Select(p => new GuideStepElement()
                     {
                         Point = new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, GetYPositionFromTick(p.Tick)),
-                        Width = (UnitLaneWidth + BorderThickness) * p.Width - BorderThickness
+                        Tick = p.Tick,
+                        Width = (UnitLaneWidth + BorderThickness) * p.Width - BorderThickness,
+                        LaneIndex = p.LaneIndex,
+                        LaneWidth = p.Width
                     });
                 var visibleStepPos = visibleSteps
                     .Where(p => p.Tick >= visibleHead && p.Tick <= visibleTail)
                     .Select(p => GetYPositionFromTick(p.Tick));
 
                 if (stepHead == stepTail) continue;
-                dc.DrawGuideBackground(steps, visibleStepPos, ShortNoteHeight, isch, noteVisualMode, guide.GuideColor);
+                dc.DrawGuideBackground(steps, visibleStepPos, ShortNoteHeight, isch, noteVisualMode, guide.GuideColor, ApplicationSettings.Default.IsUsingBezierCurves, Notes.Airs, Notes.Taps.Concat(Notes.ExTaps));
 
 
             }

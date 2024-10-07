@@ -110,7 +110,7 @@ namespace Ched.Configuration
             set => this["SlideEndDefaultType"] = value;
         }
 
-        [UserScopedSetting]
+        [UserScopedSetting] //デフォルトの
         [DefaultSettingValue("0")]
         public decimal LaneOffset
         {
@@ -1744,6 +1744,13 @@ namespace Ched.Configuration
         }
         [UserScopedSetting]
         [DefaultSettingValue("False")]
+        public bool IsLighterPlay
+        {
+            get => (bool)this["IsLighterPlay"];
+            set => this["IsLighterPlay"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
         public bool IsAccurateOverlap
         {
             get => (bool)this["IsAccurateOverlap"];
@@ -1755,6 +1762,13 @@ namespace Ched.Configuration
         {
             get => (bool)this["IsVisibleOverlap"];
             set => this["IsVisibleOverlap"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool IsUsingBezierCurves
+        {
+            get => (bool)this["IsUsingBezierCurves"];
+            set => this["IsUsingBezierCurves"] = value;
         }
 
     }

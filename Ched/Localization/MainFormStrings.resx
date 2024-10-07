@@ -624,4 +624,10 @@
   <data name="CurrentChannel" xml:space="preserve">
     <value>現在のチャンネルへ</value>
   </data>
+  <data name="IsOverlap" xml:space="preserve">
+    <value>現在の譜面に追加するか</value>
+  </data>
+  <data name="UsingBezierCurves" xml:space="preserve">
+    <value>滑らかなカーブ</value>
+  </data>
 </root>

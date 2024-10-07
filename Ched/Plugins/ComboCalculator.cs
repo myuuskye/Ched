@@ -84,7 +84,7 @@ namespace Ched.Plugins
             {
                 var tickList = new HashSet<int>(calcComboTicks(hold.StartTick, new int[] { hold.Duration }));
 
-                if (airList.Contains(hold.EndNote))
+                if (airList.Contains((IAirable)hold.EndNote))
                 {
                     combo.Hold += removeLostTicks(tickList, hold.StartTick, hold.Duration).Count();
                 }

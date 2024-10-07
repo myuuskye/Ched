@@ -862,6 +862,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   現在の譜面に追加するか に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string IsOverlap {
+            get {
+                return ResourceManager.GetString("IsOverlap", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   昇格試験用の譜面 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string isSiken {
@@ -1488,6 +1497,15 @@ namespace Ched.Localization {
         public static string Undo {
             get {
                 return ResourceManager.GetString("Undo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   滑らかなカーブ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string UsingBezierCurves {
+            get {
+                return ResourceManager.GetString("UsingBezierCurves", resourceCulture);
             }
         }
         

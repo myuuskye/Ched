@@ -725,18 +725,21 @@ namespace Ched.Components.Exporter
                 {
                     if (judgeAccurate)
                     {
-                        if (note.Tick == note2.Tick && note.LaneIndex == note2.LaneIndex && note.Width == note2.Width && note.Channel == note2.Channel && note2.VerticalDirection == VerticalAirDirection.Down)
+                        if (note.Tick == note2.Tick && note.LaneIndex == note2.LaneIndex && note.Width == note2.Width && note.Channel == note2.Channel)
                         {
                             switch (note2.HorizontalDirection)
                             {
                                 case HorizontalAirDirection.Center:
                                     startEase = "in";
+                                    if (note2.VerticalDirection == VerticalAirDirection.Up) startEase = "inout";
                                     break;
                                 case HorizontalAirDirection.Left:
                                 case HorizontalAirDirection.Right:
                                     startEase = "out";
+                                    if (note2.VerticalDirection == VerticalAirDirection.Up) startEase = "outin";
                                     break;
                             }
+
                         }
                         if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && endNote.Width == note2.Width && endNote.Channel == note2.Channel && note2.VerticalDirection == VerticalAirDirection.Up)
                         {
@@ -745,16 +748,18 @@ namespace Ched.Components.Exporter
                     }
                     else
                     {
-                        if (note.Tick == note2.Tick && note.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel && note2.VerticalDirection == VerticalAirDirection.Down)
+                        if (note.Tick == note2.Tick && note.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel)
                         {
                             switch (note2.HorizontalDirection)
                             {
                                 case HorizontalAirDirection.Center:
                                     startEase = "in";
+                                    if (note2.VerticalDirection == VerticalAirDirection.Up) startEase = "inout";
                                     break;
                                 case HorizontalAirDirection.Left:
                                 case HorizontalAirDirection.Right:
                                     startEase = "out";
+                                    if (note2.VerticalDirection == VerticalAirDirection.Up) startEase = "outin";
                                     break;
                             }
                         }
@@ -878,32 +883,36 @@ namespace Ched.Components.Exporter
                     {
                         if (judgeAccurate)
                         {
-                            if(step.Tick == note2.Tick && step.LaneIndex == note2.LaneIndex && step.Width == note2.Width && step.Channel == note2.Channel && note2.VerticalDirection == VerticalAirDirection.Down)
+                            if(step.Tick == note2.Tick && step.LaneIndex == note2.LaneIndex && step.Width == note2.Width && step.Channel == note2.Channel)
                             {
                                 switch (note2.HorizontalDirection)
                                 {
                                     case HorizontalAirDirection.Center:
                                         stepEase = "in";
+                                        if (note2.VerticalDirection == VerticalAirDirection.Up) stepEase = "inout";
                                         break;
                                     case HorizontalAirDirection.Left:
                                     case HorizontalAirDirection.Right:
                                         stepEase = "out";
+                                        if (note2.VerticalDirection == VerticalAirDirection.Up) stepEase = "outin";
                                         break;
                                 }
                             }
                         }
                         else
                         {
-                            if (step.Tick == note2.Tick && step.LaneIndex == note2.LaneIndex && step.Channel == note2.Channel && note2.VerticalDirection == VerticalAirDirection.Down)
+                            if (step.Tick == note2.Tick && step.LaneIndex == note2.LaneIndex && step.Channel == note2.Channel)
                             {
                                 switch (note2.HorizontalDirection)
                                 {
                                     case HorizontalAirDirection.Center:
                                         stepEase = "in";
+                                        if (note2.VerticalDirection == VerticalAirDirection.Up) stepEase = "inout";
                                         break;
                                     case HorizontalAirDirection.Left:
                                     case HorizontalAirDirection.Right:
                                         stepEase = "out";
+                                        if (note2.VerticalDirection == VerticalAirDirection.Up) stepEase = "outin";
                                         break;
                                 }
                             }
@@ -1371,18 +1380,36 @@ namespace Ched.Components.Exporter
 
                 foreach (var note2 in notes.Airs)
                 {
-                    if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex && note2.VerticalDirection == VerticalAirDirection.Down)
+                    if (note.StartNote.Tick == note2.Tick && note.StartNote.LaneIndex == note2.LaneIndex)
                     {
+                        var tap = notes.Taps.Concat(notes.ExTaps).Where(p => p.Tick == note.StartNote.Tick && p.LaneIndex == note.StartNote.LaneIndex && p.Channel == note.StartNote.Channel && p.IsStart).FirstOrDefault();
+
                         switch (note2.HorizontalDirection)
                         {
                             case HorizontalAirDirection.Center:
-                                startEase = "in";
+                                if (note2.VerticalDirection == VerticalAirDirection.Up)
+                                {
+                                    if (tap != null) startEase = "inout";
+                                }
+                                else
+                                {
+                                    startEase = "in";
+                                }
                                 break;
                             case HorizontalAirDirection.Left:
                             case HorizontalAirDirection.Right:
-                                startEase = "out";
+                                if (note2.VerticalDirection == VerticalAirDirection.Up)
+                                {
+                                    if (tap != null) startEase = "outin";
+                                }
+                                else
+                                {
+                                    startEase = "out";
+                                }
                                 break;
                         }
+                        
+                        
                     }
                 }
 
@@ -1421,10 +1448,12 @@ namespace Ched.Components.Exporter
                             {
                                 case HorizontalAirDirection.Center:
                                     stepEase = "in";
+                                    if (note2.VerticalDirection == VerticalAirDirection.Up) stepEase = "inout";
                                     break;
                                 case HorizontalAirDirection.Left:
                                 case HorizontalAirDirection.Right:
                                     stepEase = "out";
+                                    if (note2.VerticalDirection == VerticalAirDirection.Up) stepEase = "outin";
                                     break;
                             }
                         };

@@ -264,6 +264,9 @@
     <Compile Include="UI\Windows\BindableNumericUpDown.xaml.cs">
       <DependentUpon>BindableNumericUpDown.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI\Windows\UscImportWindow.xaml.cs">
+      <DependentUpon>UscImportWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI\Windows\TimeSignatureEventPropertyWindow.xaml.cs">
       <DependentUpon>TimeSignatureEventPropertyWindow.xaml</DependentUpon>
     </Compile>
@@ -607,6 +610,10 @@
     <Page Include="UI\Windows\BindableNumericUpDown.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="UI\Windows\UscImportWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
     <Page Include="UI\Windows\TimeSignatureEventPropertyWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

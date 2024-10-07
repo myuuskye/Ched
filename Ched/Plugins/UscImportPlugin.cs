@@ -20,6 +20,7 @@ using System.Runtime.Remoting.Channels;
 using Ched.Configuration;
 using static Ched.Core.Notes.Guide;
 using static Ched.Core.Notes.Slide;
+using System.ComponentModel;
 
 namespace Ched.Plugins
 {
@@ -32,8 +33,17 @@ namespace Ched.Plugins
 
         ScoreBook IScoreBookImportPlugin.Import(IScoreBookImportPluginArgs args)
         {
+            
             //Console.WriteLine(args.Path);
             ScoreBook result = new ScoreBook();
+            
+
+            var vm = new UscImportWindowViewModel(ApplicationSettings.Default.LaneOffset, new UscArgs());
+            var window = new UscImportWindow() { DataContext = vm };
+            var result2 = window.ShowDialog();
+            if (!result2.HasValue || !result2.Value) throw new UserCancelledException();
+        
+          
 
             string data = null;
 
@@ -524,4 +534,26 @@ namespace Ched.Plugins
             return result;
         }
     }
+
+    [Newtonsoft.Json.JsonObject(Newtonsoft.Json.MemberSerialization.OptIn)]
+    public class UscArgs
+    {
+        [Newtonsoft.Json.JsonProperty]
+        private decimal laneOffset;
+        [Newtonsoft.Json.JsonProperty]
+        private bool isOverlap;
+
+        public decimal LaneOffset
+        {
+            get { return laneOffset; }
+            set { laneOffset = value; }
+        }
+        public bool IsOverlap
+        {
+            get { return isOverlap; }
+            set { isOverlap = value; }
+        }
+
+    }
+
 }

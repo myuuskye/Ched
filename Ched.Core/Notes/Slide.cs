@@ -130,8 +130,12 @@ namespace Ched.Core.Notes
         {
             [Newtonsoft.Json.JsonProperty]
             private Slide parentNote;
+            [Newtonsoft.Json.JsonProperty]
+            private int curveType;
 
             public Slide ParentNote { get { return parentNote; } }
+            public int CurveType { get { return curveType; } set { curveType = value; } }
+            
 
             public TapBase(Slide parent)
             {
@@ -150,6 +154,7 @@ namespace Ched.Core.Notes
             public override float Width { get { return ParentNote.StartWidth; }  }
 
             public override int Channel { get { return ParentNote.Channel; } set { ParentNote.Channel = value; } }
+
 
             public StartTap(Slide parent) : base(parent)
             {

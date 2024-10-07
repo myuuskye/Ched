@@ -409,7 +409,8 @@ namespace Ched.UI
         {
             if (exportPlugin.ID == 1)
             {
-                if (NoteView.Notes.AirActions.Count > 0) MessageBox.Show(this, ErrorStrings.AirActionInfo, Program.ApplicationName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                
+                if (ScoreBook.Score.Notes.AirActions.Count > 0) MessageBox.Show(this, ErrorStrings.AirActionInfo, Program.ApplicationName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
             var dialog = new SaveFileDialog() { Filter = exportPlugin.FileFilter };
             if (dialog.ShowDialog(this) != DialogResult.OK) return;
@@ -1173,6 +1174,15 @@ namespace Ched.UI
             {
                 Checked = ApplicationSettings.Default.IsVisibleOverlap
             };
+            var isUsingBezierCurves = new ToolStripMenuItem(MainFormStrings.UsingBezierCurves, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsUsingBezierCurves = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsUsingBezierCurves
+            };
 
             NoteView.UnitLaneWidthChanged += (s, e) =>
             {
@@ -1185,7 +1195,7 @@ namespace Ched.UI
                 viewModeItem,
                 new ToolStripSeparator(),
                 widenLaneWidthMenuItem, narrowLaneWidthMenuItem,
-                visibleOverlapItem
+                visibleOverlapItem, isUsingBezierCurves
             };
 
 

@@ -135,8 +135,11 @@ namespace Ched.Core.Notes
         {
             [Newtonsoft.Json.JsonProperty]
             private Guide parentNote;
+            [Newtonsoft.Json.JsonProperty]
+            private int curveType;
 
             public Guide ParentNote { get { return parentNote; } }
+            public int CurveType { get { return curveType; } set { curveType = value; } }
 
             public TapBase(Guide parent)
             {

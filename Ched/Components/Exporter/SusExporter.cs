@@ -30,8 +30,6 @@ namespace Ched.Components.Exporter
         protected int BarIndexOffset => CustomArgs.HasPaddingBar ? 1 : 0;
         public SusArgs CustomArgs { get; }
 
-        public bool Siken { get; }
-
         public SusExporter(ScoreBook book, SusArgs susArgs)
         {
             ScoreBook = book;
@@ -66,8 +64,8 @@ namespace Ched.Components.Exporter
                 }
 
                 writer.WriteLine("#REQUEST \"ticks_per_beat {0}\"", book.Score.TicksPerBeat);
-                if(!Siken) writer.WriteLine("#REQUEST \"side_lane true\"");
-                if (!Siken) writer.WriteLine("#REQUEST \"lane_offset {0}\"", book.LaneOffset); 
+                writer.WriteLine("#REQUEST \"side_lane true\"");
+                writer.WriteLine("#REQUEST \"lane_offset {0}\"", book.LaneOffset); 
                 writer.WriteLine();
 
                 var timeSignatures = BarIndexCalculator.TimeSignatures.Select(p => new SusDataLine(p.StartBarIndex, barIndex => string.Format("#{0:000}02: {1}", barIndex, 4f * p.TimeSignature.Numerator / p.TimeSignature.Denominator), p.StartBarIndex == 0));

@@ -74,6 +74,7 @@ namespace Ched.Core.Notes
 
     }
 
+
     public enum VerticalAirDirection
     {
         Up,
