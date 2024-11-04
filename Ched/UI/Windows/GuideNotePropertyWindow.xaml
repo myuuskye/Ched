@@ -101,7 +101,7 @@
                     </Grid.ColumnDefinitions>
 
                     <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.Color}"  />
-                    <local:BindableNumericUpDown Grid.Column="1" Value="{Binding NoteColor}" DecimalPlaces="0" Increment="1" Minimum="0"  Maximum="6"/>
+                    <local:BindableNumericUpDown Grid.Column="1" Value="{Binding NoteColor}" DecimalPlaces="0" Increment="1" Minimum="0"  Maximum="7"/>
                 </Grid>
 
 

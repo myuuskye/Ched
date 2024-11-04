@@ -24,6 +24,8 @@ namespace Ched.UI
 
         [DllImport("gdi32.dll")]
         private static extern bool Rectangle(IntPtr hdc, int x1, int y1, int x2, int y2);
+        [DllImport("gdi32.dll")]
+        private static extern bool RectangleF(IntPtr hdc, float x1, float y1, float x2, float y2);
 
         [DllImport("gdi32.dll")]
         private static extern IntPtr GetStockObject(int brStyle);
@@ -44,6 +46,24 @@ namespace Ched.UI
             IntPtr oldBrush = SelectObject(hdc, GetStockObject(NULL_BRUSH));
 
             Rectangle(hdc, x1, y1, x2, y2);
+
+            SelectObject(hdc, oldBrush);
+            SelectObject(hdc, oldPen);
+            DeleteObject(pen);
+
+            g.ReleaseHdc(hdc);
+        }
+        public static void DrawXorRectangle(this Graphics g, PenStyles style, float x1, float y1, float x2, float y2)
+        {
+            IntPtr hdc = g.GetHdc();
+            IntPtr pen = CreatePen(style, 1, BLACK_PEN);
+
+            SetROP2(hdc, R2_XORPEN);
+
+            IntPtr oldPen = SelectObject(hdc, pen);
+            IntPtr oldBrush = SelectObject(hdc, GetStockObject(NULL_BRUSH));
+
+            RectangleF(hdc, x1, y1, x2, y2);
 
             SelectObject(hdc, oldBrush);
             SelectObject(hdc, oldPen);

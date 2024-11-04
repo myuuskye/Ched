@@ -503,6 +503,16 @@ namespace Ched.Properties {
         /// <summary>
         ///   型 System.Drawing.Bitmap のローカライズされたリソースを検索します。
         /// </summary>
+        public static System.Drawing.Bitmap StepEditorIcon {
+            get {
+                object obj = ResourceManager.GetObject("StepEditorIcon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   型 System.Drawing.Bitmap のローカライズされたリソースを検索します。
+        /// </summary>
         public static System.Drawing.Bitmap TapIcon {
             get {
                 object obj = ResourceManager.GetObject("TapIcon", resourceCulture);

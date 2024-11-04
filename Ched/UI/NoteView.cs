@@ -46,6 +46,7 @@ namespace Ched.UI
         public event EventHandler GuideFademodeChanged;
         public event EventHandler SlideStartChanged;
         public event EventHandler SlideEndChanged;
+        public event EventHandler ChannelVisualChanged;
 
 
 
@@ -81,7 +82,7 @@ namespace Ched.UI
         private bool editablebyCh = ApplicationSettings.Default.IsAnotherChannelEditable;
         private bool soundsbyCh = ApplicationSettings.Default.IsAnotherChannelSounds;
         private bool allowstepCh = ApplicationSettings.Default.IsAllowStepChannel;
-        private int noteVisualMode = 1;
+        private int noteVisualMode = ApplicationSettings.Default.NoteVisualMode;
         private SelectionRange selectedRange = SelectionRange.Empty;
         private NoteType newNoteType = NoteType.Tap;
         private AirDirection airDirection = new AirDirection(VerticalAirDirection.Up, HorizontalAirDirection.Center);
@@ -546,6 +547,7 @@ namespace Ched.UI
             set
             {
                 noteVisualMode = value;
+                ChannelVisualChanged?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -947,6 +949,7 @@ namespace Ched.UI
                                 if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
                                 {
                                     xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                    Console.WriteLine(xdiff);
                                 }
                                 else
                                 {
@@ -980,7 +983,7 @@ namespace Ched.UI
                                 if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
                                 {
                                     xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                    xdiff = Math.Min(beforePos.Width - 0.1f, Math.Max(-beforePos.LaneIndex, xdiff));
+                                    xdiff = Math.Min(beforePos.Width - widthamount, Math.Max(-beforePos.LaneIndex, xdiff));
                                 }
                                 else
                                 {
@@ -1121,20 +1124,32 @@ namespace Ched.UI
                                 if ((step.Channel != channel) && (editablebyCh == true)) return;
                                 var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
                                 float xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                
                                 if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
                                 {
                                     xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                    
                                 }
                                 else
                                 {
                                     xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                    
                                 }
-
                                 float laneIndexOffset = beforeStepPos.LaneIndexOffset + xdiff;
                                 float widthChange = beforeStepPos.WidthChange - xdiff;
-                                laneIndexOffset = Math.Min(beforeStepPos.LaneIndexOffset + step.ParentNote.StartWidth + beforeStepPos.WidthChange - 0.1f, Math.Max(-step.ParentNote.StartLaneIndex, laneIndexOffset));
-                                widthChange = Math.Min(step.ParentNote.StartLaneIndex + beforeStepPos.LaneIndexOffset + step.ParentNote.StartWidth + beforeStepPos.WidthChange - step.ParentNote.StartWidth, Math.Max(-step.ParentNote.StartWidth + 0.1f, widthChange));
-                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.Tab) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift))
+                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
+                                {
+                                    laneIndexOffset = Math.Min(beforeStepPos.LaneIndexOffset + step.ParentNote.StartWidth + beforeStepPos.WidthChange - widthamount, Math.Max(-step.ParentNote.StartLaneIndex, laneIndexOffset));
+                                    widthChange = Math.Min(step.ParentNote.StartLaneIndex + beforeStepPos.LaneIndexOffset + step.ParentNote.StartWidth + beforeStepPos.WidthChange - step.ParentNote.StartWidth, Math.Max(-step.ParentNote.StartWidth + widthamount, widthChange));
+                                }
+                                else
+                                {
+                                    laneIndexOffset = Math.Min(beforeStepPos.LaneIndexOffset + step.ParentNote.StartWidth + beforeStepPos.WidthChange - 1, Math.Max(-step.ParentNote.StartLaneIndex, laneIndexOffset));
+                                    widthChange = Math.Min(step.ParentNote.StartLaneIndex + beforeStepPos.LaneIndexOffset + step.ParentNote.StartWidth + beforeStepPos.WidthChange - step.ParentNote.StartWidth, Math.Max(-step.ParentNote.StartWidth + 1, widthChange));
+                                }
+
+
+                                    if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.Tab) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift))
                                 {
                                     laneIndexOffset = 1;
                                     widthChange = 3;
@@ -1163,18 +1178,24 @@ namespace Ched.UI
                                 if ((step.Channel != channel) && (editablebyCh == true)) return;
                                 var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
                                 float xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+
+                                float widthChange = beforeStepPos.WidthChange + xdiff;
+
                                 if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
                                 {
                                     xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                    widthChange = beforeStepPos.WidthChange + xdiff;
+                                    step.WidthChange = Math.Min(Constants.LanesCount - step.LaneIndex - step.ParentNote.StartWidth, Math.Max(-step.ParentNote.StartWidth + widthamount, widthChange));
                                 }
                                 else
                                 {
                                     xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                    widthChange = beforeStepPos.WidthChange + xdiff;
+                                    step.WidthChange = Math.Min(Constants.LanesCount - step.LaneIndex - step.ParentNote.StartWidth, Math.Max(-step.ParentNote.StartWidth + 1, widthChange));
                                 }
-                                float widthChange = beforeStepPos.WidthChange + xdiff;
+                                
 
-                                step.WidthChange = Math.Min(Constants.LanesCount - step.LaneIndex - step.ParentNote.StartWidth, Math.Max(-step.ParentNote.StartWidth + 0.1f, widthChange));
-                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.Tab) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift))
+                                    if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.Tab) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift))
                                 {
                                     step.WidthChange = 0;
                                 }
@@ -2461,7 +2482,9 @@ namespace Ched.UI
                                             (UnitLaneWidth + BorderThickness) * bg[i].LaneIndex,
                                             GetYPositionFromTick(bg[i].Tick),
                                             (UnitLaneWidth + BorderThickness) * bg[i + 1].LaneIndex,
-                                            GetYPositionFromTick(bg[i + 1].Tick));
+                                            GetYPositionFromTick(bg[i + 1].Tick),
+                                            ApplicationSettings.Default.IsUsingBezierCurves,
+                                            bg[i].CurveType);
                                         if (path.PathPoints.ContainsPoint(scorePos))
                                         {
                                             int tickOffset = GetQuantizedTick(GetTickFromYPosition(scorePos.Y)) - note.StartTick;
@@ -2511,7 +2534,7 @@ namespace Ched.UI
                                     for (int i = 0; i < bg.Count - 1; i++)
                                     {
                                         // 描画時のコードコピペつらい
-                                        var path = NoteGraphics.GetSlideBackgroundPath(
+                                        var path = NoteGraphics.GetGuideBackgroundPath(
                                             (UnitLaneWidth + BorderThickness) * bg[i].Width - BorderThickness,
                                             (UnitLaneWidth + BorderThickness) * bg[i + 1].Width - BorderThickness,
                                             (UnitLaneWidth + BorderThickness) * bg[i].LaneIndex,
@@ -4165,7 +4188,141 @@ namespace Ched.UI
                     return Observable.Empty<MouseEventArgs>();
                 }).Subscribe(p => Invalidate());
 
+            var stepEditSubscription = mouseDown
+                .Where(p => Editable)
+                .Where(p => p.Button == MouseButtons.Left && EditMode == EditMode.StepEdit)
+                .SelectMany(p =>
+                {
+                    Matrix startMatrix = GetDrawingMatrix(new Matrix());
+                    startMatrix.Invert();
+                    PointF startScorePos = startMatrix.TransformPoint(p.Location);
 
+                    if (GetSelectionRectF().Contains(startScorePos))
+                    {
+                        int minTick = SelectedRange.StartTick + (SelectedRange.Duration < 0 ? SelectedRange.Duration : 0);
+                        int maxTick = SelectedRange.StartTick + (SelectedRange.Duration < 0 ? 0 : SelectedRange.Duration);
+                        int startTick = SelectedRange.StartTick;
+                        float startLaneIndex = SelectedRange.StartLaneIndex;
+                        float endLaneIndex = SelectedRange.StartLaneIndex + SelectedRange.SelectedLanesCount;
+
+                        var selectedNotes = GetSelectedSteps();
+                        var dicShortNotes = selectedNotes.GetShortNotes().ToDictionary(q => q, q => new MoveShortNoteOperation.NotePosition(q.Tick, q.LaneIndex));
+                        var dicHolds = selectedNotes.Holds.ToDictionary(q => q, q => new MoveHoldOperation.NotePosition(q.StartTick, q.LaneIndex, q.Width));
+                        var dicSlides = selectedNotes.Slides.ToDictionary(q => q, q => new MoveSlideOperation.NotePosition(q.StartTick, q.StartLaneIndex, q.StartWidth));
+                        var dicGuides = selectedNotes.Guides.ToDictionary(q => q, q => new MoveGuideOperation.NotePosition(q.StartTick, q.StartLaneIndex, q.StartWidth));
+
+                        // 選択範囲移動
+                        return mouseMove.TakeUntil(mouseUp).Do(q =>
+                        {
+                            Matrix currentMatrix = GetDrawingMatrix(new Matrix());
+                            currentMatrix.Invert();
+                            var scorePos = currentMatrix.TransformPoint(q.Location);
+
+                            float xdiff = (int)((scorePos.X - startScorePos.X) / (UnitLaneWidth + BorderThickness));
+                            if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
+                            {
+                                xdiff = widthamount * (int)((scorePos.X - startScorePos.X) / (UnitLaneWidth + BorderThickness));
+                            }
+                            else
+                            {
+                                xdiff = (int)((scorePos.X - startScorePos.X) / (UnitLaneWidth + BorderThickness));
+                            }
+                            float laneIndex = startLaneIndex + xdiff;
+
+                            SelectedRange = new SelectionRange()
+                            {
+                                StartTick = startTick + Math.Max(GetQuantizedTick(GetTickFromYPosition(scorePos.Y) - GetTickFromYPosition(startScorePos.Y)), -startTick - (SelectedRange.Duration < 0 ? SelectedRange.Duration : 0)),
+                                Duration = SelectedRange.Duration,
+                                StartLaneIndex = Math.Min(Math.Max(laneIndex, Constants.MLanesCount), Constants.LanesCount - SelectedRange.SelectedLanesCount),
+                                SelectedLanesCount = SelectedRange.SelectedLanesCount
+                            };
+
+                            foreach (var item in dicShortNotes)
+                            {
+                                item.Key.Tick = item.Value.Tick + (SelectedRange.StartTick - startTick);
+                                item.Key.LaneIndex = item.Value.LaneIndex + (SelectedRange.StartLaneIndex - startLaneIndex);
+                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl))
+                                {
+                                    item.Key.Channel = channel;
+
+                                }
+                            }
+
+                            // ロングノーツは全体が範囲内に含まれているもののみを対象にするので範囲外移動は考えてない
+                            foreach (var item in dicHolds)
+                            {
+                                item.Key.StartTick = item.Value.StartTick + (SelectedRange.StartTick - startTick);
+                                item.Key.LaneIndex = item.Value.LaneIndex + (SelectedRange.StartLaneIndex - startLaneIndex);
+                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl))
+                                {
+                                    item.Key.Channel = channel;
+
+                                }
+                            }
+
+                            foreach (var item in dicSlides)
+                            {
+                                item.Key.StartTick = item.Value.StartTick + (SelectedRange.StartTick - startTick);
+                                item.Key.StartLaneIndex = item.Value.StartLaneIndex + (SelectedRange.StartLaneIndex - startLaneIndex);
+                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl))
+                                {
+                                    item.Key.Channel = channel;
+
+                                }
+                            }
+
+                            foreach (var item in dicGuides)
+                            {
+                                item.Key.StartTick = item.Value.StartTick + (SelectedRange.StartTick - startTick);
+                                item.Key.StartLaneIndex = item.Value.StartLaneIndex + (SelectedRange.StartLaneIndex - startLaneIndex);
+                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl))
+                                {
+                                    item.Key.Channel = channel;
+
+                                }
+                            }
+
+                            // AIR-ACTIONはOffsetの管理面倒で実装できませんでした。許せ
+
+                            Invalidate();
+                        })
+                        .Finally(() =>
+                        {
+                            var opShortNotes = dicShortNotes.Select(q =>
+                            {
+                                var after = new MoveShortNoteOperation.NotePosition(q.Key.Tick, q.Key.LaneIndex);
+                                return new MoveShortNoteOperation(q.Key, q.Value, after);
+                            });
+
+                            var opHolds = dicHolds.Select(q =>
+                            {
+                                var after = new MoveHoldOperation.NotePosition(q.Key.StartTick, q.Key.LaneIndex, q.Key.Width);
+                                return new MoveHoldOperation(q.Key, q.Value, after);
+                            });
+
+                            var opSlides = dicSlides.Select(q =>
+                            {
+                                var after = new MoveSlideOperation.NotePosition(q.Key.StartTick, q.Key.StartLaneIndex, q.Key.StartWidth);
+                                return new MoveSlideOperation(q.Key, q.Value, after);
+                            });
+                            var opGuides = dicGuides.Select(q =>
+                            {
+                                var after = new MoveGuideOperation.NotePosition(q.Key.StartTick, q.Key.StartLaneIndex, q.Key.StartWidth);
+                                return new MoveGuideOperation(q.Key, q.Value, after);
+                            });
+
+                            // 同じ位置に戻ってきたら操作扱いにしない
+                            if (startTick == SelectedRange.StartTick && startLaneIndex == SelectedRange.StartLaneIndex) return;
+                            OperationManager.Push(new CompositeOperation("ノーツの移動", opShortNotes.Cast<IOperation>().Concat(opHolds).Concat(opSlides).Concat(opGuides).ToList()));
+                        });
+                    }
+                    else
+                    {
+                        // 範囲選択
+                        CurrentTick = Math.Max(GetQuantizedTick(GetTickFromYPosition(startScorePos.Y)), 0);
+                        return rangeSelection(startScorePos);
+                    }
+                }).Subscribe(p => Invalidate());
 
 
 
@@ -4184,7 +4341,7 @@ namespace Ched.UI
             Matrix matrix = GetDrawingMatrix(new Matrix());
             matrix.Invert();
 
-            if (EditMode == EditMode.Select && Editable)
+            if ((EditMode == EditMode.Select || EditMode == EditMode.StepEdit) && Editable)
             {
                 var scorePos = matrix.TransformPoint(e.Location);
                 Cursor = GetSelectionRect().Contains(scorePos) ? Cursors.SizeAll : Cursors.Default;
@@ -4698,6 +4855,7 @@ namespace Ched.UI
                         if (note.Tick == note2.StartTick && note.LaneIndex == note2.StartLaneIndex && note.Width == note2.StartWidth) isOverlap = true;
                         var end = note2.StepNotes.OrderBy(p => p.TickOffset).Last();
                         if (note.Tick == end.Tick && note.LaneIndex == end.LaneIndex && note.Width == end.Width) isOverlap = true;
+                        Console.WriteLine(note.Tick + " " + end.Tick + " " + note.LaneIndex + " " + end.LaneIndex + " " + note.Width + " " + end.Width + " " + isOverlap);
                     }
                     if (isOverlap)
                     {
@@ -4954,6 +5112,9 @@ namespace Ched.UI
                     color = USCGuideColor.cyan;
                     break;
                 case USCGuideColor.cyan:
+                    color = USCGuideColor.black;
+                    break;
+                case USCGuideColor.black:
                     color = USCGuideColor.neutral;
                     break;
             }
@@ -5077,9 +5238,19 @@ namespace Ched.UI
             return new Rectangle(start.X, start.Y, end.X - start.X, end.Y - start.Y);
         }
 
+        private RectangleF GetSelectionRectF()
+        {
+            int minTick = SelectedRange.Duration < 0 ? SelectedRange.StartTick + SelectedRange.Duration : SelectedRange.StartTick;
+            int maxTick = SelectedRange.Duration < 0 ? SelectedRange.StartTick : SelectedRange.StartTick + SelectedRange.Duration;
+            var start = new PointF(SelectedRange.StartLaneIndex * (UnitLaneWidth + BorderThickness), (int)GetYPositionFromTick(minTick) - ShortNoteHeight);
+            var end = new PointF(((int)SelectedRange.StartLaneIndex + (int)SelectedRange.SelectedLanesCount) * (UnitLaneWidth + BorderThickness), (int)GetYPositionFromTick(maxTick) + ShortNoteHeight);
+            return new RectangleF(start.X, start.Y, end.X - start.X, end.Y - start.Y);
+        }
+
         protected void DrawSelectionRange(Graphics g)
         {
             Rectangle selectedRect = GetSelectionRect();
+            
             g.DrawXorRectangle(PenStyles.Dot, g.Transform.TransformPoint(selectedRect.Location), g.Transform.TransformPoint(selectedRect.Location + selectedRect.Size));
         }
 
@@ -5118,6 +5289,56 @@ namespace Ched.UI
                 c.Guides.AddRange(Notes.Guides.Where(p => p.StartTick >= minTick && p.StartTick + p.GetDuration() <= maxTick && p.StartLaneIndex >= startLaneIndex && p.StartLaneIndex + p.StartWidth <= endLaneIndex && p.StepNotes.All(r => r.LaneIndex >= startLaneIndex && r.LaneIndex + r.Width <= endLaneIndex)));
             }
             
+
+            var airables = c.GetShortNotes().Cast<IAirable>()
+                .Concat(c.Holds.Select(p => p.EndNote))
+                .Concat(c.Slides.SelectMany(p => p.StepNotes))
+                .Concat(c.Guides.SelectMany(p => p.StepNotes))
+                .ToList();
+            c.Airs.AddRange(airables.SelectMany(p => Notes.GetReferencedAir(p)));
+            // AIR-ACTIONはとりあえず全コピー
+            c.AirActions.AddRange(airables.SelectMany(p => Notes.GetReferencedAirAction(p)));
+            return c;
+        }
+        public Core.NoteCollection GetSelectedSteps()
+        {
+            int minTick = SelectedRange.StartTick + (SelectedRange.Duration < 0 ? SelectedRange.Duration : 0);
+            int maxTick = SelectedRange.StartTick + (SelectedRange.Duration < 0 ? 0 : SelectedRange.Duration);
+            float startLaneIndex = SelectedRange.StartLaneIndex;
+            float endLaneIndex = SelectedRange.StartLaneIndex + SelectedRange.SelectedLanesCount;
+
+            var c = new Core.NoteCollection();
+
+
+            bool contained(IAirable p) => p.Tick >= minTick && p.Tick <= maxTick & p.LaneIndex + p.Width > startLaneIndex && p.LaneIndex < endLaneIndex;
+            bool contained2(IAirable p) => p.Tick >= minTick && p.Tick <= maxTick & p.LaneIndex + p.Width > startLaneIndex && p.LaneIndex < endLaneIndex && p.Channel == channel;
+            if (editablebyCh)
+            {
+                c.Slides.AddRange(Notes.Slides.Where(p => p.StartTick >= minTick && p.StartTick + p.GetDuration() <= maxTick && p.StartLaneIndex >= startLaneIndex && p.StartLaneIndex + p.StartWidth <= endLaneIndex && p.StepNotes.All(r => r.LaneIndex >= startLaneIndex && r.LaneIndex + r.Width <= endLaneIndex) && p.Channel == channel));
+                c.Guides.AddRange(Notes.Guides.Where(p => p.StartTick >= minTick && p.StartTick + p.GetDuration() <= maxTick && p.StartLaneIndex >= startLaneIndex && p.StartLaneIndex + p.StartWidth <= endLaneIndex && p.StepNotes.All(r => r.LaneIndex >= startLaneIndex && r.LaneIndex + r.Width <= endLaneIndex) && p.Channel == channel));
+                foreach (var slide in Notes.Slides)
+                {
+                    c.SlideSteps.AddRange(slide.StepNotes.Where(p => p.Tick >= minTick && p.Tick <= maxTick && p.LaneIndex + p.Width > startLaneIndex && p.LaneIndex < endLaneIndex && p.Channel == channel));
+                }
+                foreach(var guide in Notes.Slides)
+                {
+                    c.SlideSteps.AddRange(guide.StepNotes.Where(p => p.Tick >= minTick && p.Tick <= maxTick && p.LaneIndex + p.Width > startLaneIndex && p.LaneIndex < endLaneIndex && p.Channel == channel));
+                }
+            }
+            else
+            {
+                c.Slides.AddRange(Notes.Slides.Where(p => p.StartTick >= minTick && p.StartTick + p.GetDuration() <= maxTick && p.StartLaneIndex >= startLaneIndex && p.StartLaneIndex + p.StartWidth <= endLaneIndex && p.StepNotes.All(r => r.LaneIndex >= startLaneIndex && r.LaneIndex + r.Width <= endLaneIndex)));
+                c.Guides.AddRange(Notes.Guides.Where(p => p.StartTick >= minTick && p.StartTick + p.GetDuration() <= maxTick && p.StartLaneIndex >= startLaneIndex && p.StartLaneIndex + p.StartWidth <= endLaneIndex && p.StepNotes.All(r => r.LaneIndex >= startLaneIndex && r.LaneIndex + r.Width <= endLaneIndex)));
+                foreach (var slide in Notes.Slides)
+                {
+                    c.SlideSteps.AddRange(slide.StepNotes.Where(p => p.Tick >= minTick && p.Tick <= maxTick && p.LaneIndex + p.Width > startLaneIndex && p.LaneIndex < endLaneIndex));
+                }
+                foreach (var guide in Notes.Slides)
+                {
+                    c.SlideSteps.AddRange(guide.StepNotes.Where(p => p.Tick >= minTick && p.Tick <= maxTick && p.LaneIndex + p.Width > startLaneIndex && p.LaneIndex < endLaneIndex));
+                }
+            }
+
 
             var airables = c.GetShortNotes().Cast<IAirable>()
                 .Concat(c.Holds.Select(p => p.EndNote))
@@ -5966,7 +6187,8 @@ namespace Ched.UI
         Erase,
         Paint,
         Property,
-        Marker
+        Marker,
+        StepEdit
     }
 
     [Flags]

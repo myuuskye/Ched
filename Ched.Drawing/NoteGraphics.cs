@@ -14,6 +14,8 @@ using System.Security.Permissions;
 using static Ched.Core.Notes.Guide;
 using Ched.Core;
 using System.Net;
+using System.Reflection;
+using System.Collections;
 
 namespace Ched.Drawing
 {
@@ -231,479 +233,397 @@ namespace Ched.Drawing
         /// <param name="noteHeight">ノート描画高さ</param>
         public static void DrawSlideBackground(this DrawingContext dc, IEnumerable<SlideStepElement> steps, IEnumerable<float> visibleSteps, float noteHeight, bool isch, int mode, bool usingBezier , IReadOnlyCollection<Air> airs, IReadOnlyCollection<Flick> flicks)
         {
-            if (isch)
+
+            var prevMode = dc.Graphics.SmoothingMode;
+            dc.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+            Color BackgroundEdgeColor = dc.ColorProfile.SlideBackgroundColor.DarkColor;
+            Color BackgroundMiddleColor = dc.ColorProfile.SlideBackgroundColor.LightColor;
+            Color SlideLineColor = dc.ColorProfile.SlideLineColor;
+            //mode 0:非表示, 1:半透明, 2:表示
+
+            if (!isch)
             {
-                var prevMode = dc.Graphics.SmoothingMode;
-                dc.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                if (mode == 0) return;
+                if(mode == 1)
+                {
+                    BackgroundEdgeColor = dc.ColorProfile.InvSlideBackgroundColor.DarkColor;
+                    BackgroundMiddleColor = dc.ColorProfile.InvSlideBackgroundColor.LightColor;
+                    SlideLineColor = dc.ColorProfile.InvSlideLineColor;
+                }
+            }
+            
 
-                Color BackgroundEdgeColor = dc.ColorProfile.SlideBackgroundColor.DarkColor;
-                Color BackgroundMiddleColor = dc.ColorProfile.SlideBackgroundColor.LightColor;
+            var orderedSteps = steps.OrderBy(p => p.Point.Y).ToList();
+            var orderedVisibleSteps = visibleSteps.OrderBy(p => p).ToList();
+            
 
-                var orderedSteps = steps.OrderBy(p => p.Point.Y).ToList();
-                var orderedVisibleSteps = visibleSteps.OrderBy(p => p).ToList();
 
+            //スライド背景
+            using (var path = new GraphicsPath())
+            {
+                var left = orderedSteps.Select(p => p.Point);
+                var right = orderedSteps.Select(p => new PointF(p.Point.X + p.Width, p.Point.Y)).Reverse();
+
+
+                float head = orderedVisibleSteps[0];
+                float height = orderedVisibleSteps[orderedVisibleSteps.Count - 1] - head;
+                var pathBounds = path.GetBounds();
+                var blendBounds = new RectangleF(pathBounds.X, head, pathBounds.Width + 0.1f, height + 0.1f);
                 
 
-                //スライド背景
-                using (var path = new GraphicsPath())
+                if (usingBezier)
                 {
-                    var left = orderedSteps.Select(p => p.Point);
-                    var right = orderedSteps.Select(p => new PointF(p.Point.X + p.Width , p.Point.Y)).Reverse();
-
-
-                    float head = orderedVisibleSteps[0];
-                    float height = orderedVisibleSteps[orderedVisibleSteps.Count - 1] - head;
-                    var pathBounds = path.GetBounds();
-                    var blendBounds = new RectangleF(pathBounds.X, head, pathBounds.Width + 0.1f, height + 0.1f);
-
-                    if (usingBezier)
+                    int i = 0;
+                    foreach (var step in orderedSteps)
                     {
-                        int i = 0;
-                        foreach (var step in orderedSteps)
+                        foreach (var flick in flicks)
                         {
-                            foreach (var flick in flicks)
+                            if (visibleSteps.Contains(step.Point.Y) && orderedVisibleSteps.Last() != step.Point.Y && orderedSteps.First().Point.Y != step.Point.Y && step.Tick == flick.Tick && step.LaneIndex == flick.LaneIndex)
                             {
-                                if (visibleSteps.Contains(step.Point.Y) && orderedVisibleSteps.Last() != step.Point.Y && orderedSteps.First().Point.Y != step.Point.Y && step.Tick == flick.Tick && step.LaneIndex == flick.LaneIndex)
-                                {
-                                    step.Skippable = true;
-                                }
-
+                                step.Skippable = true;
                             }
+
                         }
-                        var lineSteps = orderedSteps.Where(q => !q.Skippable).ToList();
-                        foreach (var step in orderedSteps)
+                    }
+                    var lineSteps = orderedSteps.Where(q => !q.Skippable).ToList();
+                    foreach (var step in orderedSteps)
+                    {
+                        if (step.Skippable) continue;
+                        if (i + 2 > orderedSteps.Count)
+                            continue;
+                        int curvetype1 = 0;
+                        int curvetype2 = 0;
+                        var air = airs.Where(p => p.ParentNote.Tick == step.Tick && p.ParentNote.LaneIndex == step.LaneIndex).FirstOrDefault();
+                        if (air != null)
                         {
-                            if (step.Skippable) continue;
-                            if (i + 2 > orderedSteps.Count)
-                                continue;
-                            int curvetype1 = 0;
-                            int curvetype2 = 0;
-                            var air = airs.Where(p => p.ParentNote.Tick == step.Tick && p.ParentNote.LaneIndex == step.LaneIndex).FirstOrDefault();
-                            if (air != null)
-                            {
-                                curvetype1 = (int)air.HorizontalDirection + 1;
-                                curvetype2 = (int)air.VerticalDirection;
-                                if (curvetype2 == 0) curvetype1 += 3; //DOWN  center1 left,right 2,3 UP center4 left, right5,6
-                            }
-                            step.CurveType = curvetype1;
+                            curvetype1 = (int)air.HorizontalDirection + 1;
+                            curvetype2 = (int)air.VerticalDirection;
+                            if (curvetype2 == 0) curvetype1 += 3; //DOWN  center1 left,right 2,3 UP center4 left, right5,6
+                        }
+                        step.CurveType = curvetype1;
 
-                            if (flicks.Where(q => visibleSteps.Contains(step.Point.Y) && orderedVisibleSteps.Last() != step.Point.Y && orderedSteps.First().Point.Y != step.Point.Y && step.Tick == q.Tick && step.LaneIndex == q.LaneIndex).FirstOrDefault() != null)
-                            {
-                                step.Skippable = true; //もしフリックが重なってたらスキップ可能に
+                        if (flicks.Where(q => visibleSteps.Contains(step.Point.Y) && orderedVisibleSteps.Last() != step.Point.Y && orderedSteps.First().Point.Y != step.Point.Y && step.Tick == q.Tick && step.LaneIndex == q.LaneIndex).FirstOrDefault() != null)
+                        {
+                            step.Skippable = true; //もしフリックが重なってたらスキップ可能に
 
-                            }
-
-                            while (!orderedSteps[i + 1].Skippable)
-                            {
-
-                                //Console.WriteLine("i: " + i + " " + !orderedSteps[i + 1].Skippable);
-                                if (!orderedSteps[i + 1].Skippable)
-                                {
-                                    break;
-                                }
-                                else
-                                {
-                                    i++;
-                                }
-
-                            }
-
-                            if (step.Skippable) { i++; continue; };
-                            //Console.WriteLine(lineSteps.IndexOf(step) + " count:" + lineSteps.Count);
-                            var nextstep = lineSteps.OrderBy(q => q.Tick).ToList()[Math.Min(lineSteps.IndexOf(step) + 1, lineSteps.Count - 1)];
-
-                            float un = nextstep.Point.Y - step.Point.Y;
-                            float ln = nextstep.Point.X - step.Point.X;
-
-                            var startpoint = step.Point;
-                            var steppoint1 = new PointF(step.Point.X, step.Point.Y + un / 3);
-                            var steppoint2 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                            var steppoint3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                            var endpoint = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                            var startpointr = new PointF(step.Point.X + step.Width, step.Point.Y);
-                            var steppoint1r = new PointF(step.Point.X + step.Width, step.Point.Y + un / 3);
-                            var steppoint2r = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-                            var endpointr = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-
-                            var start = step.Point;
-                            var step1 = step.Point;
-                            var step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
-                            var end = new PointF(step.Point.X + step.Width, step.Point.Y);
-                            var step3 = step.Point;
-                            var step4 = new PointF(step.Point.X + step.Width / 2, step.Point.Y + un / 3);
-                            var end2 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                            var step5 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                            var step6 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-                            var end3 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-                            var step7 = new PointF(step.Point.X, step.Point.Y + un / 5 * 3);
-                            var step8 = new PointF(nextstep.Point.X, nextstep.Point.Y - un / 5 * 3);
-                            PointF[] points = { start, step1, step2, end };
-                            PointF[] points2 = { start, step1, step2, end };
-
-                            switch (step.CurveType)
-                            {
-                                case 0:
-                                    points = new[] { step.Point, end, end3, end2 };
-                                    path.AddPolygon( points);
-                                    path.CloseFigure();
-                                    break;
-                                case 1:
-
-                                    start = step.Point;
-                                    step1 = step.Point;
-                                    step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                    end = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                    step3 = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                    step4 = new PointF(step.Point.X + step.Width , step.Point.Y + un / 5 * 3);
-                                    end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y - 0.01f);
-                                    step5 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y - 0.01f);
-                                    step6 = new PointF(nextstep.Point.X , nextstep.Point.Y - 0.01f);
-                                    end3 = new PointF(nextstep.Point.X , nextstep.Point.Y - 0.01f);
-                                    step7 = new PointF(step.Point.X, step.Point.Y + un / 5 * 3);
-
-                                    points = new[] { start, step1, step2, end, step3, step4, end2, step5,step6,end3, step6, step7, start };
-                                    
-                                    path.AddBeziers(points);
-                                    path.CloseFigure();
-                                    break;
-
-                                case 2:
-                                case 3:
-
-                                    start = step.Point;
-                                    step1 = step.Point;
-                                    step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                    end = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                    step3 = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                    step4 = new PointF(nextstep.Point.X + nextstep.Width, step.Point.Y + un / 5 * 2);
-                                    end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y - 0.01f);
-                                    step5 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y - 0.01f);
-                                    step6 = new PointF(nextstep.Point.X, nextstep.Point.Y - 0.01f);
-                                    end3 = new PointF(nextstep.Point.X, nextstep.Point.Y - 0.01f);
-                                    step7 = new PointF(nextstep.Point.X, step.Point.Y + un / 5 * 2);
-
-                                    points = new[] { start, step1, step2, end, step3, step4, end2, step5, step6, end3, step6, step7, start };
-                                    path.AddBeziers(points);
-                                    path.CloseFigure();
-                                    break;
-
-                                case 4:
-
-                                    start = step.Point;
-                                    step1 = step.Point;
-                                    step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                    end = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                    step3 = new PointF(step.Point.X + step.Width, step.Point.Y + un / 5 * 3);
-                                    step4 = new PointF(nextstep.Point.X+ nextstep.Width, nextstep.Point.Y - un / 5 * 3);
-                                    end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y );
-                                    step5 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y );
-                                    step6 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                                    end3 = new PointF(nextstep.Point.X, nextstep.Point.Y );
-                                    step7 = new PointF(step.Point.X , step.Point.Y + un / 5 * 3);
-                                    step8 = new PointF(nextstep.Point.X, nextstep.Point.Y - un / 5 * 3);
-
-                                    points = new[] { start, step1, step2, end, step3, step4, end2, step5, step6, end3, step8, step7, start };
-
-                                    path.AddBeziers(points);
-                                    path.CloseFigure();
-
-                                    break;
-
-                                case 5:
-                                case 6:
-
-                                    start = step.Point;
-                                    step1 = step.Point;
-                                    step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                    end = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                    step3 = new PointF(nextstep.Point.X + nextstep.Width , step.Point.Y + un / 5 * 3);
-                                    step4 = new PointF(step.Point.X + step.Width, nextstep.Point.Y - un / 5 * 3);
-                                    end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-                                    step5 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-                                    step6 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                                    end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                                    step7 = new PointF(step.Point.X, nextstep.Point.Y - un / 5 * 3);
-                                    step8 = new PointF(nextstep.Point.X, step.Point.Y + un / 5 * 3);
-
-                                    points = new[] { start, step1, step2, end, step3, step4, end2, step5, step6, end3, step7, step8, start };
-
-                                    path.AddBeziers(points);
-                                    path.CloseFigure();
-
-                                    break;
-
-                                default:
-                                    //Console.WriteLine("default");
-                                    points = new[] { step.Point, end, end3, end2 };
-                                    path.AddPolygon(points);
-                                    path.CloseFigure();
-                                    break;
-
-                            }
-                            
-
-                            
-                            i++;
                         }
 
-                    }
-                    else
-                    {
-                        path.AddPolygon(left.Concat(right).ToArray());
-                    }
-                   
-
-                    
-
-                    
-
-                    using (var brush = new LinearGradientBrush(blendBounds, Color.Black, Color.Black, LinearGradientMode.Vertical))
-                    {
-                        var heights = orderedVisibleSteps.Zip(orderedVisibleSteps.Skip(1), (p, q) => Tuple.Create(p, q - p));
-                        var absPos = new[] { head }.Concat(heights.SelectMany(p => new[] { p.Item1 + p.Item2 * 0.3f, p.Item1 + p.Item2 * 0.7f, p.Item1 + p.Item2 }));
-                        var blend = new ColorBlend()
+                        while (!orderedSteps[i + 1].Skippable)
                         {
-                            Positions = absPos.Select(p => (p - head) / height).ToArray(),
-                            Colors = new[] { BackgroundEdgeColor }.Concat(Enumerable.Range(0, orderedVisibleSteps.Count - 1).SelectMany(p => new[] { BackgroundMiddleColor, BackgroundMiddleColor, BackgroundEdgeColor })).ToArray()
-                        };
-                        brush.InterpolationColors = blend;
-                        path.FillMode = FillMode.Winding;
-                        dc.Graphics.FillPath(brush, path);
+
+                            //Console.WriteLine("i: " + i + " " + !orderedSteps[i + 1].Skippable);
+                            if (!orderedSteps[i + 1].Skippable)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                i++;
+                            }
+
+                        }
+
+                        if (step.Skippable) { i++; continue; };
+                        //Console.WriteLine(lineSteps.IndexOf(step) + " count:" + lineSteps.Count);
+                        var nextstep = lineSteps.OrderBy(q => q.Tick).ToList()[Math.Min(lineSteps.IndexOf(step) + 1, lineSteps.Count - 1)];
+
+                        float un = nextstep.Point.Y - step.Point.Y;
+                        float ln = nextstep.Point.X - step.Point.X;
+
+                        var startpoint = step.Point;
+                        var steppoint1 = new PointF(step.Point.X, step.Point.Y + un / 3);
+                        var steppoint2 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                        var steppoint3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                        var endpoint = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                        var startpointr = new PointF(step.Point.X + step.Width, step.Point.Y);
+                        var steppoint1r = new PointF(step.Point.X + step.Width, step.Point.Y + un / 3);
+                        var steppoint2r = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                        var endpointr = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+
+                        var start = step.Point;
+                        var step1 = step.Point;
+                        var step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
+                        var end = new PointF(step.Point.X + step.Width, step.Point.Y);
+                        var step3 = step.Point;
+                        var step4 = new PointF(step.Point.X + step.Width / 2, step.Point.Y + un / 3);
+                        var end2 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                        var step5 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                        var step6 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                        var end3 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                        var step7 = new PointF(step.Point.X, step.Point.Y + un / 5 * 3);
+                        var step8 = new PointF(nextstep.Point.X, nextstep.Point.Y - un / 5 * 3);
+                        PointF[] points = { start, step1, step2, end };
+                        PointF[] points2 = { start, step1, step2, end };
+
+                        switch (step.CurveType)
+                        {
+                            case 0:
+                                points = new[] { step.Point, end, end3, end2 };
+                                path.AddPolygon(points);
+                                path.CloseFigure();
+                                break;
+                            case 1:
+
+                                start = step.Point;
+                                step1 = step.Point;
+                                step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                end = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                step3 = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                step4 = new PointF(step.Point.X + step.Width, step.Point.Y + un / 5 * 3);
+                                end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                step5 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                step6 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                step7 = new PointF(step.Point.X, step.Point.Y + un / 5 * 3);
+
+                                points = new[] { start, step1, step2, end, step3, step4, end2, step5, step6, end3, step6, step7, start };
+
+                                path.AddBeziers(points);
+                                path.CloseFigure();
+                                break;
+
+                            case 2:
+                            case 3:
+
+                                start = step.Point;
+                                step1 = step.Point;
+                                step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                end = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                step3 = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                step4 = new PointF(nextstep.Point.X + nextstep.Width, step.Point.Y + un / 5 * 2);
+                                end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                step5 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                step6 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                step7 = new PointF(nextstep.Point.X, step.Point.Y + un / 5 * 2);
+
+                                points = new[] { start, step1, step2, end, step3, step4, end2, step5, step6, end3, step6, step7, start };
+                                path.AddBeziers(points);
+                                path.CloseFigure();
+                                break;
+
+                            case 4:
+
+                                start = step.Point;
+                                step1 = step.Point;
+                                step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                end = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                step3 = new PointF(step.Point.X + step.Width, step.Point.Y + un / 5 * 3);
+                                step4 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y - un / 5 * 3);
+                                end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                step5 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                step6 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                step7 = new PointF(step.Point.X, step.Point.Y + un / 5 * 3);
+                                step8 = new PointF(nextstep.Point.X, nextstep.Point.Y - un / 5 * 3);
+
+                                points = new[] { start, step1, step2, end, step3, step4, end2, step5, step6, end3, step8, step7, start };
+
+                                path.AddBeziers(points);
+                                path.CloseFigure();
+
+                                break;
+
+                            case 5:
+                            case 6:
+
+                                start = step.Point;
+                                step1 = step.Point;
+                                step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                end = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                step3 = new PointF(nextstep.Point.X + nextstep.Width, step.Point.Y + un / 5 * 3);
+                                step4 = new PointF(step.Point.X + step.Width, nextstep.Point.Y - un / 5 * 3);
+                                end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                step5 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                step6 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                step7 = new PointF(step.Point.X, nextstep.Point.Y - un / 5 * 3);
+                                step8 = new PointF(nextstep.Point.X, step.Point.Y + un / 5 * 3);
+
+                                points = new[] { start, step1, step2, end, step3, step4, end2, step5, step6, end3, step7, step8, start };
+
+                                path.AddBeziers(points);
+                                path.CloseFigure();
+
+                                break;
+
+                            default:
+                                //Console.WriteLine("default");
+                                points = new[] { step.Point, end, end3, end2 };
+                                path.AddPolygon(points);
+                                path.CloseFigure();
+                                break;
+
+                        }
+
+
+
+                        i++;
                     }
+
                 }
-                //スライドの線
-                using (var pen = new Pen(dc.ColorProfile.SlideLineColor, noteHeight * 0.4f))
+                else
                 {
-                    if (usingBezier)
-                    {
-                        int i = 0;
-                        foreach(var step in orderedSteps)
-                        {
-                            foreach (var flick in flicks)
-                            {
-                                //Console.WriteLine("isVisible:" + visibleSteps.Contains(step.Point.Y) + "notLast:" + orderedVisibleSteps.Last() != step.Point.Y + "Tick:" + (step.Tick == flick.Tick) + "LaneIndex:" + (step.LaneIndex == flick.LaneIndex));
-                                if (visibleSteps.Contains(step.Point.Y) && orderedVisibleSteps.Last() != step.Point.Y && orderedSteps.First().Point.Y != step.Point.Y && step.Tick == flick.Tick && step.LaneIndex == flick.LaneIndex)
-                                {
-                                    step.Skippable = true;
-                                }
-
-                            }
-                        }
-                        var lineSteps = orderedSteps.Where(q => !q.Skippable).ToList();
-                        foreach (var p in orderedSteps)
-                        {
-  
-                            
-                            if (i + 2 > orderedSteps.Count) //Countは2~ 
-                                continue;
-
-                            if (flicks.Where(q => visibleSteps.Contains(p.Point.Y) && orderedVisibleSteps.Last() != p.Point.Y && orderedSteps.First().Point.Y != p.Point.Y && p.Tick == q.Tick && p.LaneIndex == q.LaneIndex).FirstOrDefault() != null)
-                            {
-                                p.Skippable = true; //もしフリックが重なってたらスキップ可能に
-
-                            }
-
-                            while (!orderedSteps[i + 1].Skippable)
-                            {
-                                
-                                //Console.WriteLine("i: " + i + " " + !orderedSteps[i + 1].Skippable);
-                                if (!orderedSteps[i + 1].Skippable)
-                                {
-                                    break;
-                                }
-                                else
-                                {
-                                    i++;
-                                }
-                                
-                            }
-
-                            //Console.WriteLine("i: " + i + " " + !orderedSteps[i + 1].Skippable + "end");
-
-
-
-
-                            if (p.Skippable) { i++; continue; };
-
-                            //Console.WriteLine("linestep: " + lineSteps.IndexOf(p));
-                            var nextstep = lineSteps.OrderBy(q => q.Tick).ToList()[lineSteps.IndexOf(p) + 1];
-                            /*
-                            var o = 1;
-                            while (!nextstep.Skippable)
-                            {
-                                nextstep = lineSteps[Math.Min(lineSteps.Count - 1, lineSteps.IndexOf(p) + o)];
-                                Console.WriteLine("next" + o + " " + nextstep.Skippable);
-                                if (!nextstep.Skippable)
-                                {
-                                    break;
-                                }
-                                else
-                                {
-                                    o++;
-                                }
-                            }
-                            */
-                            
-
-                            var start = new PointF(p.Point.X + p.Width / 2, p.Point.Y);
-                            var end = new PointF(nextstep.Point.X + nextstep.Width / 2, nextstep.Point.Y);
-
-                            float un = nextstep.Point.Y - p.Point.Y;
-                            var step1 = new PointF(p.Point.X + p.Width / 2, p.Point.Y + un / 5 * 3);
-                            var step2 = new PointF(nextstep.Point.X + nextstep.Width / 2, p.Point.Y + un / 5 * 2);
-                            var step3 = new PointF(p.Point.X + p.Width / 2, p.Point.Y + un / 5 * 3);
-                            var step5 = new PointF(nextstep.Point.X + nextstep.Width / 2 , p.Point.Y + un / 5 * 3);
-                            var step6 = new PointF(p.Point.X + p.Width / 2, nextstep.Point.Y - un / 5 * 3);
-
-
-                            var linepoints = new[] { start, end }; 
-
-                            switch (p.CurveType)
-                            {
-                                case 0:
-                                    dc.Graphics.DrawLines(pen,linepoints);
-                                    break;
-                                case 1:
-                                    dc.Graphics.DrawBezier(pen, start, start, step1, end);
-                                    break;
-                                case 2:
-                                case 3:
-                                    dc.Graphics.DrawBezier(pen, start, start, step2, end);
-                                    break;
-                                case 4:
-                                    dc.Graphics.DrawBezier(pen, start,step1, step2, end);
-                                    break;
-                                case 5:
-                                case 6:
-                                    dc.Graphics.DrawBezier(pen, start, step5, step6, end);
-                                    break;
-                            }
-
-                            i++;
-                        }
-                    }
-                    else
-                    {
-                        dc.Graphics.DrawLines(pen, orderedSteps.Select(p => new PointF(p.Point.X + p.Width / 2, p.Point.Y)).ToArray());
-                    }
-                    
-                    
+                    path.AddPolygon(left.Concat(right).ToArray());
                 }
 
-                dc.Graphics.SmoothingMode = prevMode;
+
+
+
+
+
+                using (var brush = new LinearGradientBrush(blendBounds, Color.Black, Color.Black, LinearGradientMode.Vertical))
+                {
+                    var heights = orderedVisibleSteps.Zip(orderedVisibleSteps.Skip(1), (p, q) => Tuple.Create(p, q - p));
+                    var absPos = new[] { head }.Concat(heights.SelectMany(p => new[] { p.Item1 + p.Item2 * 0.3f, p.Item1 + p.Item2 * 0.7f, p.Item1 + p.Item2 }));
+                    var blend = new ColorBlend()
+                    {
+                        Positions = absPos.Select(p => (p - head) / height).ToArray(),
+                        Colors = new[] { BackgroundEdgeColor }.Concat(Enumerable.Range(0, orderedVisibleSteps.Count - 1).SelectMany(p => new[] { BackgroundMiddleColor, BackgroundMiddleColor, BackgroundEdgeColor })).ToArray()
+                    };
+                    brush.InterpolationColors = blend;
+                    path.FillMode = FillMode.Winding;
+                    dc.Graphics.FillPath(brush, path);
+                }
             }
-            else
+            //スライドの線
+            using (var pen = new Pen(dc.ColorProfile.SlideLineColor, noteHeight * 0.4f))
             {
-                var prevMode = dc.Graphics.SmoothingMode;
-
-                Color BackgroundEdgeColor = dc.ColorProfile.SlideBackgroundColor.DarkColor;
-                Color BackgroundMiddleColor = dc.ColorProfile.SlideBackgroundColor.LightColor;
-
-                var orderedSteps = steps.OrderBy(p => p.Point.Y).ToList();
-                var orderedVisibleSteps = visibleSteps.OrderBy(p => p).ToList();
-                switch (mode)//0 非表示 1 半透明 2 表示
+                if (usingBezier)
                 {
-                    case 0:
-                        break;
-                    case 1:
-                        
-                        dc.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-
-                        BackgroundEdgeColor = dc.ColorProfile.InvSlideBackgroundColor.DarkColor;
-                        BackgroundMiddleColor = dc.ColorProfile.InvSlideBackgroundColor.LightColor;
-
-
-                        if (orderedSteps[0].Point.Y < orderedVisibleSteps[0] || orderedSteps[orderedSteps.Count - 1].Point.Y > orderedVisibleSteps[orderedVisibleSteps.Count - 1])
+                    int i = 0;
+                    foreach (var step in orderedSteps)
+                    {
+                        foreach (var flick in flicks)
                         {
-                            //throw new ArgumentOutOfRangeException("visibleSteps", "visibleSteps must contain steps");
+                            //Console.WriteLine("isVisible:" + visibleSteps.Contains(step.Point.Y) + "notLast:" + orderedVisibleSteps.Last() != step.Point.Y + "Tick:" + (step.Tick == flick.Tick) + "LaneIndex:" + (step.LaneIndex == flick.LaneIndex));
+                            if (visibleSteps.Contains(step.Point.Y) && orderedVisibleSteps.Last() != step.Point.Y && orderedSteps.First().Point.Y != step.Point.Y && step.Tick == flick.Tick && step.LaneIndex == flick.LaneIndex)
+                            {
+                                step.Skippable = true;
+                            }
+
+                        }
+                    }
+                    var lineSteps = orderedSteps.Where(q => !q.Skippable).ToList();
+                    foreach (var p in orderedSteps)
+                    {
+
+
+                        if (i + 2 > orderedSteps.Count) //Countは2~ 
+                            continue;
+
+                        if (flicks.Where(q => visibleSteps.Contains(p.Point.Y) && orderedVisibleSteps.Last() != p.Point.Y && orderedSteps.First().Point.Y != p.Point.Y && p.Tick == q.Tick && p.LaneIndex == q.LaneIndex).FirstOrDefault() != null)
+                        {
+                            p.Skippable = true; //もしフリックが重なってたらスキップ可能に
+
                         }
 
-                        using (var path = new GraphicsPath())
+                        while (!orderedSteps[i + 1].Skippable)
                         {
-                            var left = orderedSteps.Select(p => p.Point);
-                            var right = orderedSteps.Select(p => new PointF(p.Point.X + p.Width, p.Point.Y)).Reverse();
-                            path.AddPolygon(left.Concat(right).ToArray());
 
-                            float head = orderedVisibleSteps[0];
-                            float height = orderedVisibleSteps[orderedVisibleSteps.Count - 1] - head;
-                            var pathBounds = path.GetBounds();
-                            var blendBounds = new RectangleF(pathBounds.X, head, pathBounds.Width, height);
-                            using (var brush = new LinearGradientBrush(blendBounds, Color.Black, Color.Black, LinearGradientMode.Vertical))
+                            //Console.WriteLine("i: " + i + " " + !orderedSteps[i + 1].Skippable);
+                            if (!orderedSteps[i + 1].Skippable)
                             {
-                                var heights = orderedVisibleSteps.Zip(orderedVisibleSteps.Skip(1), (p, q) => Tuple.Create(p, q - p));
-                                var absPos = new[] { head }.Concat(heights.SelectMany(p => new[] { p.Item1 + p.Item2 * 0.3f, p.Item1 + p.Item2 * 0.7f, p.Item1 + p.Item2 }));
-                                var blend = new ColorBlend()
-                                {
-                                    Positions = absPos.Select(p => (p - head) / height).ToArray(),
-                                    Colors = new[] { BackgroundEdgeColor }.Concat(Enumerable.Range(0, orderedVisibleSteps.Count - 1).SelectMany(p => new[] { BackgroundMiddleColor, BackgroundMiddleColor, BackgroundEdgeColor })).ToArray()
-                                };
-                                brush.InterpolationColors = blend;
-                                dc.Graphics.FillPath(brush, path);
+                                break;
+                            }
+                            else
+                            {
+                                i++;
+                            }
+
+                        }
+
+                        //Console.WriteLine("i: " + i + " " + !orderedSteps[i + 1].Skippable + "end");
+
+
+
+
+                        if (p.Skippable) { i++; continue; };
+
+                        //Console.WriteLine("linestep: " + lineSteps.IndexOf(p));
+                        var nextstep = lineSteps.OrderBy(q => q.Tick).ToList()[lineSteps.IndexOf(p) + 1];
+                        /*
+                        var o = 1;
+                        while (!nextstep.Skippable)
+                        {
+                            nextstep = lineSteps[Math.Min(lineSteps.Count - 1, lineSteps.IndexOf(p) + o)];
+                            Console.WriteLine("next" + o + " " + nextstep.Skippable);
+                            if (!nextstep.Skippable)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                o++;
                             }
                         }
+                        */
 
-                        using (var pen = new Pen(dc.ColorProfile.InvSlideLineColor, noteHeight * 0.4f))
+
+                        var start = new PointF(p.Point.X + p.Width / 2, p.Point.Y);
+                        var end = new PointF(nextstep.Point.X + nextstep.Width / 2, nextstep.Point.Y);
+
+                        float un = nextstep.Point.Y - p.Point.Y;
+                        var step1 = new PointF(p.Point.X + p.Width / 2, p.Point.Y + un / 5 * 3);
+                        var step2 = new PointF(nextstep.Point.X + nextstep.Width / 2, p.Point.Y + un / 5 * 2);
+                        var step3 = new PointF(p.Point.X + p.Width / 2, p.Point.Y + un / 5 * 3);
+                        var step5 = new PointF(nextstep.Point.X + nextstep.Width / 2, p.Point.Y + un / 5 * 3);
+                        var step6 = new PointF(p.Point.X + p.Width / 2, nextstep.Point.Y - un / 5 * 3);
+
+
+                        var linepoints = new[] { start, end };
+
+                        switch (p.CurveType)
                         {
-                            dc.Graphics.DrawLines(pen, orderedSteps.Select(p => new PointF(p.Point.X + p.Width / 2, p.Point.Y)).ToArray());
+                            case 0:
+                                dc.Graphics.DrawLines(pen, linepoints);
+                                break;
+                            case 1:
+                                dc.Graphics.DrawBezier(pen, start, start, step1, end);
+                                break;
+                            case 2:
+                            case 3:
+                                dc.Graphics.DrawBezier(pen, start, start, step2, end);
+                                break;
+                            case 4:
+                                dc.Graphics.DrawBezier(pen, start, step1, step2, end);
+                                break;
+                            case 5:
+                            case 6:
+                                dc.Graphics.DrawBezier(pen, start, step5, step6, end);
+                                break;
                         }
 
-                        dc.Graphics.SmoothingMode = prevMode;
-                        break;
-                    case 2:
-                        dc.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-
-                        BackgroundEdgeColor = dc.ColorProfile.SlideBackgroundColor.DarkColor;
-                        BackgroundEdgeColor = dc.ColorProfile.SlideBackgroundColor.LightColor;
-
-                        
-
-                        using (var path = new GraphicsPath())
-                        {
-                            var left = orderedSteps.Select(p => p.Point);
-                            var right = orderedSteps.Select(p => new PointF(p.Point.X + p.Width, p.Point.Y)).Reverse();
-                            path.AddPolygon(left.Concat(right).ToArray());
-
-                            float head = orderedVisibleSteps[0];
-                            float height = orderedVisibleSteps[orderedVisibleSteps.Count - 1] - head;
-                            var pathBounds = path.GetBounds();
-                            var blendBounds = new RectangleF(pathBounds.X, head, pathBounds.Width, height);
-                            using (var brush = new LinearGradientBrush(blendBounds, Color.Black, Color.Black, LinearGradientMode.Vertical))
-                            {
-                                var heights = orderedVisibleSteps.Zip(orderedVisibleSteps.Skip(1), (p, q) => Tuple.Create(p, q - p));
-                                var absPos = new[] { head }.Concat(heights.SelectMany(p => new[] { p.Item1 + p.Item2 * 0.3f, p.Item1 + p.Item2 * 0.7f, p.Item1 + p.Item2 }));
-                                var blend = new ColorBlend()
-                                {
-                                    Positions = absPos.Select(p => (p - head) / height).ToArray(),
-                                    Colors = new[] { BackgroundEdgeColor }.Concat(Enumerable.Range(0, orderedVisibleSteps.Count - 1).SelectMany(p => new[] { BackgroundMiddleColor, BackgroundMiddleColor, BackgroundEdgeColor })).ToArray()
-                                };
-                                brush.InterpolationColors = blend;
-                                dc.Graphics.FillPath(brush, path);
-                            }
-                        }
-
-                        using (var pen = new Pen(dc.ColorProfile.SlideLineColor, noteHeight * 0.4f))
-                        {
-                            dc.Graphics.DrawLines(pen, orderedSteps.Select(p => new PointF(p.Point.X + p.Width / 2, p.Point.Y)).ToArray());
-                        }
-
-                        dc.Graphics.SmoothingMode = prevMode;
-                        break;
+                        i++;
+                    }
                 }
-                
+                else
+                {
+                    dc.Graphics.DrawLines(pen, orderedSteps.Select(p => new PointF(p.Point.X + p.Width / 2, p.Point.Y)).ToArray());
+                }
+
+
             }
+
+            dc.Graphics.SmoothingMode = prevMode;
+            
+            
             
         }
 
-        public static GraphicsPath GetSlideBackgroundPath(float width1, float width2, float x1, float y1, float x2, float y2)
+        public static GraphicsPath GetSlideBackgroundPath(float width1, float width2, float x1, float y1, float x2, float y2, bool useBezier, int curveType)
         {
             var path = new GraphicsPath();
-            path.AddPolygon(new PointF[]
-            {
+                path.AddPolygon(new PointF[]
+                            {
                 new PointF(x1, y1),
                 new PointF(x1 + width1, y1),
                 new PointF(x2 + width2, y2),
                 new PointF(x2, y2)
-            });
+                            });
+            
+            
             return path;
         }
 
@@ -788,479 +708,425 @@ namespace Ched.Drawing
         /// <param name="noteHeight">ノート描画高さ</param>
         public static void DrawGuideBackground(this DrawingContext dc, IEnumerable<GuideStepElement> steps, IEnumerable<float> visibleSteps, float noteHeight, bool isch, int mode, USCGuideColor color, bool usingBezier, IReadOnlyCollection<Air> airs, IEnumerable<Tap> taps)
         {
-            if (isch)
+            if (!isch && mode == 0) return;
+            var prevMode = dc.Graphics.SmoothingMode;
+            dc.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+
+
+            Color BackgroundEdgeColor = dc.ColorProfile.GuideBackgroundColor.DarkColor;
+            Color BackgroundMiddleColor = dc.ColorProfile.GuideBackgroundColor.LightColor;
+            Color GuideLineColor = dc.ColorProfile.SlideLineColor;
+            //mode 0:非表示, 1:半透明, 2:表示
+
+            var orderedSteps = steps.OrderBy(p => p.Point.Y).ToList();
+            var orderedVisibleSteps = visibleSteps.OrderBy(p => p).ToList();
+
+            if (!isch && mode == 1)
             {
-                var prevMode = dc.Graphics.SmoothingMode;
-                dc.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-
-                Color BackgroundEdgeColor = dc.ColorProfile.GuideBackgroundColor.DarkColor;
-                Color BackgroundMiddleColor = dc.ColorProfile.GuideBackgroundColor.LightColor;
-
+                GuideLineColor = dc.ColorProfile.InvSlideLineColor;
+            }
+            
                 switch (color)
                 {
-                    case USCGuideColor.neutral:
+                case USCGuideColor.neutral:
+                    if(!isch && mode == 1)
+                    {
+                        BackgroundEdgeColor = dc.ColorProfile.InvGuideBackgroundNeutralColor.DarkColor;
+                        BackgroundMiddleColor = dc.ColorProfile.InvGuideBackgroundNeutralColor.LightColor;
+                    }
+                    else
+                    {
                         BackgroundEdgeColor = dc.ColorProfile.GuideBackgroundNeutralColor.DarkColor;
                         BackgroundMiddleColor = dc.ColorProfile.GuideBackgroundNeutralColor.LightColor;
-                        break;
-                    case USCGuideColor.red: 
+                    }
+                    
+                    break;
+                case USCGuideColor.red:
+                    if (!isch && mode == 1)
+                    {
+                        BackgroundEdgeColor = dc.ColorProfile.InvGuideBackgroundRedColor.DarkColor;
+                        BackgroundMiddleColor = dc.ColorProfile.InvGuideBackgroundRedColor.LightColor;
+                    }
+                    else
+                    {
                         BackgroundEdgeColor = dc.ColorProfile.GuideBackgroundRedColor.DarkColor;
                         BackgroundMiddleColor = dc.ColorProfile.GuideBackgroundRedColor.LightColor;
-                        break;
-                    case USCGuideColor.green:
+                    }
+                    break;
+                case USCGuideColor.green:
+                    if (!isch && mode == 1)
+                    {
+                        BackgroundEdgeColor = dc.ColorProfile.InvGuideBackgroundColor.DarkColor;
+                        BackgroundMiddleColor = dc.ColorProfile.InvGuideBackgroundColor.LightColor;
+                    }
+                    else
+                    {
                         BackgroundEdgeColor = dc.ColorProfile.GuideBackgroundColor.DarkColor;
                         BackgroundMiddleColor = dc.ColorProfile.GuideBackgroundColor.LightColor;
-                        break;
-                    case USCGuideColor.blue:
+                    }
+                    break;
+                case USCGuideColor.blue:
+                    if (!isch && mode == 1)
+                    {
+                        BackgroundEdgeColor = dc.ColorProfile.InvGuideBackgroundBlueColor.DarkColor;
+                        BackgroundMiddleColor = dc.ColorProfile.InvGuideBackgroundBlueColor.LightColor;
+                    }
+                    else
+                    {
                         BackgroundEdgeColor = dc.ColorProfile.GuideBackgroundBlueColor.DarkColor;
                         BackgroundMiddleColor = dc.ColorProfile.GuideBackgroundBlueColor.LightColor;
-                        break;
-                    case USCGuideColor.yellow:
+                    }
+                    break;
+                case USCGuideColor.yellow:
+                    if (!isch && mode == 1)
+                    {
+                        BackgroundEdgeColor = dc.ColorProfile.InvGuideBackgroundYellowColor.DarkColor;
+                        BackgroundMiddleColor = dc.ColorProfile.InvGuideBackgroundYellowColor.LightColor;
+                    }
+                    else
+                    {
                         BackgroundEdgeColor = dc.ColorProfile.GuideBackgroundYellowColor.DarkColor;
                         BackgroundMiddleColor = dc.ColorProfile.GuideBackgroundYellowColor.LightColor;
-                        break;
-                    case USCGuideColor.purple:
+                    }
+                    break;
+                case USCGuideColor.purple:
+                    if (!isch && mode == 1)
+                    {
+                        BackgroundEdgeColor = dc.ColorProfile.InvGuideBackgroundPurpleColor.DarkColor;
+                        BackgroundMiddleColor = dc.ColorProfile.InvGuideBackgroundPurpleColor.LightColor;
+                    }
+                    else
+                    {
                         BackgroundEdgeColor = dc.ColorProfile.GuideBackgroundPurpleColor.DarkColor;
                         BackgroundMiddleColor = dc.ColorProfile.GuideBackgroundPurpleColor.LightColor;
-                        break;
-                    case USCGuideColor.cyan:
+                    }
+                    break;
+                case USCGuideColor.cyan:
+                    if (!isch && mode == 1)
+                    {
+                        BackgroundEdgeColor = dc.ColorProfile.InvGuideBackgroundCyanColor.DarkColor;
+                        BackgroundMiddleColor = dc.ColorProfile.InvGuideBackgroundCyanColor.LightColor;
+                    }
+                    else
+                    {
                         BackgroundEdgeColor = dc.ColorProfile.GuideBackgroundCyanColor.DarkColor;
                         BackgroundMiddleColor = dc.ColorProfile.GuideBackgroundCyanColor.LightColor;
-                        break;
-                    case USCGuideColor.black:
+                    }
+                    break;
+                case USCGuideColor.black:
+                    if (!isch && mode == 1)
+                    {
+                        BackgroundEdgeColor = dc.ColorProfile.InvGuideBackgroundBlackColor.DarkColor;
+                        BackgroundMiddleColor = dc.ColorProfile.InvGuideBackgroundBlackColor.LightColor;
+                    }
+                    else
+                    {
                         BackgroundEdgeColor = dc.ColorProfile.GuideBackgroundBlackColor.DarkColor;
                         BackgroundMiddleColor = dc.ColorProfile.GuideBackgroundBlackColor.LightColor;
-                        break;
-                }
+                    }
+                    break;
+            }
 
 
-                var orderedSteps = steps.OrderBy(p => p.Point.Y).ToList();
-                var orderedVisibleSteps = visibleSteps.OrderBy(p => p).ToList();
+            
 
 
 
-                using (var path = new GraphicsPath())
+            using (var path = new GraphicsPath())
+            {
+                var left = orderedSteps.Select(p => p.Point);
+                var right = orderedSteps.Select(p => new PointF(p.Point.X + p.Width, p.Point.Y)).Reverse();
+
+                float head = orderedVisibleSteps[0];
+                float height = orderedVisibleSteps[orderedVisibleSteps.Count - 1] - head;
+                var pathBounds = path.GetBounds();
+                var blendBounds = new RectangleF(pathBounds.X, head, pathBounds.Width + 0.01f, height + 0.01f);
+
+                if (usingBezier)
                 {
-                    var left = orderedSteps.Select(p => p.Point);
-                    var right = orderedSteps.Select(p => new PointF(p.Point.X + p.Width, p.Point.Y)).Reverse();
-
-                    float head = orderedVisibleSteps[0];
-                    float height = orderedVisibleSteps[orderedVisibleSteps.Count - 1] - head;
-                    var pathBounds = path.GetBounds();
-                    var blendBounds = new RectangleF(pathBounds.X, head, pathBounds.Width + 0.01f, height + 0.01f);
-
-                    if (usingBezier)
+                    int i = 0;
+                    foreach (var step in orderedSteps)
                     {
-                        int i = 0;
-                        foreach (var step in orderedSteps)
+                        if (i + 2 > orderedSteps.Count)
+                            continue;
+                        int curvetype1 = 0;
+                        int curvetype2 = 0;
+                        var air = airs.Where(p => p.ParentNote.Tick == step.Tick && p.ParentNote.LaneIndex == step.LaneIndex).FirstOrDefault();
+                        if (orderedSteps.IndexOf(step) == 0)
                         {
-                            if (i + 2 > orderedSteps.Count)
-                                continue;
-                            int curvetype1 = 0;
-                            int curvetype2 = 0;
-                            var air = airs.Where(p => p.ParentNote.Tick == step.Tick && p.ParentNote.LaneIndex == step.LaneIndex).FirstOrDefault();
-                            if (orderedSteps.IndexOf(step) == 0)
+                            var tap = taps.Where(p => p.Tick == step.Tick && p.LaneIndex == step.LaneIndex && p.IsStart).FirstOrDefault();
+                            if (air != null)
                             {
-                                var tap = taps.Where(p => p.Tick == step.Tick && p.LaneIndex == step.LaneIndex && p.IsStart).FirstOrDefault();
-                                if(air != null)
-                                {
-                                    if(air.VerticalDirection == VerticalAirDirection.Down)
-                                    {
-                                        curvetype1 = (int)air.HorizontalDirection + 1;
-                                        curvetype2 = (int)air.VerticalDirection;
-                                        if (curvetype2 == 0) curvetype1 += 3; //DOWN  center1 left,right 2,3 UP center4 left, right5,6
-                                    }
-                                    else
-                                    {
-                                        if(tap != null)
-                                        {
-                                            curvetype1 = (int)air.HorizontalDirection + 1;
-                                            curvetype2 = (int)air.VerticalDirection;
-                                            if (curvetype2 == 0) curvetype1 += 3; //DOWN  center1 left,right 2,3 UP center4 left, right5,6
-                                        }
-                                    }
-                                    
-                                }
-                            }
-                            else
-                            {
-                                
-                                if (air != null)
+                                if (air.VerticalDirection == VerticalAirDirection.Down)
                                 {
                                     curvetype1 = (int)air.HorizontalDirection + 1;
                                     curvetype2 = (int)air.VerticalDirection;
                                     if (curvetype2 == 0) curvetype1 += 3; //DOWN  center1 left,right 2,3 UP center4 left, right5,6
                                 }
-                            }
-                            
-                            step.CurveType = curvetype1;
-
-
-                            //Console.WriteLine(lineSteps.IndexOf(step) + " count:" + lineSteps.Count);
-                            var nextstep = orderedSteps.OrderBy(q => q.Tick).ToList()[Math.Min(orderedSteps.IndexOf(step) + 1, orderedSteps.Count - 1)];
-
-                            float un = nextstep.Point.Y - step.Point.Y;
-                            float ln = nextstep.Point.X - step.Point.X;
-
-                            var startpoint = step.Point;
-                            var steppoint1 = new PointF(step.Point.X, step.Point.Y + un / 3);
-                            var steppoint2 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                            var steppoint3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                            var endpoint = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                            var startpointr = new PointF(step.Point.X + step.Width, step.Point.Y);
-                            var steppoint1r = new PointF(step.Point.X + step.Width, step.Point.Y + un / 3);
-                            var steppoint2r = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-                            var endpointr = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-
-                            var start = step.Point;
-                            var step1 = step.Point;
-                            var step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
-                            var end = new PointF(step.Point.X + step.Width, step.Point.Y);
-                            var step3 = step.Point;
-                            var step4 = new PointF(step.Point.X + step.Width / 2, step.Point.Y + un / 3);
-                            var end2 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                            var step5 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                            var step6 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-                            var end3 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-                            var step7 = new PointF(step.Point.X, step.Point.Y + un / 5 * 3);
-                            var step8 = new PointF(nextstep.Point.X, nextstep.Point.Y - un / 5 * 3);
-                            PointF[] points = { start, step1, step2, end };
-                            PointF[] points2 = { start, step1, step2, end };
-
-                            switch (step.CurveType)
-                            {
-                                case 0:
-                                    points = new[] { step.Point, end, end3, end2 };
-                                    path.AddPolygon(points);
-                                    path.CloseFigure();
-                                    break;
-                                case 1:
-
-                                    start = step.Point;
-                                    step1 = step.Point;
-                                    step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                    end = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                    step3 = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                    step4 = new PointF(step.Point.X + step.Width, step.Point.Y + un / 5 * 3);
-                                    end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y - 0.01f);
-                                    step5 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y - 0.01f);
-                                    step6 = new PointF(nextstep.Point.X, nextstep.Point.Y - 0.01f);
-                                    end3 = new PointF(nextstep.Point.X, nextstep.Point.Y - 0.01f);
-                                    step7 = new PointF(step.Point.X, step.Point.Y + un / 5 * 3);
-
-                                    points = new[] { start, step1, step2, end, step3, step4, end2, step5, step6, end3, step6, step7, start };
-
-                                    path.AddBeziers(points);
-                                    path.CloseFigure();
-                                    break;
-
-                                case 2:
-                                case 3:
-
-                                    start = step.Point;
-                                    step1 = step.Point;
-                                    step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                    end = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                    step3 = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                    step4 = new PointF(nextstep.Point.X + nextstep.Width, step.Point.Y + un / 5 * 2);
-                                    end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y - 0.01f);
-                                    step5 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y - 0.01f);
-                                    step6 = new PointF(nextstep.Point.X, nextstep.Point.Y - 0.01f);
-                                    end3 = new PointF(nextstep.Point.X, nextstep.Point.Y - 0.01f);
-                                    step7 = new PointF(nextstep.Point.X, step.Point.Y + un / 5 * 2);
-
-                                    points = new[] { start, step1, step2, end, step3, step4, end2, step5, step6, end3, step6, step7, start };
-                                    path.AddBeziers(points);
-                                    path.CloseFigure();
-                                    break;
-
-                                case 4:
-
-                                    start = step.Point;
-                                    step1 = step.Point;
-                                    step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                    end = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                    step3 = new PointF(step.Point.X + step.Width, step.Point.Y + un / 5 * 3);
-                                    step4 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y - un / 5 * 3);
-                                    end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-                                    step5 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-                                    step6 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                                    end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                                    step7 = new PointF(step.Point.X, step.Point.Y + un / 5 * 3);
-                                    step8 = new PointF(nextstep.Point.X, nextstep.Point.Y - un / 5 * 3);
-
-                                    points = new[] { start, step1, step2, end, step3, step4, end2, step5, step6, end3, step8, step7, start };
-
-                                    path.AddBeziers(points);
-                                    path.CloseFigure();
-
-                                    break;
-
-                                case 5:
-                                case 6:
-
-                                    start = step.Point;
-                                    step1 = step.Point;
-                                    step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                    end = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                    step3 = new PointF(nextstep.Point.X + nextstep.Width, step.Point.Y + un / 5 * 3);
-                                    step4 = new PointF(step.Point.X + step.Width, nextstep.Point.Y - un / 5 * 3);
-                                    end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-                                    step5 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-                                    step6 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                                    end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                                    step7 = new PointF(step.Point.X, nextstep.Point.Y - un / 5 * 3);
-                                    step8 = new PointF(nextstep.Point.X, step.Point.Y + un / 5 * 3);
-
-                                    points = new[] { start, step1, step2, end, step3, step4, end2, step5, step6, end3, step7, step8, start };
-
-                                    path.AddBeziers(points);
-                                    path.CloseFigure();
-
-                                    break;
-
-                                default:
-                                    //Console.WriteLine("default");
-                                    points = new[] { step.Point, end, end3, end2 };
-                                    path.AddPolygon(points);
-                                    path.CloseFigure();
-                                    break;
-
-                            }
-
-
-
-                            i++;
-                        }
-
-                    }
-                    else
-                    {
-                        path.AddPolygon(left.Concat(right).ToArray());
-                    }
-
-                    using (var brush = new LinearGradientBrush(blendBounds, Color.Black, Color.Black, LinearGradientMode.Vertical))
-                    {
-                        var heights = orderedVisibleSteps.Zip(orderedVisibleSteps.Skip(1), (p, q) => Tuple.Create(p, q - p));
-                        var absPos = new[] { head }.Concat(heights.SelectMany(p => new[] { p.Item1 + p.Item2 * 0.3f, p.Item1 + p.Item2 * 0.7f, p.Item1 + p.Item2 }));
-                        var blend = new ColorBlend()
-                        {
-                            Positions = absPos.Select(p => (p - head) / height).ToArray(),
-                            Colors = new[] { BackgroundEdgeColor }.Concat(Enumerable.Range(0, orderedVisibleSteps.Count - 1).SelectMany(p => new[] { BackgroundMiddleColor, BackgroundMiddleColor, BackgroundEdgeColor })).ToArray()
-                        };
-                        brush.InterpolationColors = blend;
-                        dc.Graphics.FillPath(brush, path);
-                    }
-                }
-
-                using (var pen = new Pen(dc.ColorProfile.SlideLineColor, noteHeight * 0.4f))
-                {
-                    if (usingBezier)
-                    {
-                        int i = 0;
-                        foreach (var p in orderedSteps)
-                        {
-
-
-                            if (i + 2 > orderedSteps.Count) //Countは2~ 
-                                continue;
-
-                            //Console.WriteLine("i: " + i + " " + !orderedSteps[i + 1].Skippable + "end");
-
-
-
-                            //Console.WriteLine("linestep: " + lineSteps.IndexOf(p));
-                            var nextstep = orderedSteps.OrderBy(q => q.Tick).ToList()[orderedSteps.IndexOf(p) + 1];
-                            /*
-                            var o = 1;
-                            while (!nextstep.Skippable)
-                            {
-                                nextstep = lineSteps[Math.Min(lineSteps.Count - 1, lineSteps.IndexOf(p) + o)];
-                                Console.WriteLine("next" + o + " " + nextstep.Skippable);
-                                if (!nextstep.Skippable)
-                                {
-                                    break;
-                                }
                                 else
                                 {
-                                    o++;
+                                    if (tap != null)
+                                    {
+                                        curvetype1 = (int)air.HorizontalDirection + 1;
+                                        curvetype2 = (int)air.VerticalDirection;
+                                        if (curvetype2 == 0) curvetype1 += 3; //DOWN  center1 left,right 2,3 UP center4 left, right5,6
+                                    }
                                 }
+
                             }
-                            */
-
-
-                            var start = new PointF(p.Point.X + p.Width / 2, p.Point.Y);
-                            var end = new PointF(nextstep.Point.X + nextstep.Width / 2, nextstep.Point.Y);
-
-                            float un = nextstep.Point.Y - p.Point.Y;
-                            var step1 = new PointF(p.Point.X + p.Width / 2, p.Point.Y + un / 5 * 3);
-                            var step2 = new PointF(nextstep.Point.X + nextstep.Width / 2, p.Point.Y + un / 5 * 2);
-                            var step3 = new PointF(p.Point.X + p.Width / 2, p.Point.Y + un / 5 * 3);
-                            var step5 = new PointF(nextstep.Point.X + nextstep.Width / 2, p.Point.Y + un / 5 * 3);
-                            var step6 = new PointF(p.Point.X + p.Width / 2, nextstep.Point.Y - un / 5 * 3);
-
-
-                            var linepoints = new[] { start, end };
-
-                            switch (p.CurveType)
-                            {
-                                case 0:
-                                    dc.Graphics.DrawLines(pen, linepoints);
-                                    break;
-                                case 1:
-                                    dc.Graphics.DrawBezier(pen, start, start, step1, end);
-                                    break;
-                                case 2:
-                                case 3:
-                                    dc.Graphics.DrawBezier(pen, start, start, step2, end);
-                                    break;
-                                case 4:
-                                    dc.Graphics.DrawBezier(pen, start, step1, step2, end);
-                                    break;
-                                case 5:
-                                case 6:
-                                    dc.Graphics.DrawBezier(pen, start, step5, step6, end);
-                                    break;
-                            }
-
-                            i++;
                         }
+                        else
+                        {
+
+                            if (air != null)
+                            {
+                                curvetype1 = (int)air.HorizontalDirection + 1;
+                                curvetype2 = (int)air.VerticalDirection;
+                                if (curvetype2 == 0) curvetype1 += 3; //DOWN  center1 left,right 2,3 UP center4 left, right5,6
+                            }
+                        }
+
+                        step.CurveType = curvetype1;
+
+
+                        //Console.WriteLine(lineSteps.IndexOf(step) + " count:" + lineSteps.Count);
+                        var nextstep = orderedSteps.OrderBy(q => q.Tick).ToList()[Math.Min(orderedSteps.IndexOf(step) + 1, orderedSteps.Count - 1)];
+
+                        float un = nextstep.Point.Y - step.Point.Y;
+                        float ln = nextstep.Point.X - step.Point.X;
+
+                        var startpoint = step.Point;
+                        var steppoint1 = new PointF(step.Point.X, step.Point.Y + un / 3);
+                        var steppoint2 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                        var steppoint3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                        var endpoint = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                        var startpointr = new PointF(step.Point.X + step.Width, step.Point.Y);
+                        var steppoint1r = new PointF(step.Point.X + step.Width, step.Point.Y + un / 3);
+                        var steppoint2r = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                        var endpointr = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+
+                        var start = step.Point;
+                        var step1 = step.Point;
+                        var step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
+                        var end = new PointF(step.Point.X + step.Width, step.Point.Y);
+                        var step3 = step.Point;
+                        var step4 = new PointF(step.Point.X + step.Width / 2, step.Point.Y + un / 3);
+                        var end2 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                        var step5 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                        var step6 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                        var end3 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                        var step7 = new PointF(step.Point.X, step.Point.Y + un / 5 * 3);
+                        var step8 = new PointF(nextstep.Point.X, nextstep.Point.Y - un / 5 * 3);
+                        PointF[] points = { start, step1, step2, end };
+                        PointF[] points2 = { start, step1, step2, end };
+
+                        switch (step.CurveType)
+                        {
+                            case 0:
+                                points = new[] { step.Point, end, end3, end2 };
+                                path.AddPolygon(points);
+                                path.CloseFigure();
+                                break;
+                            case 1:
+
+                                start = step.Point;
+                                step1 = step.Point;
+                                step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                end = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                step3 = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                step4 = new PointF(step.Point.X + step.Width, step.Point.Y + un / 5 * 3);
+                                end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                step5 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                step6 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                step7 = new PointF(step.Point.X, step.Point.Y + un / 5 * 3);
+
+                                points = new[] { start, step1, step2, end, step3, step4, end2, step5, step6, end3, step6, step7, start };
+
+                                path.AddBeziers(points);
+                                path.CloseFigure();
+                                break;
+
+                            case 2:
+                            case 3:
+
+                                start = step.Point;
+                                step1 = step.Point;
+                                step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                end = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                step3 = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                step4 = new PointF(nextstep.Point.X + nextstep.Width, step.Point.Y + un / 5 * 2);
+                                end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                step5 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                step6 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                step7 = new PointF(nextstep.Point.X, step.Point.Y + un / 5 * 2);
+
+                                points = new[] { start, step1, step2, end, step3, step4, end2, step5, step6, end3, step6, step7, start };
+                                path.AddBeziers(points);
+                                path.CloseFigure();
+                                break;
+
+                            case 4:
+
+                                start = step.Point;
+                                step1 = step.Point;
+                                step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                end = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                step3 = new PointF(step.Point.X + step.Width, step.Point.Y + un / 5 * 3);
+                                step4 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y - un / 5 * 3);
+                                end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                step5 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                step6 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                step7 = new PointF(step.Point.X, step.Point.Y + un / 5 * 3);
+                                step8 = new PointF(nextstep.Point.X, nextstep.Point.Y - un / 5 * 3);
+
+                                points = new[] { start, step1, step2, end, step3, step4, end2, step5, step6, end3, step8, step7, start };
+
+                                path.AddBeziers(points);
+                                path.CloseFigure();
+
+                                break;
+
+                            case 5:
+                            case 6:
+
+                                start = step.Point;
+                                step1 = step.Point;
+                                step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                end = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                step3 = new PointF(nextstep.Point.X + nextstep.Width, step.Point.Y + un / 5 * 3);
+                                step4 = new PointF(step.Point.X + step.Width, nextstep.Point.Y - un / 5 * 3);
+                                end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                step5 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                step6 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                step7 = new PointF(step.Point.X, nextstep.Point.Y - un / 5 * 3);
+                                step8 = new PointF(nextstep.Point.X, step.Point.Y + un / 5 * 3);
+
+                                points = new[] { start, step1, step2, end, step3, step4, end2, step5, step6, end3, step7, step8, start };
+
+                                path.AddBeziers(points);
+                                path.CloseFigure();
+
+                                break;
+
+                            default:
+                                //Console.WriteLine("default");
+                                points = new[] { step.Point, end, end3, end2 };
+                                path.AddPolygon(points);
+                                path.CloseFigure();
+                                break;
+
+                        }
+
+
+
+                        i++;
                     }
-                    else
+
+                }
+                else
+                {
+                    path.AddPolygon(left.Concat(right).ToArray());
+                }
+
+                using (var brush = new LinearGradientBrush(blendBounds, Color.Black, Color.Black, LinearGradientMode.Vertical))
+                {
+                    var heights = orderedVisibleSteps.Zip(orderedVisibleSteps.Skip(1), (p, q) => Tuple.Create(p, q - p));
+                    var absPos = new[] { head }.Concat(heights.SelectMany(p => new[] { p.Item1 + p.Item2 * 0.3f, p.Item1 + p.Item2 * 0.7f, p.Item1 + p.Item2 }));
+                    var blend = new ColorBlend()
                     {
-                        dc.Graphics.DrawLines(pen, orderedSteps.Select(p => new PointF(p.Point.X + p.Width / 2, p.Point.Y)).ToArray());
+                        Positions = absPos.Select(p => (p - head) / height).ToArray(),
+                        Colors = new[] { BackgroundEdgeColor }.Concat(Enumerable.Range(0, orderedVisibleSteps.Count - 1).SelectMany(p => new[] { BackgroundMiddleColor, BackgroundMiddleColor, BackgroundEdgeColor })).ToArray()
+                    };
+                    brush.InterpolationColors = blend;
+                    dc.Graphics.FillPath(brush, path);
+                }
+            }
+
+            using (var pen = new Pen(GuideLineColor, noteHeight * 0.4f))
+            {
+                if (usingBezier)
+                {
+                    int i = 0;
+                    foreach (var p in orderedSteps)
+                    {
+
+
+                        if (i + 2 > orderedSteps.Count) //Countは2~ 
+                            continue;
+
+                        //Console.WriteLine("i: " + i + " " + !orderedSteps[i + 1].Skippable + "end");
+
+
+
+                        //Console.WriteLine("linestep: " + lineSteps.IndexOf(p));
+                        var nextstep = orderedSteps.OrderBy(q => q.Tick).ToList()[orderedSteps.IndexOf(p) + 1];
+                        /*
+                        var o = 1;
+                        while (!nextstep.Skippable)
+                        {
+                            nextstep = lineSteps[Math.Min(lineSteps.Count - 1, lineSteps.IndexOf(p) + o)];
+                            Console.WriteLine("next" + o + " " + nextstep.Skippable);
+                            if (!nextstep.Skippable)
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                o++;
+                            }
+                        }
+                        */
+
+
+                        var start = new PointF(p.Point.X + p.Width / 2, p.Point.Y);
+                        var end = new PointF(nextstep.Point.X + nextstep.Width / 2, nextstep.Point.Y);
+
+                        float un = nextstep.Point.Y - p.Point.Y;
+                        var step1 = new PointF(p.Point.X + p.Width / 2, p.Point.Y + un / 5 * 3);
+                        var step2 = new PointF(nextstep.Point.X + nextstep.Width / 2, p.Point.Y + un / 5 * 2);
+                        var step3 = new PointF(p.Point.X + p.Width / 2, p.Point.Y + un / 5 * 3);
+                        var step5 = new PointF(nextstep.Point.X + nextstep.Width / 2, p.Point.Y + un / 5 * 3);
+                        var step6 = new PointF(p.Point.X + p.Width / 2, nextstep.Point.Y - un / 5 * 3);
+
+
+                        var linepoints = new[] { start, end };
+
+                        switch (p.CurveType)
+                        {
+                            case 0:
+                                dc.Graphics.DrawLines(pen, linepoints);
+                                break;
+                            case 1:
+                                dc.Graphics.DrawBezier(pen, start, start, step1, end);
+                                break;
+                            case 2:
+                            case 3:
+                                dc.Graphics.DrawBezier(pen, start, start, step2, end);
+                                break;
+                            case 4:
+                                dc.Graphics.DrawBezier(pen, start, step1, step2, end);
+                                break;
+                            case 5:
+                            case 6:
+                                dc.Graphics.DrawBezier(pen, start, step5, step6, end);
+                                break;
+                        }
+
+                        i++;
                     }
                 }
-
-                dc.Graphics.SmoothingMode = prevMode;
-            }
-            else
-            {
-                var prevMode = dc.Graphics.SmoothingMode;
-
-                Color BackgroundEdgeColor = dc.ColorProfile.GuideBackgroundColor.DarkColor;
-                Color BackgroundMiddleColor = dc.ColorProfile.GuideBackgroundColor.LightColor;
-
-                switch (color)
+                else
                 {
-                    case USCGuideColor.neutral:
-                        BackgroundEdgeColor = dc.ColorProfile.InvGuideBackgroundNeutralColor.DarkColor;
-                        BackgroundMiddleColor = dc.ColorProfile.InvGuideBackgroundNeutralColor.LightColor;
-                        break;
-                    case USCGuideColor.red:
-                        BackgroundEdgeColor = dc.ColorProfile.InvGuideBackgroundRedColor.DarkColor;
-                        BackgroundMiddleColor = dc.ColorProfile.InvGuideBackgroundRedColor.LightColor;
-                        break;
-                    case USCGuideColor.green:
-                        BackgroundEdgeColor = dc.ColorProfile.InvGuideBackgroundColor.DarkColor;
-                        BackgroundMiddleColor = dc.ColorProfile.InvGuideBackgroundColor.LightColor;
-                        break;
-                    case USCGuideColor.blue:
-                        BackgroundEdgeColor = dc.ColorProfile.InvGuideBackgroundBlueColor.DarkColor;
-                        BackgroundMiddleColor = dc.ColorProfile.InvGuideBackgroundBlueColor.LightColor;
-                        break;
-                    case USCGuideColor.yellow:
-                        BackgroundEdgeColor = dc.ColorProfile.InvGuideBackgroundYellowColor.DarkColor;
-                        BackgroundMiddleColor = dc.ColorProfile.InvGuideBackgroundYellowColor.LightColor;
-                        break;
-                    case USCGuideColor.purple:
-                        BackgroundEdgeColor = dc.ColorProfile.InvGuideBackgroundPurpleColor.DarkColor;
-                        BackgroundMiddleColor = dc.ColorProfile.InvGuideBackgroundPurpleColor.LightColor;
-                        break;
-                    case USCGuideColor.cyan:
-                        BackgroundEdgeColor = dc.ColorProfile.InvGuideBackgroundCyanColor.DarkColor;
-                        BackgroundMiddleColor = dc.ColorProfile.InvGuideBackgroundCyanColor.LightColor;
-                        break;
-                    case USCGuideColor.black:
-                        BackgroundEdgeColor = dc.ColorProfile.InvGuideBackgroundBlackColor.DarkColor;
-                        BackgroundMiddleColor = dc.ColorProfile.InvGuideBackgroundBlackColor.LightColor;
-                        break;
+                    dc.Graphics.DrawLines(pen, orderedSteps.Select(p => new PointF(p.Point.X + p.Width / 2, p.Point.Y)).ToArray());
                 }
-
-                var orderedSteps = steps.OrderBy(p => p.Point.Y).ToList();
-                var orderedVisibleSteps = visibleSteps.OrderBy(p => p).ToList();
-                switch (mode)
-                {
-                    case 0:
-                        break;
-                    case 1:
-
-                        dc.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-
-
-
-                        using (var path = new GraphicsPath())
-                        {
-                            var left = orderedSteps.Select(p => p.Point);
-                            var right = orderedSteps.Select(p => new PointF(p.Point.X + p.Width, p.Point.Y)).Reverse();
-                            path.AddPolygon(left.Concat(right).ToArray());
-
-                            float head = orderedVisibleSteps[0];
-                            float height = orderedVisibleSteps[orderedVisibleSteps.Count - 1] - head;
-                            var pathBounds = path.GetBounds();
-                            var blendBounds = new RectangleF(pathBounds.X, head, pathBounds.Width, height);
-                            using (var brush = new LinearGradientBrush(blendBounds, Color.Black, Color.Black, LinearGradientMode.Vertical))
-                            {
-                                var heights = orderedVisibleSteps.Zip(orderedVisibleSteps.Skip(1), (p, q) => Tuple.Create(p, q - p));
-                                var absPos = new[] { head }.Concat(heights.SelectMany(p => new[] { p.Item1 + p.Item2 * 0.3f, p.Item1 + p.Item2 * 0.7f, p.Item1 + p.Item2 }));
-                                var blend = new ColorBlend()
-                                {
-                                    Positions = absPos.Select(p => (p - head) / height).ToArray(),
-                                    Colors = new[] { BackgroundEdgeColor }.Concat(Enumerable.Range(0, orderedVisibleSteps.Count - 1).SelectMany(p => new[] { BackgroundMiddleColor, BackgroundMiddleColor, BackgroundEdgeColor })).ToArray()
-                                };
-                                brush.InterpolationColors = blend;
-                                dc.Graphics.FillPath(brush, path);
-                            }
-                        }
-
-                        using (var pen = new Pen(dc.ColorProfile.InvSlideLineColor, noteHeight * 0.4f))
-                        {
-                            dc.Graphics.DrawLines(pen, orderedSteps.Select(p => new PointF(p.Point.X + p.Width / 2, p.Point.Y)).ToArray());
-                        }
-
-                        dc.Graphics.SmoothingMode = prevMode;
-                        break;
-                    case 2:
-                        dc.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-
-                        BackgroundEdgeColor = dc.ColorProfile.GuideBackgroundColor.DarkColor;
-                        BackgroundEdgeColor = dc.ColorProfile.GuideBackgroundColor.LightColor;
-
-
-
-                        using (var path = new GraphicsPath())
-                        {
-                            var left = orderedSteps.Select(p => p.Point);
-                            var right = orderedSteps.Select(p => new PointF(p.Point.X + p.Width, p.Point.Y)).Reverse();
-                            path.AddPolygon(left.Concat(right).ToArray());
-
-                            float head = orderedVisibleSteps[0];
-                            float height = orderedVisibleSteps[orderedVisibleSteps.Count - 1] - head;
-                            var pathBounds = path.GetBounds();
-                            var blendBounds = new RectangleF(pathBounds.X, head, pathBounds.Width, height);
-                            using (var brush = new LinearGradientBrush(blendBounds, Color.Black, Color.Black, LinearGradientMode.Vertical))
-                            {
-                                var heights = orderedVisibleSteps.Zip(orderedVisibleSteps.Skip(1), (p, q) => Tuple.Create(p, q - p));
-                                var absPos = new[] { head }.Concat(heights.SelectMany(p => new[] { p.Item1 + p.Item2 * 0.3f, p.Item1 + p.Item2 * 0.7f, p.Item1 + p.Item2 }));
-                                var blend = new ColorBlend()
-                                {
-                                    Positions = absPos.Select(p => (p - head) / height).ToArray(),
-                                    Colors = new[] { BackgroundEdgeColor }.Concat(Enumerable.Range(0, orderedVisibleSteps.Count - 1).SelectMany(p => new[] { BackgroundMiddleColor, BackgroundMiddleColor, BackgroundEdgeColor })).ToArray()
-                                };
-                                brush.InterpolationColors = blend;
-                                dc.Graphics.FillPath(brush, path);
-                            }
-                        }
-
-                        using (var pen = new Pen(dc.ColorProfile.SlideLineColor, noteHeight * 0.4f))
-                        {
-                            dc.Graphics.DrawLines(pen, orderedSteps.Select(p => new PointF(p.Point.X + p.Width / 2, p.Point.Y)).ToArray());
-                        }
-
-                        dc.Graphics.SmoothingMode = prevMode;
-                        break;
-                }
-
             }
+
+            dc.Graphics.SmoothingMode = prevMode;
 
         }
 

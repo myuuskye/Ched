@@ -65,6 +65,7 @@ namespace Ched.UI.Shortcuts
         public static string SelectPaint => "editor.selectPaint";
         public static string SelectProperty => "editor.selectProperty";
         public static string SelectMarker => "editor.selectMarker";
+        public static string SelectStepEditor => "editor.selectStepEditor";
 
         public static string ZoomIn => "editor.view.zoomIn";
         public static string ZoomOut => "editor.view.zoomOut";

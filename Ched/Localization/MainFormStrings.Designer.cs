@@ -1411,6 +1411,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   中継点編集 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string StepEditor {
+            get {
+                return ResourceManager.GetString("StepEditor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   ステップのチャンネル移動なし に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string steptype1 {

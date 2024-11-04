@@ -744,6 +744,7 @@
     <None Include="Resources\flick1.png" />
     <None Include="Resources\damage1.png" />
     <None Include="Resources\pencil1.png" />
+    <None Include="Resources\pencil2.png" />
     <Content Include="Sounds\exflick.mp3">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -903,6 +903,7 @@ namespace Ched.UI
             commandSource.RegisterCommand(Commands.SelectPaint, MainFormStrings.Paint, () => NoteView.EditMode = EditMode.Paint);
             commandSource.RegisterCommand(Commands.SelectProperty, MainFormStrings.Property, () => NoteView.EditMode = EditMode.Property);
             commandSource.RegisterCommand(Commands.SelectMarker, MainFormStrings.Marker, () => NoteView.EditMode = EditMode.Marker);
+            commandSource.RegisterCommand(Commands.SelectStepEditor, MainFormStrings.StepEditor, () => NoteView.EditMode = EditMode.StepEdit);
 
             commandSource.RegisterCommand(Commands.ZoomIn, MainFormStrings.ZoomIn, () =>
             {
@@ -3779,26 +3780,39 @@ namespace Ched.UI
 
 
             noteView.NoteVisualMode = ApplicationSettings.Default.NoteVisualMode;
-            var noteVisualModeItems = new ToolStripMenuItem[]
+            var notDisplay = new ToolStripMenuItem(MainFormStrings.Visual1, null, (s, e) =>
             {
-                new ToolStripMenuItem(MainFormStrings.Visual1, null, (s, e) =>
-                {
                 var item = s as ToolStripMenuItem;
                 ApplicationSettings.Default.NoteVisualMode = 0;
                 noteView.NoteVisualMode = 0;
-                }),
-                new ToolStripMenuItem(MainFormStrings.Visual2, null, (s, e) =>
-                {
+                item.Checked = ApplicationSettings.Default.NoteVisualMode == 0;
+            })
+            {
+                Checked = ApplicationSettings.Default.NoteVisualMode == 0
+            };
+            var translucentDisplay = new ToolStripMenuItem(MainFormStrings.Visual2, null, (s, e) =>
+            {
                 var item = s as ToolStripMenuItem;
                 ApplicationSettings.Default.NoteVisualMode = 1;
                 noteView.NoteVisualMode = 1;
-                }),
-                new ToolStripMenuItem(MainFormStrings.Visual3, null, (s, e) =>
-                {
+                item.Checked = ApplicationSettings.Default.NoteVisualMode == 1;
+            })
+            {
+                Checked = ApplicationSettings.Default.NoteVisualMode == 1
+            };
+            var Display = new ToolStripMenuItem(MainFormStrings.Visual3, null, (s, e) =>
+            {
                 var item = s as ToolStripMenuItem;
                 ApplicationSettings.Default.NoteVisualMode = 2;
                 noteView.NoteVisualMode = 2;
-                }),
+                item.Checked = ApplicationSettings.Default.NoteVisualMode == 2;
+            })
+            {
+                Checked = ApplicationSettings.Default.NoteVisualMode == 2
+            };
+            var noteVisualModeItems = new ToolStripMenuItem[]
+            {
+             notDisplay, translucentDisplay, Display   
         };
             var noteVisualModeItem = new ToolStripMenuItem(MainFormStrings.ChannelNote, null, noteVisualModeItems);
 
@@ -3857,6 +3871,13 @@ namespace Ched.UI
                 SEtypeE.Checked = noteView.SlideEndDefault == 2;
 
             };
+            noteView.ChannelVisualChanged += (s, e) =>
+            {
+                notDisplay.Checked = noteView.NoteVisualMode == 0;
+                translucentDisplay.Checked = noteView.NoteVisualMode == 1;
+                Display.Checked = noteView.NoteVisualMode == 2;
+
+            };
 
 
             menu.Items.AddRange(new ToolStripItem[]
@@ -3900,6 +3921,7 @@ namespace Ched.UI
             var paintButton = shortcutItemBuilder.BuildItem(Commands.SelectPaint, MainFormStrings.Paint, Resources.PaintIcon);
             var propertyButton = shortcutItemBuilder.BuildItem(Commands.SelectProperty, MainFormStrings.Property, Resources.PropertyIcon);
             var markerButton = shortcutItemBuilder.BuildItem(Commands.SelectMarker, MainFormStrings.Marker, Resources.MarkerIcon);
+            var stepeditorButton = shortcutItemBuilder.BuildItem(Commands.SelectStepEditor, MainFormStrings.StepEditor, Resources.StepEditorIcon);
 
             var zoomInButton = shortcutItemBuilder.BuildItem(Commands.ZoomIn, MainFormStrings.ZoomIn, Resources.ZoomInIcon);
             zoomInButton.Enabled = CanZoomIn;
@@ -3940,6 +3962,7 @@ namespace Ched.UI
                 paintButton.Checked = noteView.EditMode == EditMode.Paint;
                 propertyButton.Checked = noteView.EditMode == EditMode.Property;
                 markerButton.Checked = noteView.EditMode == EditMode.Marker;
+                stepeditorButton.Checked = noteView.EditMode == EditMode.StepEdit;
             };
 
 
@@ -3976,7 +3999,7 @@ namespace Ched.UI
                 newFileButton, openFileButton, saveFileButton, exportButton, new ToolStripSeparator(),
                 cutButton, copyButton, pasteButton, new ToolStripSeparator(),
                 undoButton, redoButton, new ToolStripSeparator(),
-                penButton, selectionButton, eraserButton, paintButton, propertyButton, new ToolStripSeparator(),
+                penButton, selectionButton, eraserButton, paintButton, propertyButton, markerButton, stepeditorButton, new ToolStripSeparator(),
                 zoomInButton, zoomOutButton, new ToolStripSeparator(),
                 scrollAmountBox
                 

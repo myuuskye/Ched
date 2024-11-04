@@ -615,4 +615,7 @@
   <data name="UsingBezierCurves" xml:space="preserve">
     <value>Smooth Curves</value>
   </data>
+  <data name="StepEditor" xml:space="preserve">
+    <value>Step Edit Tool</value>
+  </data>
 </root>

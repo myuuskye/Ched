@@ -630,4 +630,7 @@
   <data name="UsingBezierCurves" xml:space="preserve">
     <value>滑らかなカーブ</value>
   </data>
+  <data name="StepEditor" xml:space="preserve">
+    <value>中継点編集</value>
+  </data>
 </root>

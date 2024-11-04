@@ -37,6 +37,10 @@ namespace Ched.Core
         private List<AirAction> airActions;
         [Newtonsoft.Json.JsonProperty]
         private List<StepNoteTap> stepNoteTaps;
+        [Newtonsoft.Json.JsonProperty]
+        private List<Slide.StepTap> slidesteps;
+        [Newtonsoft.Json.JsonProperty]
+        private List<Guide.StepTap> guidesteps;
 
 
         public List<Tap> Taps
@@ -104,6 +108,17 @@ namespace Ched.Core
             set { stepNoteTaps = value; }
         }
 
+        public List<Slide.StepTap> SlideSteps
+        {
+            get { return slidesteps; }
+            set { slidesteps = value; }
+        }
+        public List<Guide.StepTap> GuideSteps
+        {
+            get { return guidesteps; }
+            set { guidesteps = value; }
+        }
+
 
         public NoteCollection()
         {
@@ -118,6 +133,8 @@ namespace Ched.Core
             Flicks = new List<Flick>();
             Damages = new List<Damage>();
             StepNoteTaps = new List<StepNoteTap>();
+            SlideSteps = new List<Slide.StepTap>();
+            GuideSteps = new List<Guide.StepTap>();
         }
 
         public NoteCollection(NoteCollection collection)
@@ -133,6 +150,8 @@ namespace Ched.Core
             Flicks = collection.Flicks.ToList();
             Damages = collection.Damages.ToList();
             StepNoteTaps = collection.StepNoteTaps.ToList();
+            SlideSteps = collection.SlideSteps.ToList();
+            GuideSteps = collection.GuideSteps.ToList();
         }
 
         public IEnumerable<TappableBase> GetShortNotes()
