@@ -120,6 +120,9 @@
   <data name="ComboCalculator" xml:space="preserve">
     <value>コンボ計算</value>
   </data>
+  <data name="GuideConverter" xml:space="preserve">
+    <value>ガイド-&gt;スライド変換</value>
+  </data>
   <data name="GuideKnitter" xml:space="preserve">
     <value>ガイド編み込み</value>
   </data>
@@ -134,6 +137,9 @@
   </data>
   <data name="PJsekaiComboCalculator" xml:space="preserve">
     <value>プロセカ式コンボ計算</value>
+  </data>
+  <data name="SlideConverter" xml:space="preserve">
+    <value>スライド-&gt;ガイド変換</value>
   </data>
   <data name="SlideKnitter" xml:space="preserve">
     <value>スライド編み込み</value>

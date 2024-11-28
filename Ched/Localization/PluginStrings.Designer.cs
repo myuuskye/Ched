@@ -70,6 +70,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   ガイド-&gt;スライド変換 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string GuideConverter {
+            get {
+                return ResourceManager.GetString("GuideConverter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   ガイド編み込み に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string GuideKnitter {
@@ -111,6 +120,15 @@ namespace Ched.Localization {
         public static string PJsekaiComboCalculator {
             get {
                 return ResourceManager.GetString("PJsekaiComboCalculator", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   スライド-&gt;ガイド変換 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SlideConverter {
+            get {
+                return ResourceManager.GetString("SlideConverter", resourceCulture);
             }
         }
         

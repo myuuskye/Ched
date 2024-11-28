@@ -654,7 +654,7 @@ namespace Ched.Components.Exporter
                 {
                     if (judgeAccurate)
                     {
-                        if (note.Tick == note2.Tick && note.LaneIndex == note2.LaneIndex && note.Width == note2.Width && note.Channel == note2.Channel)
+                        if (note.Tick.Equals(note2.Tick) && note.LaneIndex.Equals(note2.LaneIndex) && note.Width.Equals(note2.Width) && note.Channel.Equals(note2.Channel))
                         {
                             if (ApplicationSettings.Default.SSIsDamageCritical && !note2.IsStart) isCritical = true;
                             if (ApplicationSettings.Default.SSIsDamage2Critical && note2.IsStart) isCritical = true;
@@ -668,7 +668,7 @@ namespace Ched.Components.Exporter
                             if (ApplicationSettings.Default.SSIsDamageDeleteE && !note2.IsStart) endJudge = "none";
                             if (ApplicationSettings.Default.SSIsDamage2DeleteE && note2.IsStart) endJudge = "none";
                         }
-                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && endNote.Width == note2.Width && endNote.Channel == note2.Channel)
+                        if (endNote.Tick.Equals(note2.Tick) && endNote.LaneIndex.Equals(note2.LaneIndex) && endNote.Width.Equals(note2.Width) && endNote.Channel.Equals(note2.Channel))
                         {
                             if (ApplicationSettings.Default.SEIsDamageCritical && !note2.IsStart) isCritical = true;
                             if (ApplicationSettings.Default.SEIsDamage2Critical && note2.IsStart) isCritical = true;
@@ -687,7 +687,7 @@ namespace Ched.Components.Exporter
                     }
                     else
                     {
-                        if (note.Tick == note2.Tick && note.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel)
+                        if (note.Tick.Equals(note2.Tick) && note.LaneIndex.Equals(note2.LaneIndex) && note.Channel.Equals(note2.Channel))
                         {
                             if (ApplicationSettings.Default.SSIsDamageCritical && !note2.IsStart) isCritical = true;
                             if (ApplicationSettings.Default.SSIsDamage2Critical && note2.IsStart) isCritical = true;
@@ -701,7 +701,7 @@ namespace Ched.Components.Exporter
                             if (ApplicationSettings.Default.SSIsDamageDeleteE && !note2.IsStart) endJudge = "none";
                             if (ApplicationSettings.Default.SSIsDamage2DeleteE && note2.IsStart) endJudge = "none";
                         }
-                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && endNote.Channel == note2.Channel)
+                        if (endNote.Tick.Equals(note2.Tick) && endNote.LaneIndex.Equals(note2.LaneIndex) && endNote.Channel.Equals(note2.Channel))
                         {
                             if (ApplicationSettings.Default.SEIsDamageCritical && !note2.IsStart) isCritical = true;
                             if (ApplicationSettings.Default.SEIsDamage2Critical && note2.IsStart) isCritical = true;
@@ -725,7 +725,7 @@ namespace Ched.Components.Exporter
                 {
                     if (judgeAccurate)
                     {
-                        if (note.Tick == note2.Tick && note.LaneIndex == note2.LaneIndex && note.Width == note2.Width && note.Channel == note2.Channel)
+                        if (note.Tick.Equals(note2.Tick) && note.LaneIndex.Equals(note2.LaneIndex) && note.Width.Equals(note2.Width) && note.Channel.Equals(note2.Channel))
                         {
                             switch (note2.HorizontalDirection)
                             {
@@ -741,14 +741,14 @@ namespace Ched.Components.Exporter
                             }
 
                         }
-                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && endNote.Width == note2.Width && endNote.Channel == note2.Channel && note2.VerticalDirection == VerticalAirDirection.Up)
+                        if (endNote.Tick.Equals(note2.Tick) && endNote.LaneIndex.Equals(note2.LaneIndex) && endNote.Width.Equals(note2.Width) && endNote.Channel.Equals(note2.Channel) && note2.VerticalDirection == VerticalAirDirection.Up)
                         {
                             endDirection = (int)note2.HorizontalDirection;
                         }
                     }
                     else
                     {
-                        if (note.Tick == note2.Tick && note.LaneIndex == note2.LaneIndex && note.Channel == note2.Channel)
+                        if (note.Tick.Equals(note2.Tick) && note.LaneIndex.Equals(note2.LaneIndex) && note.Channel.Equals(note2.Channel))
                         {
                             switch (note2.HorizontalDirection)
                             {
@@ -763,7 +763,7 @@ namespace Ched.Components.Exporter
                                     break;
                             }
                         }
-                        if (endNote.Tick == note2.Tick && endNote.LaneIndex == note2.LaneIndex && endNote.Channel == note2.Channel && note2.VerticalDirection == VerticalAirDirection.Up)
+                        if (endNote.Tick.Equals(note2.Tick) && endNote.LaneIndex.Equals(note2.LaneIndex) && endNote.Channel.Equals(note2.Channel) && note2.VerticalDirection == VerticalAirDirection.Up)
                         {
                             endDirection = (int)note2.HorizontalDirection;
                         }

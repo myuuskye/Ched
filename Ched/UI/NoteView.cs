@@ -27,6 +27,7 @@ using Ched.Configuration;
 using static Ched.Core.Notes.Guide;
 using Ched.UI.Windows;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
+using System.Runtime.InteropServices;
 
 namespace Ched.UI
 {
@@ -949,7 +950,6 @@ namespace Ched.UI
                                 if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
                                 {
                                     xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                    Console.WriteLine(xdiff);
                                 }
                                 else
                                 {
@@ -1021,19 +1021,24 @@ namespace Ched.UI
                                 if ((note.Channel != channel) && (editablebyCh == true)) return;
                                 var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
                                 float xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                
+
+                                float width = beforeWidth + xdiff;
                                 if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
                                 {
                                     xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                    width = beforeWidth + xdiff;
+                                    note.Width = Math.Min(Constants.LanesCount - note.LaneIndex, Math.Max(0.1f, width));
                                 }
                                 else
                                 {
                                     xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                    width = beforeWidth + xdiff;
+                                    note.Width = Math.Min(Constants.LanesCount - note.LaneIndex, Math.Max(1, width));
                                 }
                                 
-                                float width = beforeWidth + xdiff;
+                                
 
-                                note.Width = Math.Min(Constants.LanesCount - note.LaneIndex, Math.Max(0.1f, width));
+                                
                                 if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.Tab) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift))
                                 {
                                     note.Width = 3;
@@ -1368,16 +1373,21 @@ namespace Ched.UI
                                         if ((slide.Channel != channel) && (editablebyCh == true)) return;
                                         var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
                                         float xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                        float width = beforePos.StartWidth + xdiff;
                                         if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
                                         {
                                             xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                            width = beforePos.StartWidth + xdiff;
+                                            slide.StartWidth = Math.Min(Constants.LanesCount - slide.StartLaneIndex - rightStepLaneIndexOffset, Math.Max(-minWidthChange + 0.1f, width));
                                         }
                                         else
                                         {
                                             xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                            width = beforePos.StartWidth + xdiff;
+                                            slide.StartWidth = Math.Min(Constants.LanesCount - slide.StartLaneIndex - rightStepLaneIndexOffset, Math.Max(-minWidthChange + 1, width));
                                         }
-                                        float width = beforePos.StartWidth + xdiff;
-                                        slide.StartWidth = Math.Min(Constants.LanesCount - slide.StartLaneIndex - rightStepLaneIndexOffset, Math.Max(-minWidthChange + 0.1f, width));
+                                        
+                                        
                                         if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.Tab) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift))
                                         {
                                             slide.StartWidth = 3;
@@ -1496,17 +1506,22 @@ namespace Ched.UI
                                 if ((step.Channel != channel) && (editablebyCh == true)) return;
                                 var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
                                 float xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                float widthChange = beforeStepPos.WidthChange + xdiff;
                                 if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
                                 {
                                     xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                    widthChange = beforeStepPos.WidthChange + xdiff;
+                                    step.WidthChange = Math.Min(Constants.LanesCount - step.LaneIndex - step.ParentNote.StartWidth, Math.Max(-step.ParentNote.StartWidth + 0.1f, widthChange));
                                 }
                                 else
                                 {
                                     xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                    widthChange = beforeStepPos.WidthChange + xdiff;
+                                    step.WidthChange = Math.Min(Constants.LanesCount - step.LaneIndex - step.ParentNote.StartWidth, Math.Max(-step.ParentNote.StartWidth + 1, widthChange));
                                 }
-                                float widthChange = beforeStepPos.WidthChange + xdiff;
+                                
 
-                                step.WidthChange = Math.Min(Constants.LanesCount - step.LaneIndex - step.ParentNote.StartWidth, Math.Max(-step.ParentNote.StartWidth + 0.1f, widthChange));
+                                
                                 if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.Tab) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift))
                                 {
                                     step.WidthChange = 0;
@@ -1681,16 +1696,21 @@ namespace Ched.UI
                                         if ((guide.Channel != channel) && (editablebyCh == true)) return;
                                         var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
                                         float xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                        float width = beforePos.StartWidth + xdiff;
                                         if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
                                         {
                                             xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                            width = beforePos.StartWidth + xdiff;
+                                            guide.StartWidth = Math.Min(Constants.LanesCount - guide.StartLaneIndex - rightStepLaneIndexOffset, Math.Max(-minWidthChange + 0.1f, width));
                                         }
                                         else
                                         {
                                             xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                            width = beforePos.StartWidth + xdiff;
+                                            guide.StartWidth = Math.Min(Constants.LanesCount - guide.StartLaneIndex - rightStepLaneIndexOffset, Math.Max(-minWidthChange + 1, width));
                                         }
-                                        float width = beforePos.StartWidth + xdiff;
-                                        guide.StartWidth = Math.Min(Constants.LanesCount - guide.StartLaneIndex - rightStepLaneIndexOffset, Math.Max(-minWidthChange + 0.1f, width));
+                                        
+                                        
                                         if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.Tab) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift))
                                         {
                                             guide.StartWidth = 3;
@@ -4854,8 +4874,8 @@ namespace Ched.UI
                     {
                         if (note.Tick == note2.StartTick && note.LaneIndex == note2.StartLaneIndex && note.Width == note2.StartWidth) isOverlap = true;
                         var end = note2.StepNotes.OrderBy(p => p.TickOffset).Last();
-                        if (note.Tick == end.Tick && note.LaneIndex == end.LaneIndex && note.Width == end.Width) isOverlap = true;
-                        Console.WriteLine(note.Tick + " " + end.Tick + " " + note.LaneIndex + " " + end.LaneIndex + " " + note.Width + " " + end.Width + " " + isOverlap);
+                        if (note.Tick == end.Tick && note.LaneIndex.Equals(end.LaneIndex) && note.Width.Equals(end.Width)) isOverlap = true;
+                        Console.WriteLine(note.Tick + " " + end.Tick + " " + note.LaneIndex + " " + end.LaneIndex + " " + note.Width + " " + end.Width + " " + (note.Tick == end.Tick) + " " + (note.LaneIndex.Equals(end.LaneIndex)) + " " + (note.Width.Equals(end.Width)));
                     }
                     if (isOverlap)
                     {

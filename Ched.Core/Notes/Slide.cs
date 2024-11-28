@@ -198,7 +198,7 @@ namespace Ched.Core.Notes
 
             public override int Tick { get { return ParentNote.StartTick + TickOffset; } }
 
-            public override float LaneIndex { get { return ParentNote.StartLaneIndex + LaneIndexOffset; } }
+            public override float LaneIndex { get { return float.Parse((ParentNote.StartLaneIndex + LaneIndexOffset).ToString("0.0000")); } }
 
             public override int Channel
             {
@@ -226,7 +226,7 @@ namespace Ched.Core.Notes
                 }
             }
 
-            public override float Width { get { return ParentNote.StartWidth + WidthChange; } }
+            public override float Width { get { return float.Parse((ParentNote.StartWidth + WidthChange).ToString("0.0000")); } }
 
             public StepTap(Slide parent) : base(parent)
             {

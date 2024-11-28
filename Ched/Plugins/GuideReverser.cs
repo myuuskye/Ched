@@ -33,6 +33,15 @@ namespace Ched.Plugins
                 .Where(p => p.StepNotes.All(q => q.LaneIndex >= range.StartLaneIndex && q.LaneIndex + q.Width <= range.StartLaneIndex + range.SelectedLanesCount))
                 .Where(p => !airStepDic.ContainsKey(endStepDic[p]) && !airActionStepDic.ContainsKey(endStepDic[p]))
                 .ToList();
+            List<Guide.StepTap> StepList = new List<Guide.StepTap>();
+
+            foreach (var slide in targets)
+            {
+                StepList.AddRange(slide.StepNotes);
+            }
+            var airedStepDic = score.Notes.Airs
+                .Where(p => StepList.Contains(p.ParentNote))
+                .ToDictionary(p => p.ParentNote as Guide.StepTap, p => p);
             if (targets.Count == 0) return;
             var results = targets.Select(p =>
             {
@@ -45,6 +54,11 @@ namespace Ched.Plugins
                 {
                     var step = new Guide.StepTap(res) { IsVisible = q.IsVisible, TickOffset = startTick + (endTick - q.Tick) - res.StartTick };
                     step.SetPosition(q.LaneIndex - res.StartLaneIndex, q.Width - res.StartWidth);
+                    if (airedStepDic.ContainsKey(q))
+                    {
+                        score.Notes.Airs.Add(new Air(step) { HorizontalDirection = airedStepDic[q].HorizontalDirection, VerticalDirection = airedStepDic[q].VerticalDirection });
+                        score.Notes.Airs.Remove(airedStepDic[q]);
+                    }
                     return step;
                 })
                 .Concat(new[] { trailing });
@@ -52,7 +66,7 @@ namespace Ched.Plugins
                 return res;
             });
 
-            foreach (var guide in targets) score.Notes.Guides.Remove(guide);
+            foreach (var slide in targets) score.Notes.Guides.Remove(slide);
             score.Notes.Guides.AddRange(results);
             args.UpdateScore(score);
         }

@@ -9,9 +9,9 @@ using Ched.Localization;
 
 namespace Ched.Plugins
 {
-    public class SlideReverser : IScorePlugin
+    public class SlideConverter : IScorePlugin
     {
-        public string DisplayName => PluginStrings.SlideReverser;
+        public string DisplayName => PluginStrings.SlideConverter;
 
         public void Run(IScorePluginArgs args)
         {
@@ -46,17 +46,16 @@ namespace Ched.Plugins
             var results = targets.Select(p =>
             {
                 var ordered = p.StepNotes.OrderByDescending(q => q.TickOffset).ToList();
-                var res = new Slide() { StartTick = startTick + (endTick - ordered[0].Tick) };
-                res.SetPosition(ordered[0].LaneIndex, ordered[0].Width);
-                var trailing = new Slide.StepTap(res) { IsVisible = true, TickOffset = startTick + (endTick - p.StartTick) - res.StartTick };
-                trailing.SetPosition(p.StartLaneIndex - res.StartLaneIndex, p.StartWidth - res.StartWidth);
+                var res = new Guide() { StartTick = p.StartTick};
+                res.SetPosition(p.StartLaneIndex, p.StartWidth);
+                var trailing = new Guide.StepTap(res) { IsVisible = true, TickOffset = ordered[0].TickOffset };
+                trailing.SetPosition(ordered[0].LaneIndexOffset, ordered[0].WidthChange );
                 var steps = ordered.Skip(1).Select(q =>
                 {
-                    var step = new Slide.StepTap(res) { IsVisible = q.IsVisible, TickOffset = startTick + (endTick - q.Tick) - res.StartTick };
-                    step.SetPosition(q.LaneIndex - res.StartLaneIndex, q.Width - res.StartWidth);
+                    var step = new Guide.StepTap(res) { IsVisible = q.IsVisible, TickOffset = q.TickOffset};
+                    step.SetPosition(q.LaneIndexOffset , q.WidthChange);
                     if (airedStepDic.ContainsKey(q))
                     {
-                        Console.WriteLine(p.Tick + " " + p.LaneIndex + " " + p.Width);
                         score.Notes.Airs.Add(new Air(step) { HorizontalDirection = airedStepDic[q].HorizontalDirection, VerticalDirection = airedStepDic[q].VerticalDirection });
                         score.Notes.Airs.Remove(airedStepDic[q]);
                     }
@@ -68,7 +67,7 @@ namespace Ched.Plugins
             });
 
             foreach (var slide in targets) score.Notes.Slides.Remove(slide);
-            score.Notes.Slides.AddRange(results);
+            score.Notes.Guides.AddRange(results);
             args.UpdateScore(score);
         }
     }

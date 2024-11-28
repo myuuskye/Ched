@@ -26,6 +26,7 @@ namespace Ched.Plugins
             var airActionStepDic = score.Notes.AirActions
                .Where(p => endStepDic.Values.Contains(p.ParentNote))
                .ToDictionary(p => p.ParentNote as Slide.StepTap, p => p);
+            
 
             foreach (var slide in targets.ToList())
             {
@@ -33,15 +34,25 @@ namespace Ched.Plugins
                 int offset = range.StartTick - slide.StartTick;
                 if (slide.StepNotes.All(p => p.TickOffset != offset)) continue;
 
+                var airedStepDic = score.Notes.Airs
+                .Where(p => slide.StepNotes.Contains(p.ParentNote))
+                .ToDictionary(p => p.ParentNote as Slide.StepTap, p => p);
                 var first = new Slide() { StartTick = slide.StartTick };
                 first.SetPosition(slide.StartLaneIndex, slide.StartWidth);
                 first.StepNotes.AddRange(slide.StepNotes.OrderBy(p => p.TickOffset).TakeWhile(p => p.TickOffset <= offset).Select(p =>
                 {
                     var step = new Slide.StepTap(first) { TickOffset = p.TickOffset, IsVisible = p.IsVisible };
                     step.SetPosition(p.LaneIndexOffset, p.WidthChange);
+                    if (airedStepDic.ContainsKey(p))
+                    {
+                        score.Notes.Airs.Add(new Air(step) { HorizontalDirection = airedStepDic[p].HorizontalDirection, VerticalDirection = airedStepDic[p].VerticalDirection });
+                        score.Notes.Airs.Remove(airedStepDic[p]);
+                    }
                     return step;
                 }));
                 first.StepNotes[first.StepNotes.Count - 1].IsVisible = true;
+                
+
 
                 var second = new Slide() { StartTick = range.StartTick };
                 var trailing = slide.StepNotes.OrderBy(p => p.TickOffset).SkipWhile(p => p.TickOffset < offset).ToList();
@@ -50,6 +61,11 @@ namespace Ched.Plugins
                 {
                     var step = new Slide.StepTap(second) { TickOffset = p.TickOffset - offset, IsVisible = p.IsVisible };
                     step.SetPosition(p.LaneIndex - second.StartLaneIndex, p.Width - second.StartWidth);
+                    if (airedStepDic.ContainsKey(p))
+                    {
+                        score.Notes.Airs.Add(new Air(step) { HorizontalDirection = airedStepDic[p].HorizontalDirection, VerticalDirection = airedStepDic[p].VerticalDirection });
+                        score.Notes.Airs.Remove(airedStepDic[p]);
+                    }
                     return step;
                 }));
 

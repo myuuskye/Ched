@@ -38,6 +38,8 @@ namespace Ched.UI.Windows
         private float noteWidth;
         private int noteChannel;
         private bool noteVisible;
+        private int lanedecimalPlaces;
+        private int widthdecimalPlaces;
 
         public int NoteTick
         {
@@ -90,6 +92,26 @@ namespace Ched.UI.Windows
                 NotifyPropertyChanged();
             }
         }
+        public int LaneIndexDecimalPlaces
+        {
+            get => lanedecimalPlaces;
+            set
+            {
+                if (value == lanedecimalPlaces) return;
+                lanedecimalPlaces = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public int WidthDecimalPlaces
+        {
+            get => widthdecimalPlaces;
+            set
+            {
+                if (value == widthdecimalPlaces) return;
+                widthdecimalPlaces = value;
+                NotifyPropertyChanged();
+            }
+        }
 
 
         public SlideStepNotePropertiesWindowViewModel()
@@ -108,6 +130,8 @@ namespace Ched.UI.Windows
             NoteChannel = Note.Channel;
             NoteLaneIndex = Note.LaneIndexOffset;
             NoteWidth = Note.WidthChange;
+            LaneIndexDecimalPlaces = Note.LaneIndexOffset.ToString().Length;
+            WidthDecimalPlaces = Note.WidthChange.ToString().Length;
             if (IsEnd)
             NoteVisible = true;
             else

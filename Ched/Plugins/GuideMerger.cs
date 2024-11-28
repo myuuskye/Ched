@@ -20,9 +20,19 @@ namespace Ched.Plugins
             bool modified = false;
             int startTick = range.Duration < 0 ? range.StartTick + range.Duration : range.StartTick;
             int endTick = range.Duration < 0 ? range.StartTick : range.StartTick + range.Duration;
+            List<Guide.StepTap> StepList = new List<Guide.StepTap>();
+
+            foreach(var slide in score.Notes.Guides)
+            {
+                StepList.AddRange(slide.StepNotes);
+            }
+
             var endStepDic = score.Notes.Guides.ToDictionary(p => p, p => p.StepNotes.OrderByDescending(q => q.TickOffset).First());
             var airStepDic = score.Notes.Airs
                 .Where(p => endStepDic.Values.Contains(p.ParentNote))
+                .ToDictionary(p => p.ParentNote as Guide.StepTap, p => p);
+            var airStepDic2 = score.Notes.Airs
+                .Where(p => StepList.Contains(p.ParentNote))
                 .ToDictionary(p => p.ParentNote as Guide.StepTap, p => p);
             var airActionStepDic = score.Notes.AirActions
                 .Where(p => endStepDic.Values.Contains(p.ParentNote))
@@ -65,6 +75,14 @@ namespace Ched.Plugins
                     {
                         var step = new Guide.StepTap(heading) { TickOffset = p.Tick - heading.StartTick, IsVisible = p.IsVisible };
                         step.SetPosition(p.LaneIndex - heading.StartLaneIndex, p.Width - heading.StartWidth);
+                        if (airStepDic2.ContainsKey(p))
+                        {
+                            Console.WriteLine(p.Tick + " " + p.LaneIndex + " " + p.Width);
+                            score.Notes.Airs.Add(new Air(step) { HorizontalDirection = airStepDic2[p].HorizontalDirection, VerticalDirection = airStepDic2[p].VerticalDirection });
+                            score.Notes.Airs.Remove(airStepDic2[p]);
+                            
+                        }
+
                         return step;
                     }));
 
@@ -92,6 +110,8 @@ namespace Ched.Plugins
                         airActionStepDic.Add(trailingNewEndStep, airAction);
                         airActionStepDic.Remove(trailingOldEndStep);
                     }
+
+                    
 
                     endStepDic[heading] = trailingNewEndStep;
                     score.Notes.Guides.Remove(trailing);

@@ -120,6 +120,9 @@
   <data name="ComboCalculator" xml:space="preserve">
     <value>Combo Calculator</value>
   </data>
+  <data name="GuideConverter" xml:space="preserve">
+    <value>Guide Convert to Slide</value>
+  </data>
   <data name="GuideKnitter" xml:space="preserve">
     <value>Guide Knitter</value>
   </data>
@@ -134,6 +137,9 @@
   </data>
   <data name="PJsekaiComboCalculator" xml:space="preserve">
     <value>Combo Calculator(PJsekai)</value>
+  </data>
+  <data name="SlideConverter" xml:space="preserve">
+    <value>Slide Convert to Guide</value>
   </data>
   <data name="SlideKnitter" xml:space="preserve">
     <value>Slide Wiggle Generator</value>

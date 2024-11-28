@@ -182,10 +182,12 @@
     <Compile Include="Plugins\ScorePluginArgs.cs" />
     <Compile Include="Plugins\ShiftEvent.cs" />
     <Compile Include="Plugins\GuideKnitter.cs" />
+    <Compile Include="Plugins\GuideConverter.cs" />
     <Compile Include="Plugins\SlideKnitter.cs" />
     <Compile Include="Plugins\GuideMerger.cs" />
     <Compile Include="Plugins\SlideMerger.cs" />
     <Compile Include="Plugins\GuideReverser.cs" />
+    <Compile Include="Plugins\SlideConverter.cs" />
     <Compile Include="Plugins\SlideReverser.cs" />
     <Compile Include="Plugins\GuideSplitter.cs" />
     <Compile Include="Plugins\SlideSplitter.cs" />

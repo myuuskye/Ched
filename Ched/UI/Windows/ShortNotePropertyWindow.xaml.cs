@@ -36,6 +36,8 @@ namespace Ched.UI.Windows
         private float noteLaneIndex;
         private float noteWidth;
         private int noteChannel;
+        private int lanedecimalPlaces;
+        private int widthdecimalPlaces;
 
         public int NoteTick
         {
@@ -78,6 +80,26 @@ namespace Ched.UI.Windows
                 NotifyPropertyChanged();
             }
         }
+        public int LaneIndexDecimalPlaces
+        {
+            get => lanedecimalPlaces;
+            set
+            {
+                if (value == lanedecimalPlaces) return;
+                lanedecimalPlaces = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public int WidthDecimalPlaces
+        {
+            get => widthdecimalPlaces;
+            set
+            {
+                if (value == widthdecimalPlaces) return;
+                widthdecimalPlaces = value;
+                NotifyPropertyChanged();
+            }
+        }
 
 
         public ShortNotePropertiesWindowViewModel()
@@ -100,10 +122,13 @@ namespace Ched.UI.Windows
             NoteChannel = Note.Channel;
             NoteLaneIndex = Note.LaneIndex;
             NoteWidth = Note.Width;
+            LaneIndexDecimalPlaces = Note.LaneIndex.ToString().Length;
+            WidthDecimalPlaces = Note.Width.ToString().Length;
         }
 
         public void CommitEdit()
         {
+            Console.WriteLine(NoteLaneIndex + " " + NoteWidth);
             Note.Tick = NoteTick;
             Note.Channel = NoteChannel;
             Note.LaneIndex = NoteLaneIndex;

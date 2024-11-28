@@ -36,6 +36,8 @@ namespace Ched.UI.Windows
         private float noteLaneIndex;
         private float noteWidth;
         private int noteChannel;
+        private int lanedecimalPlaces;
+        private int widthdecimalPlaces;
 
         public int NoteTick
         {
@@ -80,6 +82,26 @@ namespace Ched.UI.Windows
                 NotifyPropertyChanged();
             }
         }
+        public int LaneIndexDecimalPlaces
+        {
+            get => lanedecimalPlaces;
+            set
+            {
+                if (value == lanedecimalPlaces) return;
+                lanedecimalPlaces = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public int WidthDecimalPlaces
+        {
+            get => widthdecimalPlaces;
+            set
+            {
+                if (value == widthdecimalPlaces) return;
+                widthdecimalPlaces = value;
+                NotifyPropertyChanged();
+            }
+        }
 
 
         public SlideNotePropertiesWindowViewModel()
@@ -97,7 +119,8 @@ namespace Ched.UI.Windows
             NoteLaneIndex = Note.StartLaneIndex;
             NoteWidth = Note.StartWidth;
             NoteChannel = Note.StartNote.Channel;
-
+            LaneIndexDecimalPlaces = Note.StartLaneIndex.ToString().Length;
+            WidthDecimalPlaces = Note.StartWidth.ToString().Length;
         }
 
         public void CommitEdit()
