@@ -618,4 +618,7 @@
   <data name="StepEditor" xml:space="preserve">
     <value>Step Edit Tool</value>
   </data>
+  <data name="DeleteHistory" xml:space="preserve">
+    <value>Delete Histories</value>
+  </data>
 </root>

@@ -92,6 +92,7 @@ namespace Ched.UI.Windows
             Event.Tick = EventTick;
             Event.SpeedRatio = EventSpeedRatio;
             Event.SpeedCh = EventSpeedCh;
+            Event.Type = EventSpeedCh;
         }
     }
 }

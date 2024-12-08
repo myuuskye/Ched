@@ -79,6 +79,7 @@ namespace Ched.UI.Windows
         {
             Event.Tick = EventTick;
             Event.Bpm = EventBpm;
+            Event.Type = -1;
         }
     }
 }

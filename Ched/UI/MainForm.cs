@@ -688,7 +688,8 @@ namespace Ched.UI
                 var item = new BpmChangeEvent()
                 {
                     Tick = NoteView.CurrentTick,
-                    Bpm = form.Bpm
+                    Bpm = form.Bpm,
+                    Type = -1
                 };
                 UpdateEvent(NoteView.ScoreEvents.BpmChangeEvents, item);
             });
@@ -726,7 +727,8 @@ namespace Ched.UI
                 {
                     Tick = NoteView.CurrentTick,
                     Numerator = form.Numerator,
-                    DenominatorExponent = form.DenominatorExponent                  
+                    DenominatorExponent = form.DenominatorExponent,
+                    Type = -2
                 };
                 UpdateEvent(NoteView.ScoreEvents.TimeSignatureChangeEvents, item);
             });
@@ -747,7 +749,8 @@ namespace Ched.UI
                     Comment = form.Comment,
                     Size = (float)form.TextSize,
                     Color = form.Color,
-                    
+                    Type = -3
+
                 };
                 UpdateEvent(NoteView.ScoreEvents.CommentEvents, item);
             });
@@ -3964,6 +3967,7 @@ namespace Ched.UI
                 markerButton.Checked = noteView.EditMode == EditMode.Marker;
                 stepeditorButton.Checked = noteView.EditMode == EditMode.StepEdit;
             };
+            
 
 
             var scrollAmountCounts = new float[]
@@ -4053,6 +4057,7 @@ namespace Ched.UI
                 }
                 airKind.Text = "AIR";
             };
+            
 
 
             var guideKind = new CheckableToolStripSplitButton()
@@ -4193,7 +4198,7 @@ namespace Ched.UI
                         break;
                 }
             };
-
+            
 
 
 
@@ -4421,8 +4426,79 @@ namespace Ched.UI
 
             });
             */
+            var widthSetCounts = new float[]
+            {
+                1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+            };
 
 
+            var widthSetBox = new ToolStripComboBox("設置するノーツの幅")
+            {
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                AutoSize = true,
+                Width = 30
+            };
+            widthSetBox.Items.Add(MainFormStrings.DeleteHistory);
+            widthSetBox.Items.AddRange(widthSetCounts.Select(p => p.ToString()).ToArray());
+            widthSetBox.Items.Add(MainFormStrings.Custom);
+
+            widthSetBox.SelectedIndexChanged += (s, e) =>
+            {
+
+                if (widthSetBox.SelectedIndex == widthSetBox.Items.Count - 1)
+                {
+                    var form = new CustomWidthSetSelectionForm(NoteView.Notes, NoteView.CurrentTick, NoteView.HeadTick, NoteView.HeadTick + (int)(ClientSize.Height * NoteView.UnitBeatTick / NoteView.UnitBeatHeight)) { Width = NoteView.LastWidth};
+                    Console.WriteLine(NoteView.Notes.Taps.Count);
+                    if (form.ShowDialog(this) == DialogResult.OK)
+                    {
+                        if(form.SelectNote != null)
+                        {
+                            NoteView.LastWidth = form.SelectNote.Width;
+                            if (!widthSetBox.Items.Contains(form.SelectNote.Width.ToString()))
+                            {
+                                widthSetBox.Items.Insert(widthSetBox.Items.Count - 1, form.SelectNote.Width.ToString());
+                            }
+                            widthSetBox.SelectedItem = form.SelectNote.Width.ToString();
+                        }
+                        else
+                        {
+                            NoteView.LastWidth = form.Width;
+                            if (!widthSetBox.Items.Contains(form.Width.ToString()))
+                            {
+                                widthSetBox.Items.Insert(widthSetBox.Items.Count - 1, form.Width.ToString());
+                            }
+                            widthSetBox.SelectedItem = form.Width.ToString();
+                        }
+                        
+                    }
+                }
+                else if (widthSetBox.SelectedIndex == 0)
+                {
+                    widthSetBox.Items.Clear();
+                    widthSetBox.Items.Add(MainFormStrings.DeleteHistory);
+                    widthSetBox.Items.AddRange(widthSetCounts.Select(p => p.ToString()).ToArray());
+                    widthSetBox.Items.Add(MainFormStrings.Custom);
+                    widthSetBox.SelectedItem = noteView.LastWidth.ToString();
+                }
+                else
+                {
+                    
+                    noteView.LastWidth = float.Parse(widthSetBox.SelectedItem.ToString());
+
+                }
+                noteView.Update();
+                noteView.Focus();
+            };
+            widthSetBox.SelectedItem = noteView.LastWidth.ToString();
+
+            noteView.LastWidthChanged += (s, e) =>
+            {
+                
+                if (!widthSetBox.Items.Contains(noteView.LastWidth.ToString()))
+                    widthSetBox.Items.Insert(widthSetBox.Items.Count - 1, noteView.LastWidth.ToString());
+
+                widthSetBox.SelectedItem = noteView.LastWidth.ToString();
+            };
 
             var menu = new ToolStrip(new ToolStripItem[] {});
 
@@ -4433,7 +4509,7 @@ namespace Ched.UI
                 tapButton, exTapButton, holdButton, slideButton, slideStepButton, airKind, airActionButton, flickButton, damageButton, guideKind,
                  guideStepButton, tap2Button, exTap2Button, flick2Button, damage2Button,
                 new ToolStripSeparator(), stepNoteTapButton,
-                quantizeComboBox, new ToolStripSeparator(), speedChBox, viewChBox,  laneVisible, widthAmountBox, deleteChhistory, nameChannel
+                quantizeComboBox, widthSetBox, new ToolStripSeparator(), speedChBox, viewChBox,  laneVisible, widthAmountBox, deleteChhistory, nameChannel
             });
             }
             else
@@ -4442,7 +4518,7 @@ namespace Ched.UI
             {
                 tapButton, exTapButton, holdButton, slideButton, slideStepButton, airKind, airActionButton, flickButton, damageButton, guideKind,
                  guideStepButton, tap2Button, exTap2Button, flick2Button, damage2Button,
-                quantizeComboBox, new ToolStripSeparator(), speedChBox, viewChBox,  laneVisible, widthAmountBox, deleteChhistory, nameChannel
+                quantizeComboBox, widthSetBox, new ToolStripSeparator(), speedChBox, viewChBox,  laneVisible, widthAmountBox, deleteChhistory, nameChannel
             });
             }
 

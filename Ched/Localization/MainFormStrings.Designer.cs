@@ -511,6 +511,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   履歴を削除 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string DeleteHistory {
+            get {
+                return ResourceManager.GetString("DeleteHistory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   スライド始点を削除する に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string DeleteStart {

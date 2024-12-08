@@ -633,4 +633,7 @@
   <data name="StepEditor" xml:space="preserve">
     <value>中継点編集</value>
   </data>
+  <data name="DeleteHistory" xml:space="preserve">
+    <value>履歴を削除</value>
+  </data>
 </root>

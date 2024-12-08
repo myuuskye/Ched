@@ -93,6 +93,7 @@ namespace Ched.UI.Windows
             Event.Tick = EventTick;
             Event.Numerator = EventNumrator;
             Event.DenominatorExponent = EventDenominatorExponent;
+            Event.Type = -2;
         }
     }
 }

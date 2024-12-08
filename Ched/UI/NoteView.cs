@@ -48,6 +48,7 @@ namespace Ched.UI
         public event EventHandler SlideStartChanged;
         public event EventHandler SlideEndChanged;
         public event EventHandler ChannelVisualChanged;
+        public event EventHandler LastWidthChanged;
 
 
 
@@ -91,6 +92,7 @@ namespace Ched.UI
         private bool isNewSlideStepVisible = true;
         private bool isNewGuideStepVisible = true;
         private bool isNewNoteStart = false;
+        private float lastWidth = 4;
 
 
         /// <summary>
@@ -612,7 +614,15 @@ namespace Ched.UI
         /// </summary>
         public float MinimumEdgeHitWidth => UnitLaneWidth * 0.4f;
 
-        protected float LastWidth { get; set; } = 4;
+        public float LastWidth
+        {
+            get { return lastWidth; }
+            set
+            {
+                lastWidth = value;
+                LastWidthChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
 
         public NoteCollection Notes { get; private set; } = new NoteCollection(new Core.NoteCollection());
 
@@ -5593,21 +5603,62 @@ namespace Ched.UI
 
             foreach (var @event in data.SelectedEvents.BpmChangeEvents)
             {
-                @event.Tick = @event.Tick - originTick + CurrentTick;
+                var prev = ScoreEvents.BpmChangeEvents.SingleOrDefault(p => p.Tick == @event.Tick - originTick + CurrentTick );
+                if(prev == null)
+                { //存在しなかったら
+                    @event.Tick = @event.Tick - originTick + CurrentTick;
+                }
+                else
+                { //存在したら
+                    prev.Tick = @event.Tick - originTick + CurrentTick;
+                    prev.Bpm = @event.Bpm;
+                }
+                
             }
 
             foreach(var @event in data.SelectedEvents.TimeSignatureChangeEvents)
             {
-                @event.Tick = @event.Tick - originTick + CurrentTick;
+                var prev = ScoreEvents.TimeSignatureChangeEvents.SingleOrDefault(p => p.Tick == @event.Tick - originTick + CurrentTick);
+                if (prev == null)
+                { 
+                    @event.Tick = @event.Tick - originTick + CurrentTick;
+                }
+                else
+                { 
+                    prev.Tick = @event.Tick - originTick + CurrentTick;
+                    prev.DenominatorExponent = @event.DenominatorExponent;
+                    prev.Numerator = @event.Numerator;
+                }
             }
 
             foreach (var @event in data.SelectedEvents.HighSpeedChangeEvents)
             {
-                @event.Tick = @event.Tick - originTick + CurrentTick;
+                var prev = ScoreEvents.HighSpeedChangeEvents.SingleOrDefault(p => p.Tick == @event.Tick - originTick + CurrentTick && p.Type == @event.Type);
+                if (prev == null)
+                {
+                    @event.Tick = @event.Tick - originTick + CurrentTick;
+                }
+                else
+                {
+                    prev.Tick = @event.Tick - originTick + CurrentTick;
+                    prev.SpeedCh = @event.SpeedCh;
+                    prev.SpeedRatio = @event.SpeedRatio;
+                }
             }
             foreach (var @event in data.SelectedEvents.CommentEvents)
             {
-                @event.Tick = @event.Tick - originTick + CurrentTick;
+                var prev = ScoreEvents.CommentEvents.SingleOrDefault(p => p.Tick == @event.Tick - originTick + CurrentTick);
+                if (prev == null)
+                {
+                    @event.Tick = @event.Tick - originTick + CurrentTick;
+                }
+                else
+                {
+                    prev.Tick = @event.Tick - originTick + CurrentTick;
+                    prev.Size = @event.Size;
+                    prev.Color = @event.Color;
+                    prev.Comment = @event.Comment;
+                }
             }
 
             action(data);
@@ -5643,22 +5694,63 @@ namespace Ched.UI
 
             foreach (var @event in data.SelectedEvents.BpmChangeEvents)
             {
-                @event.Tick = @event.Tick - originTick + CurrentTick;
+                var prev = ScoreEvents.BpmChangeEvents.SingleOrDefault(p => p.Tick == @event.Tick - originTick + CurrentTick );
+                if(prev == null)
+                { //存在しなかったら
+                    @event.Tick = @event.Tick - originTick + CurrentTick;
+                }
+                else
+                { //存在したら
+                    prev.Tick = @event.Tick - originTick + CurrentTick;
+                    prev.Bpm = @event.Bpm;
+                }
+                
             }
 
-            foreach (var @event in data.SelectedEvents.TimeSignatureChangeEvents)
+            foreach(var @event in data.SelectedEvents.TimeSignatureChangeEvents)
             {
-                @event.Tick = @event.Tick - originTick + CurrentTick;
+                var prev = ScoreEvents.TimeSignatureChangeEvents.SingleOrDefault(p => p.Tick == @event.Tick - originTick + CurrentTick);
+                if (prev == null)
+                { 
+                    @event.Tick = @event.Tick - originTick + CurrentTick;
+                }
+                else
+                { 
+                    prev.Tick = @event.Tick - originTick + CurrentTick;
+                    prev.DenominatorExponent = @event.DenominatorExponent;
+                    prev.Numerator = @event.Numerator;
+                }
             }
 
             foreach (var @event in data.SelectedEvents.HighSpeedChangeEvents)
             {
-                @event.Tick = @event.Tick - originTick + CurrentTick;
-                @event.SpeedCh = channel; //ハイスピードのチャンネルを今のチャンネルにする
+                var prev = ScoreEvents.HighSpeedChangeEvents.SingleOrDefault(p => p.Tick == @event.Tick - originTick + CurrentTick && p.Type == @event.Type);
+                if (prev == null)
+                {
+                    @event.Tick = @event.Tick - originTick + CurrentTick;
+                }
+                else
+                {
+                    prev.Tick = @event.Tick - originTick + CurrentTick;
+                    prev.SpeedCh = channel;
+                    prev.SpeedRatio = @event.SpeedRatio;
+                    prev.Type = channel;
+                }
             }
             foreach (var @event in data.SelectedEvents.CommentEvents)
             {
-                @event.Tick = @event.Tick - originTick + CurrentTick;
+                var prev = ScoreEvents.CommentEvents.SingleOrDefault(p => p.Tick == @event.Tick - originTick + CurrentTick);
+                if (prev == null)
+                {
+                    @event.Tick = @event.Tick - originTick + CurrentTick;
+                }
+                else
+                {
+                    prev.Tick = @event.Tick - originTick + CurrentTick;
+                    prev.Size = @event.Size;
+                    prev.Color = @event.Color;
+                    prev.Comment = @event.Comment;
+                }
             }
 
             action(data);

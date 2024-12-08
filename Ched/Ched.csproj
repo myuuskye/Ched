@@ -200,6 +200,12 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="RadixConvert.cs" />
+    <Compile Include="UI\CustomWidthSetSelectionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\CustomWidthSetSelectionForm.Designer.cs">
+      <DependentUpon>CustomWidthSetSelectionForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="UI\MarkerInsertForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -406,6 +412,12 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\CustomWidthSetSelectionForm.en.resx">
+      <DependentUpon>CustomWidthSetSelectionForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\CustomWidthSetSelectionForm.resx">
+      <DependentUpon>CustomWidthSetSelectionForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\MarkerInsertForm.en.resx">
       <DependentUpon>MarkerInsertForm.cs</DependentUpon>
