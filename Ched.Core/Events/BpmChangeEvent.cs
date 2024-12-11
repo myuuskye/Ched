@@ -22,5 +22,8 @@ namespace Ched.Core.Events
             get { return bpm; }
             set { bpm = value; }
         }
+
+        public int Type = -1;
+
     }
 }

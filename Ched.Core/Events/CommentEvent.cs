@@ -38,6 +38,6 @@ namespace Ched.Core.Events
             get { return size; }
             set { size = value; }
         }
-
+        public int Type = -3;
     }
 }

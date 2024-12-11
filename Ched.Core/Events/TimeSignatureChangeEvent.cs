@@ -57,5 +57,6 @@ namespace Ched.Core.Events
                 denominatorExponent = value;
             }
         }
+        public int Type = -2;
     }
 }

@@ -330,7 +330,7 @@ namespace Ched.UI
             var book = new ScoreBook();
             var events = book.Score.Events;
             events.BpmChangeEvents.Add(new BpmChangeEvent() { Tick = 0, Bpm = 120 });
-            events.TimeSignatureChangeEvents.Add(new TimeSignatureChangeEvent() { Tick = 0, Numerator = 4, DenominatorExponent = 2 });
+            events.TimeSignatureChangeEvents.Add(new TimeSignatureChangeEvent() { Tick = 0, Numerator = 4, DenominatorExponent = 2, Type = -2 });
             book.LaneOffset = ApplicationSettings.Default.LaneOffset;
 
             book.ChannelNames = new Dictionary<int, string>()
