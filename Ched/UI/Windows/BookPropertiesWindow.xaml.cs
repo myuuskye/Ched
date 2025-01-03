@@ -26,12 +26,14 @@ namespace Ched.UI.Windows
 
     public class BookPropertiesWindowViewModel : ViewModel
     {
-        private ScoreBook ScoreBook { get; } = new ScoreBook();
+        public ScoreBook ScoreBook { get; } = new ScoreBook();
         private SoundSource MusicSource { get; set; } = new SoundSource();
         private SoundSource GuideSource { get; set; } = Configuration.SoundSettings.Default.GuideSound;
 
         public string SoundSourceFilter { get; } = Helpers.GetFilterString(FileFilterStrings.AudioFilter, SoundSource.SupportedExtensions);
         public Action<string> SetMusicSourceFileAction => path => MusicSourcePath = path;
+
+
 
         private string title;
         public string Title
@@ -159,6 +161,17 @@ namespace Ched.UI.Windows
             }
         }
 
+        private Dictionary<int, bool> exportSettings;
+        public Dictionary<int, bool> ExportSettings
+        {
+            get => exportSettings;
+            set
+            {
+                if (value == exportSettings) return;
+                exportSettings = value;
+                NotifyPropertyChanged();
+            }
+        }
 
 
 

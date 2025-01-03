@@ -466,6 +466,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   カスタムされたスライド に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string CustomizedSlide {
+            get {
+                return ResourceManager.GetString("CustomizedSlide", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   切り取り に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Cut {
@@ -556,6 +565,42 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   説明 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string EP_desc {
+            get {
+                return ResourceManager.GetString("EP_desc", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ID に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string EP_id {
+            get {
+                return ResourceManager.GetString("EP_id", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   項目 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string EP_name {
+            get {
+                return ResourceManager.GetString("EP_name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   値 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string EP_value {
+            get {
+                return ResourceManager.GetString("EP_value", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   でスライドの終点を消す に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string EraceSlideEnd {
@@ -610,6 +655,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   エクスポート設定 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ExportSettings {
+            get {
+                return ResourceManager.GetString("ExportSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   フェードを切り替える に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string FadeChange {
@@ -660,6 +714,15 @@ namespace Ched.Localization {
         public static string FlipSelectedNotes {
             get {
                 return ResourceManager.GetString("FlipSelectedNotes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   生成される に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Generated {
+            get {
+                return ResourceManager.GetString("Generated", resourceCulture);
             }
         }
         
@@ -786,6 +849,15 @@ namespace Ched.Localization {
         public static string InsertSingleBlankAtBeginning {
             get {
                 return ResourceManager.GetString("InsertSingleBlankAtBeginning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   中継点とそのAirを非表示にする に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string InvisibleStep {
+            get {
+                return ResourceManager.GetString("InvisibleStep", resourceCulture);
             }
         }
         
@@ -1078,6 +1150,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   通常状態で に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NormalCondition {
+            get {
+                return ResourceManager.GetString("NormalCondition", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   ノーツ に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Notes {
@@ -1092,6 +1173,15 @@ namespace Ched.Localization {
         public static string NotesDesigner {
             get {
                 return ResourceManager.GetString("NotesDesigner", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   を生成しない に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NotGenerate {
+            get {
+                return ResourceManager.GetString("NotGenerate", resourceCulture);
             }
         }
         
@@ -1119,6 +1209,15 @@ namespace Ched.Localization {
         public static string Other {
             get {
                 return ResourceManager.GetString("Other", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   とこのノーツが重なっていれば生成をスキップする に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string OverlapNote {
+            get {
+                return ResourceManager.GetString("OverlapNote", resourceCulture);
             }
         }
         
@@ -1339,6 +1438,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   スライド終点 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SlideEnd {
+            get {
+                return ResourceManager.GetString("SlideEnd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   スライド終点のデフォルトタイプ に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string SlideEndTypes {
@@ -1353,6 +1461,15 @@ namespace Ched.Localization {
         public static string SlideNormal {
             get {
                 return ResourceManager.GetString("SlideNormal", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   スライド始点 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SlideStart {
+            get {
+                return ResourceManager.GetString("SlideStart", resourceCulture);
             }
         }
         
@@ -1506,6 +1623,15 @@ namespace Ched.Localization {
         public static string Title {
             get {
                 return ResourceManager.GetString("Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   種類 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Type {
+            get {
+                return ResourceManager.GetString("Type", resourceCulture);
             }
         }
         

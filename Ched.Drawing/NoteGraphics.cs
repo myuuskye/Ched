@@ -231,7 +231,7 @@ namespace Ched.Drawing
         /// <param name="steps">全ての中継点位置からなるリスト</param>
         /// <param name="visibleSteps">可視中継点のY座標からなるリスト</param>
         /// <param name="noteHeight">ノート描画高さ</param>
-        public static void DrawSlideBackground(this DrawingContext dc, IEnumerable<SlideStepElement> steps, IEnumerable<float> visibleSteps, float noteHeight, bool isch, int mode, bool usingBezier , IReadOnlyCollection<Air> airs, IReadOnlyCollection<Flick> flicks)
+        public static void DrawSlideBackground(this DrawingContext dc, IEnumerable<SlideStepElement> steps, IEnumerable<float> visibleSteps, float noteHeight, bool isch, int mode, bool usingBezier, bool customized, IReadOnlyCollection<Air> airs, IReadOnlyCollection<Flick> flicks)
         {
 
             var prevMode = dc.Graphics.SmoothingMode;
@@ -287,180 +287,469 @@ namespace Ched.Drawing
                         }
                     }
                     var lineSteps = orderedSteps.Where(q => !q.Skippable).ToList();
-                    foreach (var step in orderedSteps)
+                    if (customized)
                     {
-                        if (step.Skippable) continue;
-                        if (i + 2 > orderedSteps.Count)
-                            continue;
-                        int curvetype1 = 0;
-                        int curvetype2 = 0;
-                        var air = airs.Where(p => p.ParentNote.Tick == step.Tick && p.ParentNote.LaneIndex == step.LaneIndex).FirstOrDefault();
-                        if (air != null)
+                        foreach (var step in orderedSteps)
                         {
-                            curvetype1 = (int)air.HorizontalDirection + 1;
-                            curvetype2 = (int)air.VerticalDirection;
-                            if (curvetype2 == 0) curvetype1 += 3; //DOWN  center1 left,right 2,3 UP center4 left, right5,6
-                        }
-                        step.CurveType = curvetype1;
-
-                        if (flicks.Where(q => visibleSteps.Contains(step.Point.Y) && orderedVisibleSteps.Last() != step.Point.Y && orderedSteps.First().Point.Y != step.Point.Y && step.Tick == q.Tick && step.LaneIndex == q.LaneIndex).FirstOrDefault() != null)
-                        {
-                            step.Skippable = true; //もしフリックが重なってたらスキップ可能に
-
-                        }
-
-                        while (!orderedSteps[i + 1].Skippable)
-                        {
-
-                            //Console.WriteLine("i: " + i + " " + !orderedSteps[i + 1].Skippable);
-                            if (!orderedSteps[i + 1].Skippable)
+                            if (step.Skippable) continue;
+                            if (i + 2 > orderedSteps.Count)
+                                continue;
+                            int leftcurvetype1 = 0;
+                            int leftcurvetype2 = 0;
+                            var leftair = airs.Where(p => p.ParentNote.Tick == step.Tick && p.ParentNote.LaneIndex == step.LaneIndex).FirstOrDefault();
+                            if (leftair != null)
                             {
-                                break;
+                                leftcurvetype1 = (int)leftair.HorizontalDirection + 1;
+                                leftcurvetype2 = (int)leftair.VerticalDirection;
+                                if (leftcurvetype2 == 0) leftcurvetype1 += 3; //DOWN  center1 left,right 2,3 UP center4 left, right5,6
                             }
-                            else
+                            int rightcurvetype1 = 0;
+                            int rightcurvetype2 = 0;
+                            var rightair = airs.Where(p => p.ParentNote.Tick == step.Tick && (p.ParentNote.LaneIndex + p.ParentNote.Width) == (step.LaneIndex + step.LaneWidth)).FirstOrDefault();                            if (rightair != null)
                             {
-                                i++;
+                                rightcurvetype1 = (int)rightair.HorizontalDirection + 1;
+                                rightcurvetype2 = (int)rightair.VerticalDirection;
+                                if (rightcurvetype2 == 0) rightcurvetype1 += 3; //DOWN  center1 left,right 2,3 UP center4 left, right5,6
                             }
 
+
+                            if (flicks.Where(q => visibleSteps.Contains(step.Point.Y) && orderedVisibleSteps.Last() != step.Point.Y && orderedSteps.First().Point.Y != step.Point.Y && step.Tick == q.Tick && step.LaneIndex == q.LaneIndex).FirstOrDefault() != null)
+                            {
+                                step.Skippable = true; //もしフリックが重なってたらスキップ可能に
+
+                            }
+
+                            while (!orderedSteps[i + 1].Skippable)
+                            {
+
+                                //Console.WriteLine("i: " + i + " " + !orderedSteps[i + 1].Skippable);
+                                if (!orderedSteps[i + 1].Skippable)
+                                {
+                                    break;
+                                }
+                                else
+                                {
+                                    i++;
+                                }
+
+                            }
+
+                            if (step.Skippable) { i++; continue; };
+                            //Console.WriteLine(lineSteps.IndexOf(step) + " count:" + lineSteps.Count);
+                            var nextstep = lineSteps.OrderBy(q => q.Tick).ToList()[Math.Min(lineSteps.IndexOf(step) + 1, lineSteps.Count - 1)];
+
+                            float un = nextstep.Point.Y - step.Point.Y;
+                            float ln = nextstep.Point.X - step.Point.X;
+
+
+
+                            var start = step.Point;
+                            var step1 = step.Point;
+                            var step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
+                            var end = new PointF(step.Point.X + step.Width, step.Point.Y);
+                            var step3 = step.Point;
+                            var step4 = new PointF(step.Point.X + step.Width, step.Point.Y + un / 5 * 3);
+                            var end2 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                            var step5 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                            var step6 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                            var end3 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                            var step7 = new PointF(step.Point.X, step.Point.Y + un / 5 * 3);
+                            var step8 = new PointF(nextstep.Point.X + nextstep.Width, step.Point.Y);
+                            var step9 = new PointF(step.Point.X + step.Width, nextstep.Point.Y);
+                            PointF[] points = { start, step1, step2, end };
+                            PointF[] points2 = { start, step1, step2, end };
+                             switch (leftcurvetype1)
+                            {
+                                case 0:
+                                    
+                                    start = step.Point;
+                                    end = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                    step1 = new PointF(step.Point.X + step.Width, step.Point.Y + un / 5 * 3);
+                                    end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                    end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                    step2 = new PointF(nextstep.Point.X + nextstep.Width, step.Point.Y + un / 5 * 2);
+                                    switch (rightcurvetype1)
+                                    {
+                                        case 0:
+                                            points = new[] { start, start, end, end, end, end2, end2, end2, end3, end3};
+                                            break;
+                                        case 1:
+                                            points = new[] { start, start, end, end, end, step1, end2, end2, end3, end3 };
+                                            break;
+                                        case 2:
+                                        case 3:
+                                            points = new[] { start, start, end, end, end, step2, end2, end2, end3, end3 };
+                                            break;
+                                        case 4:
+                                            points = new[] { start, start, end, end, step1, step2, end2, end2, end3, end3 };
+                                            break;
+                                        case 5:
+                                        case 6:
+                                            points = new[] { start, start, end, end, step2, step1, end2, end2, end3, end3 };
+                                            break;
+                                        default:
+                                            points = new[] { step.Point, end, end3, end2 };
+                                            break;
+                                    }
+
+                                    path.AddBeziers(points);
+                                    path.CloseFigure();
+                                    break;
+                                case 1:
+
+                                    start = step.Point;
+                                    end = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                    step1 = new PointF(step.Point.X + step.Width, step.Point.Y + un / 5 * 3);
+                                    end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                    end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                    step2 = new PointF(nextstep.Point.X + nextstep.Width, step.Point.Y + un / 5 * 2);
+                                    step3 = new PointF(step.Point.X, step.Point.Y + un / 5 * 3);
+                                    switch (rightcurvetype1)
+                                    {
+                                        case 0:
+                                            points = new[] { start, start, end, end, end, end2, end2, end2, end3, end3, end3, step3, start };
+                                            break;
+                                        case 1:
+                                            points = new[] { start, start, end, end, end, step1, end2, end2, end3, end3, end3, step3, start };
+                                            break;
+                                        case 2:
+                                        case 3:
+                                            points = new[] { start, start, end, end, end, step2, end2, end2, end3, end3, end3, step3, start };
+                                            break;
+                                        case 4:
+                                            points = new[] { start, start, end, end, step1, step2, end2, end2, end3, end3, step3, start };
+                                            break;
+                                        case 5:
+                                        case 6:
+                                            points = new[] { start, start, end, end, step2, step1, end2, end2, end3, end3, step3, start };
+                                            break;
+                                        default:
+                                            points = new[] { step.Point, end, end3, end2 };
+                                            break;
+                                    }
+
+                                    path.AddBeziers(points);
+                                    path.CloseFigure();
+                                    break;
+
+                                case 2:
+                                case 3:
+
+                                    start = step.Point;
+                                    end = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                    step1 = new PointF(step.Point.X + step.Width, step.Point.Y + un / 5 * 3);
+                                    end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                    end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                    step2 = new PointF(nextstep.Point.X + nextstep.Width, step.Point.Y + un / 5 * 2);
+                                    step3 = new PointF(step.Point.X, step.Point.Y + un / 5 * 3);
+                                    step4 = new PointF(nextstep.Point.X, step.Point.Y + un / 5 * 2);
+                                    switch (rightcurvetype1)
+                                    {
+                                        case 0:
+                                            points = new[] { start, start, end, end, end, end2, end2, end2, end3, end3, end3, step4, start };
+                                            break;
+                                        case 1:
+                                            points = new[] { start, start, end, end, end, step1, end2, end2, end3, end3, end3, step4, start };
+                                            break;
+                                        case 2:
+                                        case 3:
+                                            points = new[] { start, start, end, end, end, step2, end2, end2, end3, end3, end3, step4, start };
+                                            break;
+                                        case 4:
+                                            points = new[] { start, start, end, end, step1, step2, end2, end2, end3, end3, step4, start };
+                                            break;
+                                        case 5:
+                                        case 6:
+                                            points = new[] { start, start, end, end, step2, step1, end2, end2, end3, end3, step4, start };
+                                            break;
+                                        default:
+                                            points = new[] { step.Point, end, end3, end2 };
+                                            break;
+                                    }
+
+                                    path.AddBeziers(points);
+                                    path.CloseFigure();
+                                    break;
+
+                                case 4:
+
+
+                                    start = step.Point;
+                                    end = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                    step1 = new PointF(step.Point.X + step.Width, step.Point.Y + un / 5 * 3);
+                                    end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                    end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                    step2 = new PointF(nextstep.Point.X + nextstep.Width, step.Point.Y + un / 5 * 2);
+                                    step3 = new PointF(step.Point.X, step.Point.Y + un / 5 * 3);
+                                    step4 = new PointF(nextstep.Point.X, step.Point.Y + un / 5 * 2);
+                                    step5 = new PointF(nextstep.Point.X, nextstep.Point.Y - un / 5 * 3);
+                                    switch (rightcurvetype1)
+                                    {
+                                        case 0:
+                                            points = new[] { start, start, end, end, end, end2, end2, end2, end3, end3, step5, step3, start };
+                                            break;
+                                        case 1:
+                                            points = new[] { start, start, end, end, end, step1, end2, end2, end3, end3, step5, step3, start };
+                                            break;
+                                        case 2:
+                                        case 3:
+                                            points = new[] { start, start, end, end, end, step2, end2, end2, end3, end3, step5, step3, start };
+                                            break;
+                                        case 4:
+                                            points = new[] { start, start, end, end, step1, step2, end2, end2, end3, end3, step5, step3, start };
+                                            break;
+                                        case 5:
+                                        case 6:
+                                            points = new[] { start, start, end, end, step2, step1, end2, end2, end3, end3, step5, step3, start };
+                                            break;
+                                        default:
+                                            points = new[] { step.Point, end, end3, end2 };
+                                            break;
+                                    }
+
+
+                                    path.AddBeziers(points);
+                                    path.CloseFigure();
+
+                                    break;
+
+                                case 5:
+                                case 6:
+
+                                    start = step.Point;
+                                    end = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                    step1 = new PointF(step.Point.X + step.Width, step.Point.Y + un / 5 * 3);
+                                    end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                    end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                    step2 = new PointF(nextstep.Point.X + nextstep.Width, step.Point.Y + un / 5 * 2);
+                                    step3 = new PointF(step.Point.X, step.Point.Y + un / 5 * 3);
+                                    step4 = new PointF(nextstep.Point.X, step.Point.Y + un / 5 * 2);
+                                    step5 = new PointF(nextstep.Point.X, nextstep.Point.Y - un / 5 * 3);
+                                    step6 = new PointF(step.Point.X, nextstep.Point.Y - un / 5 * 3);
+                                    step7 = new PointF(nextstep.Point.X, step.Point.Y + un / 5 * 3);
+                                    switch (rightcurvetype1)
+                                    {
+                                        case 0:
+                                            points = new[] { start, start, end, end, end, end2, end2, end2, end3, end3, step6, step7, start };
+                                            break;
+                                        case 1:
+                                            points = new[] { start, start, end, end, end, step1, end2, end2, end3, end3, step6, step7, start };
+                                            break;
+                                        case 2:
+                                        case 3:
+                                            points = new[] { start, start, end, end, end, step2, end2, end2, end3, end3, step6, step7, start };
+                                            break;
+                                        case 4:
+                                            points = new[] { start, start, end, end, step1, step2, end2, end2, end3, end3, step6, step7, start };
+                                            break;
+                                        case 5:
+                                        case 6:
+                                            points = new[] { start, start, end, end, step2, step1, end2, end2, end3, end3, step6, step7, start };
+                                            break;
+                                        default:
+                                            points = new[] { step.Point, end, end3, end2 };
+                                            break;
+                                    }
+
+                                    path.AddBeziers(points);
+                                    path.CloseFigure();
+
+                                    break;
+
+                                default:
+                                    //Console.WriteLine("default");
+                                    points = new[] { step.Point, end, end3, end2 };
+                                    path.AddPolygon(points);
+                                    path.CloseFigure();
+                                    break;
+
+                            }
+
+
+
+                            i++;
                         }
-
-                        if (step.Skippable) { i++; continue; };
-                        //Console.WriteLine(lineSteps.IndexOf(step) + " count:" + lineSteps.Count);
-                        var nextstep = lineSteps.OrderBy(q => q.Tick).ToList()[Math.Min(lineSteps.IndexOf(step) + 1, lineSteps.Count - 1)];
-
-                        float un = nextstep.Point.Y - step.Point.Y;
-                        float ln = nextstep.Point.X - step.Point.X;
-
-                        var startpoint = step.Point;
-                        var steppoint1 = new PointF(step.Point.X, step.Point.Y + un / 3);
-                        var steppoint2 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                        var steppoint3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                        var endpoint = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                        var startpointr = new PointF(step.Point.X + step.Width, step.Point.Y);
-                        var steppoint1r = new PointF(step.Point.X + step.Width, step.Point.Y + un / 3);
-                        var steppoint2r = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-                        var endpointr = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-
-                        var start = step.Point;
-                        var step1 = step.Point;
-                        var step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
-                        var end = new PointF(step.Point.X + step.Width, step.Point.Y);
-                        var step3 = step.Point;
-                        var step4 = new PointF(step.Point.X + step.Width / 2, step.Point.Y + un / 3);
-                        var end2 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                        var step5 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                        var step6 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-                        var end3 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-                        var step7 = new PointF(step.Point.X, step.Point.Y + un / 5 * 3);
-                        var step8 = new PointF(nextstep.Point.X, nextstep.Point.Y - un / 5 * 3);
-                        PointF[] points = { start, step1, step2, end };
-                        PointF[] points2 = { start, step1, step2, end };
-
-                        switch (step.CurveType)
-                        {
-                            case 0:
-                                points = new[] { step.Point, end, end3, end2 };
-                                path.AddPolygon(points);
-                                path.CloseFigure();
-                                break;
-                            case 1:
-
-                                start = step.Point;
-                                step1 = step.Point;
-                                step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                end = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                step3 = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                step4 = new PointF(step.Point.X + step.Width, step.Point.Y + un / 5 * 3);
-                                end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-                                step5 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-                                step6 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                                end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                                step7 = new PointF(step.Point.X, step.Point.Y + un / 5 * 3);
-
-                                points = new[] { start, step1, step2, end, step3, step4, end2, step5, step6, end3, step6, step7, start };
-
-                                path.AddBeziers(points);
-                                path.CloseFigure();
-                                break;
-
-                            case 2:
-                            case 3:
-
-                                start = step.Point;
-                                step1 = step.Point;
-                                step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                end = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                step3 = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                step4 = new PointF(nextstep.Point.X + nextstep.Width, step.Point.Y + un / 5 * 2);
-                                end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-                                step5 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-                                step6 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                                end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                                step7 = new PointF(nextstep.Point.X, step.Point.Y + un / 5 * 2);
-
-                                points = new[] { start, step1, step2, end, step3, step4, end2, step5, step6, end3, step6, step7, start };
-                                path.AddBeziers(points);
-                                path.CloseFigure();
-                                break;
-
-                            case 4:
-
-                                start = step.Point;
-                                step1 = step.Point;
-                                step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                end = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                step3 = new PointF(step.Point.X + step.Width, step.Point.Y + un / 5 * 3);
-                                step4 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y - un / 5 * 3);
-                                end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-                                step5 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-                                step6 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                                end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                                step7 = new PointF(step.Point.X, step.Point.Y + un / 5 * 3);
-                                step8 = new PointF(nextstep.Point.X, nextstep.Point.Y - un / 5 * 3);
-
-                                points = new[] { start, step1, step2, end, step3, step4, end2, step5, step6, end3, step8, step7, start };
-
-                                path.AddBeziers(points);
-                                path.CloseFigure();
-
-                                break;
-
-                            case 5:
-                            case 6:
-
-                                start = step.Point;
-                                step1 = step.Point;
-                                step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                end = new PointF(step.Point.X + step.Width, step.Point.Y);
-                                step3 = new PointF(nextstep.Point.X + nextstep.Width, step.Point.Y + un / 5 * 3);
-                                step4 = new PointF(step.Point.X + step.Width, nextstep.Point.Y - un / 5 * 3);
-                                end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-                                step5 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
-                                step6 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                                end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
-                                step7 = new PointF(step.Point.X, nextstep.Point.Y - un / 5 * 3);
-                                step8 = new PointF(nextstep.Point.X, step.Point.Y + un / 5 * 3);
-
-                                points = new[] { start, step1, step2, end, step3, step4, end2, step5, step6, end3, step7, step8, start };
-
-                                path.AddBeziers(points);
-                                path.CloseFigure();
-
-                                break;
-
-                            default:
-                                //Console.WriteLine("default");
-                                points = new[] { step.Point, end, end3, end2 };
-                                path.AddPolygon(points);
-                                path.CloseFigure();
-                                break;
-
-                        }
-
-
-
-                        i++;
                     }
+                    else
+                    {
+                        foreach (var step in orderedSteps)
+                        {
+                            if (step.Skippable) continue;
+                            if (i + 2 > orderedSteps.Count)
+                                continue;
+                            int curvetype1 = 0;
+                            int curvetype2 = 0;
+                            var air = airs.Where(p => p.ParentNote.Tick == step.Tick && p.ParentNote.LaneIndex == step.LaneIndex).FirstOrDefault();
+                            if (air != null)
+                            {
+                                curvetype1 = (int)air.HorizontalDirection + 1;
+                                curvetype2 = (int)air.VerticalDirection;
+                                if (curvetype2 == 0) curvetype1 += 3; //DOWN  center1 left,right 2,3 UP center4 left, right5,6
+                            }
+                            step.CurveType = curvetype1;
+
+                            if (flicks.Where(q => visibleSteps.Contains(step.Point.Y) && orderedVisibleSteps.Last() != step.Point.Y && orderedSteps.First().Point.Y != step.Point.Y && step.Tick == q.Tick && step.LaneIndex == q.LaneIndex).FirstOrDefault() != null)
+                            {
+                                step.Skippable = true; //もしフリックが重なってたらスキップ可能に
+
+                            }
+
+                            while (!orderedSteps[i + 1].Skippable)
+                            {
+
+                                //Console.WriteLine("i: " + i + " " + !orderedSteps[i + 1].Skippable);
+                                if (!orderedSteps[i + 1].Skippable)
+                                {
+                                    break;
+                                }
+                                else
+                                {
+                                    i++;
+                                }
+
+                            }
+
+                            if (step.Skippable) { i++; continue; };
+                            //Console.WriteLine(lineSteps.IndexOf(step) + " count:" + lineSteps.Count);
+                            var nextstep = lineSteps.OrderBy(q => q.Tick).ToList()[Math.Min(lineSteps.IndexOf(step) + 1, lineSteps.Count - 1)];
+
+                            float un = nextstep.Point.Y - step.Point.Y;
+                            float ln = nextstep.Point.X - step.Point.X;
+
+                            var startpoint = step.Point;
+                            var steppoint1 = new PointF(step.Point.X, step.Point.Y + un / 3);
+                            var steppoint2 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                            var steppoint3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                            var endpoint = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                            var startpointr = new PointF(step.Point.X + step.Width, step.Point.Y);
+                            var steppoint1r = new PointF(step.Point.X + step.Width, step.Point.Y + un / 3);
+                            var steppoint2r = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                            var endpointr = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+
+                            var start = step.Point;
+                            var step1 = step.Point;
+                            var step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
+                            var end = new PointF(step.Point.X + step.Width, step.Point.Y);
+                            var step3 = step.Point;
+                            var step4 = new PointF(step.Point.X + step.Width / 2, step.Point.Y + un / 3);
+                            var end2 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                            var step5 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                            var step6 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                            var end3 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                            var step7 = new PointF(step.Point.X, step.Point.Y + un / 5 * 3);
+                            var step8 = new PointF(nextstep.Point.X, nextstep.Point.Y - un / 5 * 3);
+                            PointF[] points = { start, step1, step2, end };
+                            PointF[] points2 = { start, step1, step2, end };
+
+                            switch (step.CurveType)
+                            {
+                                case 0:
+                                    points = new[] { step.Point, end, end3, end2 };
+                                    path.AddPolygon(points);
+                                    path.CloseFigure();
+                                    break;
+                                case 1:
+
+                                    start = step.Point;
+                                    step1 = step.Point;
+                                    step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                    end = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                    step3 = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                    step4 = new PointF(step.Point.X + step.Width, step.Point.Y + un / 5 * 3);
+                                    end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                    step5 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                    step6 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                    end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                    step7 = new PointF(step.Point.X, step.Point.Y + un / 5 * 3);
+
+                                    points = new[] { start, step1, step2, end, step3, step4, end2, step5, step6, end3, step6, step7, start };
+
+                                    path.AddBeziers(points);
+                                    path.CloseFigure();
+                                    break;
+
+                                case 2:
+                                case 3:
+
+                                    start = step.Point;
+                                    step1 = step.Point;
+                                    step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                    end = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                    step3 = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                    step4 = new PointF(nextstep.Point.X + nextstep.Width, step.Point.Y + un / 5 * 2);
+                                    end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                    step5 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                    step6 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                    end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                    step7 = new PointF(nextstep.Point.X, step.Point.Y + un / 5 * 2);
+
+                                    points = new[] { start, step1, step2, end, step3, step4, end2, step5, step6, end3, step6, step7, start };
+                                    path.AddBeziers(points);
+                                    path.CloseFigure();
+                                    break;
+
+                                case 4:
+
+                                    start = step.Point;
+                                    step1 = step.Point;
+                                    step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                    end = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                    step3 = new PointF(step.Point.X + step.Width, step.Point.Y + un / 5 * 3);
+                                    step4 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y - un / 5 * 3);
+                                    end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                    step5 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                    step6 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                    end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                    step7 = new PointF(step.Point.X, step.Point.Y + un / 5 * 3);
+                                    step8 = new PointF(nextstep.Point.X, nextstep.Point.Y - un / 5 * 3);
+
+                                    points = new[] { start, step1, step2, end, step3, step4, end2, step5, step6, end3, step8, step7, start };
+
+                                    path.AddBeziers(points);
+                                    path.CloseFigure();
+
+                                    break;
+
+                                case 5:
+                                case 6:
+
+                                    start = step.Point;
+                                    step1 = step.Point;
+                                    step2 = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                    end = new PointF(step.Point.X + step.Width, step.Point.Y);
+                                    step3 = new PointF(nextstep.Point.X + nextstep.Width, step.Point.Y + un / 5 * 3);
+                                    step4 = new PointF(step.Point.X + step.Width, nextstep.Point.Y - un / 5 * 3);
+                                    end2 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                    step5 = new PointF(nextstep.Point.X + nextstep.Width, nextstep.Point.Y);
+                                    step6 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                    end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
+                                    step7 = new PointF(step.Point.X, nextstep.Point.Y - un / 5 * 3);
+                                    step8 = new PointF(nextstep.Point.X, step.Point.Y + un / 5 * 3);
+
+                                    points = new[] { start, step1, step2, end, step3, step4, end2, step5, step6, end3, step7, step8, start };
+
+                                    path.AddBeziers(points);
+                                    path.CloseFigure();
+
+                                    break;
+
+                                default:
+                                    //Console.WriteLine("default");
+                                    points = new[] { step.Point, end, end3, end2 };
+                                    path.AddPolygon(points);
+                                    path.CloseFigure();
+                                    break;
+
+                            }
+
+
+
+                            i++;
+                        }
+                    }
+                    
+                    
+                    
 
                 }
                 else

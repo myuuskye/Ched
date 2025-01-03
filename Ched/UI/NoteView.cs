@@ -4563,7 +4563,7 @@ namespace Ched.UI
                         .Select(p => GetYPositionFromTick(p.Tick));
 
                     if (stepHead == stepTail) continue;
-                    dc.DrawSlideBackground( steps, visibleStepPos, ShortNoteHeight, isch, noteVisualMode, ApplicationSettings.Default.IsUsingBezierCurves, Notes.Airs, Notes.Flicks);
+                    dc.DrawSlideBackground( steps, visibleStepPos, ShortNoteHeight, isch, noteVisualMode, ApplicationSettings.Default.IsUsingBezierCurves, ApplicationSettings.Default.CustomizeSlide, Notes.Airs, Notes.Flicks);
                 
                 
             }
@@ -4627,6 +4627,7 @@ namespace Ched.UI
             {
                 bool isch = ((note.Channel == viewchannel) || viewchannel == -1);
                     if (!(note.ParentNote is LongNoteTapBase)) continue;
+                if (ApplicationSettings.Default.InvisibleSteps) continue;
                     RectangleF rect = GetRectFromNotePosition(note.ParentNote.Tick, note.ParentNote.LaneIndex, note.ParentNote.Width);
                     dc.DrawAirStep(rect, isch);
                 
@@ -4648,19 +4649,20 @@ namespace Ched.UI
             {
                 foreach (var step in slide.StepNotes.OrderBy(p => p.TickOffset))
                 {
-                    
-                    
+
+                    if (slide.StepNotes.OrderBy(q => q.TickOffset).Last() != step && ApplicationSettings.Default.InvisibleSteps) continue;
+
                     bool isch = ((step.Channel == viewchannel) || viewchannel == -1);
 
-                        if (!Editable && !step.IsVisible) continue;
-                        // if (Notes.GetReferencedAir(step).Count() > 0) break; // AIR付き終点
-                        RectangleF rect = GetRectFromNotePosition(step.Tick, step.LaneIndex, step.Width);
+                    if (!Editable && !step.IsVisible) continue;
+                    // if (Notes.GetReferencedAir(step).Count() > 0) break; // AIR付き終点
+                    RectangleF rect = GetRectFromNotePosition(step.Tick, step.LaneIndex, step.Width);
 
-                        if (step.IsVisible) dc.DrawSlideStep(rect,isch, noteVisualMode);
-                        else dc.DrawBorder(rect, isch, noteVisualMode);
+                    if (step.IsVisible) dc.DrawSlideStep(rect, isch, noteVisualMode);
+                    else dc.DrawBorder(rect, isch, noteVisualMode);
 
 
-                        
+
                 }
             }
 
@@ -4669,7 +4671,7 @@ namespace Ched.UI
                 foreach (var step in guide.StepNotes.OrderBy(p => p.TickOffset))
                 {
 
-
+                    if (guide.StepNotes.OrderBy(q => q.TickOffset).Last() != step && ApplicationSettings.Default.InvisibleSteps) continue;
                     bool isch = ((step.Channel == viewchannel) || viewchannel == -1);
 
                     if (!Editable && !step.IsVisible) continue;
@@ -4912,14 +4914,17 @@ namespace Ched.UI
                 }
             }
 
+            var endlist = slides.Select(p => p.StepNotes.OrderBy(q => q.TickOffset).Last()).ToList();
+            var endlist2 = guides.Select(p => p.StepNotes.OrderBy(q => q.TickOffset).Last()).ToList();
             // AIR
             foreach (var note in airs)
             {
                 bool isch = ((note.Channel == viewchannel) || viewchannel == -1);
-                
-                    RectangleF rect = GetRectFromNotePosition(note.ParentNote.Tick, note.ParentNote.LaneIndex, note.ParentNote.Width);
 
-                    dc.DrawAir(rect, note.VerticalDirection, note.HorizontalDirection, isch, noteVisualMode);
+                if (note.ParentNote is LongNoteTapBase && ApplicationSettings.Default.InvisibleSteps && !endlist.Contains(note.ParentNote) && !endlist2.Contains(note.ParentNote)) continue;
+                RectangleF rect = GetRectFromNotePosition(note.ParentNote.Tick, note.ParentNote.LaneIndex, note.ParentNote.Width);
+
+                dc.DrawAir(rect, note.VerticalDirection, note.HorizontalDirection, isch, noteVisualMode);
                 
             }
 

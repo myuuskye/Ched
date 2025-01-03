@@ -58,6 +58,7 @@ namespace Ched.Components.Exporter
             var notes = book.Score.Notes;
             var objects = new List<USCObject>();
             usc = new USC(offset);
+            var es = new Dictionary<int, string>();
 
             usc.offset = book.Offset;
 
@@ -65,10 +66,12 @@ namespace Ched.Components.Exporter
 
             bool judgeAccurate = ApplicationSettings.Default.IsAccurateOverlap;
 
+            es = ApplicationSettings.Default.DefaultExportSettings;
 
-
-
-
+            foreach(var s in ScoreBook.ExportSettings)
+            {
+                es[s.Key] = s.Value;
+            }
 
 
 

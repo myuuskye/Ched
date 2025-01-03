@@ -118,7 +118,12 @@ namespace Ched.Configuration
             set => this["LaneOffset"] = value;
         }
 
-
+        [UserScopedSetting]
+        public Dictionary<int,string> DefaultExportSettings
+        {
+            get => (Dictionary<int,string>)this["DefaultExportSettings"];
+            set => this["DefaultExportSettings"] = value;
+        }
 
         [UserScopedSetting]
         [DefaultSettingValue("True")]
@@ -1769,6 +1774,20 @@ namespace Ched.Configuration
         {
             get => (bool)this["IsUsingBezierCurves"];
             set => this["IsUsingBezierCurves"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool CustomizeSlide
+        {
+            get => (bool)this["CustomizeSlide"];
+            set => this["CustomizeSlide"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool InvisibleSteps
+        {
+            get => (bool)this["InvisibleSteps"];
+            set => this["InvisibleSteps"] = value;
         }
 
     }

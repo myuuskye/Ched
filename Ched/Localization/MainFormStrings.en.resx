@@ -621,4 +621,46 @@
   <data name="DeleteHistory" xml:space="preserve">
     <value>Delete Histories</value>
   </data>
+  <data name="CustomizedSlide" xml:space="preserve">
+    <value>Customized Slide</value>
+  </data>
+  <data name="InvisibleStep" xml:space="preserve">
+    <value>Hide steps and its Air</value>
+  </data>
+  <data name="ExportSettings" xml:space="preserve">
+    <value>Export Settings</value>
+  </data>
+  <data name="NotGenerate" xml:space="preserve">
+    <value>is not generate</value>
+  </data>
+  <data name="SlideEnd" xml:space="preserve">
+    <value>Slide End</value>
+  </data>
+  <data name="SlideStart" xml:space="preserve">
+    <value>Slide Start</value>
+  </data>
+  <data name="EP_desc" xml:space="preserve">
+    <value>description</value>
+  </data>
+  <data name="EP_id" xml:space="preserve">
+    <value>id</value>
+  </data>
+  <data name="EP_name" xml:space="preserve">
+    <value>item</value>
+  </data>
+  <data name="EP_value" xml:space="preserve">
+    <value>value</value>
+  </data>
+  <data name="OverlapNote" xml:space="preserve">
+    <value>The start of the slide overlaps with this note, so generation of this note will be skipped.</value>
+  </data>
+  <data name="NormalCondition" xml:space="preserve">
+    <value>In normal condition,</value>
+  </data>
+  <data name="Generated" xml:space="preserve">
+    <value>generated</value>
+  </data>
+  <data name="Type" xml:space="preserve">
+    <value>Type</value>
+  </data>
 </root>

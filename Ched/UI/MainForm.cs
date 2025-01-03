@@ -309,6 +309,26 @@ namespace Ched.UI
             };
                 
             }
+
+
+            var defset = new ExportSetting();
+            if (ApplicationSettings.Default.DefaultExportSettings == null) ApplicationSettings.Default.DefaultExportSettings = new Dictionary<int, string>();
+            if (ApplicationSettings.Default.DefaultExportSettings.Count < defset.SettingColumns.Count)
+            {
+                foreach (var s in defset.SettingColumns.OrderBy(p => p.Key))
+                {
+                    if(!ApplicationSettings.Default.DefaultExportSettings.TryGetValue(s.Key, out var set))
+                    {
+                        ApplicationSettings.Default.DefaultExportSettings.Add(s.Key, s.Value.Default);
+                    }
+                    // Console.WriteLine(defset.SettingColumns[s.Key].Title + " : " + defset.SettingColumns[s.Key].Value);
+                }
+            }
+
+
+            
+
+
             UpdateThumbHeight();
             SetText(book.Path);
             CurrentMusicSource = new SoundSource();
@@ -347,6 +367,11 @@ namespace Ched.UI
             { 9, "Ch9" },
             { 10, "Ch10" },
             };
+            var defset = new ExportSetting();
+            foreach (var s in defset.SettingColumns.OrderBy(p => p.Key))
+            {
+                book.ExportSettings.Add(s.Key, s.Value.Value);
+            }
 
             LoadBook(book);
         }
@@ -765,6 +790,7 @@ namespace Ched.UI
                 if (form.ShowDialog(this) != DialogResult.OK) return;
 
             });
+
 
 
             void UpdateEvent<T>(List<T> list, T item) where T : EventBase
@@ -1187,6 +1213,24 @@ namespace Ched.UI
             {
                 Checked = ApplicationSettings.Default.IsUsingBezierCurves
             };
+            var isCustomizedSlide = new ToolStripMenuItem(MainFormStrings.CustomizedSlide, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.CustomizeSlide = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.CustomizeSlide
+            };
+            var isInvisibleSteps = new ToolStripMenuItem(MainFormStrings.InvisibleStep, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.InvisibleSteps = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.InvisibleSteps
+            };
 
             NoteView.UnitLaneWidthChanged += (s, e) =>
             {
@@ -1199,7 +1243,7 @@ namespace Ched.UI
                 viewModeItem,
                 new ToolStripSeparator(),
                 widenLaneWidthMenuItem, narrowLaneWidthMenuItem,
-                visibleOverlapItem, isUsingBezierCurves
+                visibleOverlapItem, isUsingBezierCurves, isCustomizedSlide, isInvisibleSteps
             };
 
 
@@ -3782,6 +3826,7 @@ namespace Ched.UI
 
 
 
+
             noteView.NoteVisualMode = ApplicationSettings.Default.NoteVisualMode;
             var notDisplay = new ToolStripMenuItem(MainFormStrings.Visual1, null, (s, e) =>
             {
@@ -3829,7 +3874,7 @@ namespace Ched.UI
             var helpMenuItems = new ToolStripItem[]
             {
                 shortcutItemBuilder.BuildItem(Commands.ShowHelp, MainFormStrings.Help),
-                new ToolStripMenuItem(MainFormStrings.VersionInfo, null, (s, e) => new VersionInfoForm().ShowDialog(this))
+                new ToolStripMenuItem(MainFormStrings.VersionInfo, null, (s, e) => new VersionInfoForm().ShowDialog())
             };
 
 
@@ -3838,6 +3883,7 @@ namespace Ched.UI
             var channelMenuItems = new ToolStripItem[] { channelMovableItem, channelSoundsItem, noteVisualModeItem, changeChannelSelectedNotesItem, isFormSpeedItem };
 
             var exportMenuItems = new ToolStripItem[] { ExportNotesItems, Accuratedjudge };
+
 
 
 

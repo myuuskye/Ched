@@ -45,6 +45,8 @@ namespace Ched.Core
         private double offset = 0;
         [Newtonsoft.Json.JsonProperty]
         private Dictionary<int, string> channelNames = new Dictionary<int, string>();
+        [Newtonsoft.Json.JsonProperty]
+        private Dictionary<int, string> exportSettings = new Dictionary<int, string>();
 
         public string Path { get; set; }
 
@@ -128,6 +130,15 @@ namespace Ched.Core
         {
             get { return channelNames; }
             set { channelNames = value; }
+        }
+
+        /// <summary>
+        /// エクスポート設定を格納します。
+        /// </summary>
+        public Dictionary<int, string> ExportSettings
+        {
+            get { return exportSettings; }
+            set { exportSettings = value; }
         }
 
         public void Save(string path)

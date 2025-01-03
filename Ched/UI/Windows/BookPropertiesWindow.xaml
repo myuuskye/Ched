@@ -1,4 +1,4 @@
-﻿<Window x:Class="Ched.UI.Windows.BookPropertiesWindow"
+﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -8,19 +8,14 @@
         xmlns:conv="clr-namespace:Ched.UI.Windows.Converters"
         xmlns:local="clr-namespace:Ched.UI.Windows"
         xmlns:localization="clr-namespace:Ched.Localization"
+        xmlns:UI="clr-namespace:Ched.UI" x:Class="Ched.UI.Windows.BookPropertiesWindow"
         ResizeMode="NoResize"
         SizeToContent="Height"
         Width="600"
         Title="{x:Static localization:MainFormStrings.BookProperty}"
         Style="{DynamicResource DialogWindowStyle}"
         mc:Ignorable="d"
-        d:DataContext="{d:DesignInstance Type=local:BookPropertiesWindowViewModel}">
-
-    <i:Interaction.Triggers>
-        <i:EventTrigger EventName="ContentRendered">
-            <i:CallMethodAction TargetObject="{Binding}" MethodName="BeginEdit" />
-        </i:EventTrigger>
-    </i:Interaction.Triggers>
+        d:DataContext="{d:DesignInstance Type={x:Type local:BookPropertiesWindowViewModel}}">
 
     <Window.Resources>
         <ResourceDictionary>
@@ -28,21 +23,27 @@
                 <ResourceDictionary Source="CommonStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
-            <Style TargetType="GroupBox">
+            <Style TargetType="{x:Type GroupBox}">
                 <Setter Property="Padding" Value="6px" />
             </Style>
 
-            <Style x:Key="InputFieldRow" TargetType="Grid">
-                <Setter Property="Margin" Value="{StaticResource RowMargin}" />
+            <Style x:Key="InputFieldRow" TargetType="{x:Type Grid}">
                 <Style.Resources>
-                    <Style TargetType="Label">
+                    <Style TargetType="{x:Type Label}">
                         <Setter Property="HorizontalAlignment" Value="Left" />
                         <Setter Property="Margin" Value="0,0,8px,0" />
                     </Style>
                 </Style.Resources>
+                <Setter Property="Margin" Value="{StaticResource RowMargin}" />
             </Style>
         </ResourceDictionary>
     </Window.Resources>
+
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="ContentRendered">
+            <i:CallMethodAction TargetObject="{Binding}" MethodName="BeginEdit" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
 
     <Grid Margin="{StaticResource WindowContainerMargin}">
         <StackPanel Orientation="Vertical">
@@ -107,18 +108,10 @@
                         <local:BindableNumericUpDown Grid.Column="1" Value="{Binding MusicSourceLatency}" DecimalPlaces="3" Minimum="-100" Maximum="100" Increment="0.01" />
                         <Label Grid.Column="2" Content="[s]" />
                     </Grid>
-                    <Grid Style="{StaticResource InputFieldRow}">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition MaxWidth="200" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
+                    <Grid>
 
                         <Grid.Resources>
-                            <Style TargetType="Slider">
+                            <Style TargetType="{x:Type Slider}">
                                 <Setter Property="Minimum" Value="1" />
                                 <Setter Property="Maximum" Value="100" />
                                 <Setter Property="TickPlacement" Value="BottomRight" />
@@ -127,6 +120,18 @@
                             </Style>
                             <conv:VolumeConverter x:Key="VolumeConveter" />
                         </Grid.Resources>
+
+                        <Grid.Style>
+                            <StaticResource ResourceKey="InputFieldRow"/>
+                        </Grid.Style>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition MaxWidth="200" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
 
                         <Label Grid.Row="0" Grid.Column="0" Content="{x:Static localization:MainFormStrings.MusicVolume}" />
                         <Slider Grid.Row="0" Grid.Column="1" Value="{Binding MusicVolume, Converter={StaticResource VolumeConveter}}" />
@@ -153,7 +158,11 @@
 
                     </Grid>
                     <Label Content="{x:Static localization:MainFormStrings.LaneOffsetdis}" FontFamily="Yu Gothic UI Semibold" />
-
+                    <Button Grid.Column="1" Content="{x:Static localization:MainFormStrings.ExportSettings}">
+                        <i:Interaction.Behaviors>
+                            <b:OpenSettingBehavior CallbackAction="{Binding SetExportSettingsAction}" scoreBook="{Binding ScoreBook}" />
+                        </i:Interaction.Behaviors>
+                    </Button>
                 </StackPanel>
 
 
@@ -164,16 +173,16 @@
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="Click">
                             <i:CallMethodAction TargetObject="{Binding}" MethodName="CommitEdit" />
-                            <i:ChangePropertyAction TargetObject="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}" PropertyName="DialogResult" Value="True" />
-                            <i:CallMethodAction TargetObject="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}" MethodName="Close" />
+                            <i:ChangePropertyAction TargetObject="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}, Mode=FindAncestor}}" PropertyName="DialogResult" Value="True" />
+                            <i:CallMethodAction TargetObject="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}, Mode=FindAncestor}}" MethodName="Close" />
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </Button>
                 <Button Content="{x:Static localization:MainFormStrings.Cancel}" IsCancel="True">
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="Click">
-                            <i:ChangePropertyAction TargetObject="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}" PropertyName="DialogResult" Value="False" />
-                            <i:CallMethodAction TargetObject="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}" MethodName="Close" />
+                            <i:ChangePropertyAction TargetObject="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}, Mode=FindAncestor}}" PropertyName="DialogResult" Value="False" />
+                            <i:CallMethodAction TargetObject="{Binding RelativeSource={RelativeSource AncestorType={x:Type Window}, Mode=FindAncestor}}" MethodName="Close" />
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
                 </Button>
