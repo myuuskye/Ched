@@ -120,6 +120,9 @@
   <data name="AirActionInfo" xml:space="preserve">
     <value>※AirActionによるガイドの透明度調整は0幅を使って疑似再現しているだけなので、試験譜面など、小数点が禁止されている場合の使用はおやめください。</value>
   </data>
+  <data name="ArgsException" xml:space="preserve">
+    <value>使用できない文字列が使われています</value>
+  </data>
   <data name="ExportComplete" xml:space="preserve">
     <value>エクスポートが完了しました。</value>
   </data>

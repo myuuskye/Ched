@@ -136,4 +136,7 @@
   <data name="label2.Text" xml:space="preserve">
     <value>Speed Channel</value>
   </data>
+  <data name="label3.Text" xml:space="preserve">
+    <value>Custom</value>
+  </data>
 </root>

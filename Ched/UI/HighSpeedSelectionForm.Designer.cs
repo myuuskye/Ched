@@ -35,6 +35,8 @@
             this.buttonOK = new System.Windows.Forms.Button();
             this.buttonCancel = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
+            this.customBox = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.speedChBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.speedRatioBox)).BeginInit();
             this.SuspendLayout();
@@ -53,7 +55,6 @@
             // 
             resources.ApplyResources(this.speedRatioBox, "speedRatioBox");
             this.speedRatioBox.Name = "speedRatioBox";
-            
             // 
             // buttonOK
             // 
@@ -72,10 +73,22 @@
             resources.ApplyResources(this.label2, "label2");
             this.label2.Name = "label2";
             // 
+            // textBox
+            // 
+            resources.ApplyResources(this.customBox, "textBox");
+            this.customBox.Name = "customBox";
+            // 
+            // label3
+            // 
+            resources.ApplyResources(this.label3, "label3");
+            this.label3.Name = "label3";
+            // 
             // HighSpeedSelectionForm
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.customBox);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.speedChBox);
             this.Controls.Add(this.buttonCancel);
@@ -86,11 +99,10 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "HighSpeedSelectionForm";
-            ((System.ComponentModel.ISupportInitialize)(this.speedRatioBox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.speedChBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.speedRatioBox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
-            ActiveControl = this.speedRatioBox;
 
         }
 
@@ -102,5 +114,7 @@
         private System.Windows.Forms.Button buttonOK;
         private System.Windows.Forms.Button buttonCancel;
         private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.TextBox customBox;
+        private System.Windows.Forms.Label label3;
     }
 }

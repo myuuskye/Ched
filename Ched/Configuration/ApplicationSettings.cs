@@ -1790,5 +1790,13 @@ namespace Ched.Configuration
             set => this["InvisibleSteps"] = value;
         }
 
+        [UserScopedSetting]
+        [DefaultSettingValue("false")]
+        public bool SelectMethod
+        {
+            get => (bool)this["SelectMethod"];
+            set => this["SelectMethod"] = value;
+        }
+
     }
 }

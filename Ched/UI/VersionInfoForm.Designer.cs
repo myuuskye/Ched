@@ -34,6 +34,7 @@
             this.labelVersion = new System.Windows.Forms.Label();
             this.labelProduct = new System.Windows.Forms.Label();
             this.buttonClose = new System.Windows.Forms.Button();
+            this.credits = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -64,10 +65,17 @@
             this.buttonClose.Name = "buttonClose";
             this.buttonClose.UseVisualStyleBackColor = true;
             // 
+            // credits
+            // 
+            resources.ApplyResources(this.credits, "credits");
+            this.credits.Name = "credits";
+            this.credits.ReadOnly = true;
+            // 
             // VersionInfoForm
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.credits);
             this.Controls.Add(this.buttonClose);
             this.Controls.Add(this.labelProduct);
             this.Controls.Add(this.labelVersion);
@@ -90,5 +98,6 @@
         private System.Windows.Forms.Label labelVersion;
         private System.Windows.Forms.Label labelProduct;
         private System.Windows.Forms.Button buttonClose;
+        private System.Windows.Forms.TextBox credits;
     }
 }

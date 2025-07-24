@@ -18,6 +18,8 @@ namespace Ched.Core.Events
         private decimal speedRatio;
         [Newtonsoft.Json.JsonProperty]
         private int speedCh;
+        [Newtonsoft.Json.JsonProperty]
+        private string customArgs;
 
 
 
@@ -38,5 +40,10 @@ namespace Ched.Core.Events
             set { speedCh = value; }
         }
 
+        public string CustomArgs
+        {
+            get { return customArgs; }
+            set { customArgs = value; }
+        }
     }
 }

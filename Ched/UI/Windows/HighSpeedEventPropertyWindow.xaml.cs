@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.Remoting.Channels;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using Ched.Configuration;
 using Ched.Core;
 using Ched.Core.Events;
@@ -29,13 +31,15 @@ namespace Ched.UI.Windows
 
     public class HighSpeedEventPropertiesWindowViewModel : ViewModel
     {
-
+        static System.Data.DataTable _dt = new System.Data.DataTable();
         private HighSpeedChangeEvent Event { get; }
-        private NoteView noteView { get; }
+        private NoteView NoteView { get; }
+        private int Channel { get; }
 
         private int eventTick;
         private decimal eventSpeedRatio;
         private int eventSpeedCh;
+        private string customArgs;
 
         public int EventTick
         {
@@ -69,14 +73,25 @@ namespace Ched.UI.Windows
             }
         }
 
+        public string EventCustomArgs
+        {
+            get => customArgs;
+            set
+            {
+                if (value == customArgs) return;
+                customArgs = value;
+                NotifyPropertyChanged();
+            }
+        }
 
         public HighSpeedEventPropertiesWindowViewModel()
         {
         }
 
-        public HighSpeedEventPropertiesWindowViewModel(HighSpeedChangeEvent @event)
+        public HighSpeedEventPropertiesWindowViewModel(HighSpeedChangeEvent @event, NoteView noteview)
         {
             Event = @event;
+            NoteView = noteview;
         }
 
 
@@ -85,6 +100,8 @@ namespace Ched.UI.Windows
             EventTick = Event.Tick;
             EventSpeedRatio = Event.SpeedRatio; 
             EventSpeedCh = Event.SpeedCh;
+            EventCustomArgs = Event.CustomArgs;
+            
         }
 
         public void CommitEdit()
@@ -93,6 +110,24 @@ namespace Ched.UI.Windows
             Event.SpeedRatio = EventSpeedRatio;
             Event.SpeedCh = EventSpeedCh;
             Event.Type = EventSpeedCh;
+            Event.CustomArgs = EventCustomArgs;
+
+            if(EventCustomArgs.Length > 0)
+            {
+                var bpm = NoteView.ScoreEvents.BpmChangeEvents.OrderBy(p => p.Tick).LastOrDefault(p => p.Tick <= NoteView.CurrentTick)?.Bpm ?? 120;
+                var customArgs = EventCustomArgs.Replace("{channel}", NoteView.Channel.ToString()).Replace("{spchannel}", EventSpeedCh.ToString()).Replace("{bpm}", bpm.ToString());
+                try
+                {
+                    
+                    string s = _dt.Compute("1.0 *" + customArgs, "").ToString();
+                    Event.SpeedRatio = decimal.Parse(s.ToString());
+                }
+                catch
+                {
+                    Event.SpeedRatio = EventSpeedRatio;
+                    System.Windows.Forms.MessageBox.Show(ErrorStrings.ArgsException, Program.ApplicationName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
         }
     }
 }

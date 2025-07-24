@@ -68,6 +68,14 @@ namespace Ched.UI
 
         private Plugins.PluginManager PluginManager { get; } = Plugins.PluginManager.GetInstance();
 
+        static System.Data.DataTable _dt = new System.Data.DataTable();
+
+        static decimal Calculate1(string str)
+        {
+            string s = _dt.Compute("1.0 *" + str, "").ToString();
+            return decimal.Parse(s.ToString());
+            //https://lets-csharp.com/string-number-calculator/ より
+        }
 
         private bool IsPreviewMode
         {
@@ -114,7 +122,8 @@ namespace Ched.UI
                 UnitBeatHeight = ApplicationSettings.Default.UnitBeatHeight,
                 UnitLaneWidth = ApplicationSettings.Default.UnitLaneWidth,
                 InsertAirWithAirAction = ApplicationSettings.Default.InsertAirWithAirAction,
-                AllowStepCh = ApplicationSettings.Default.IsAllowStepChannel,
+                SelectMethod = ApplicationSettings.Default.SelectMethod,
+
             };
 
             PreviewManager = new SoundPreviewManager(this);
@@ -136,15 +145,17 @@ namespace Ched.UI
             {
                 Dock = DockStyle.Right,
                 Minimum = -NoteView.UnitBeatTick * 4 * 20,
-                SmallChange = NoteView.UnitBeatTick
+                SmallChange = NoteView.UnitBeatTick,
             };
 
             void processScrollBarRangeExtension(ScrollBar s)
             {
+
                 if (NoteViewScrollBar.Value < NoteViewScrollBar.Minimum * 0.9f)
                 {
                     NoteViewScrollBar.Minimum = (int)(NoteViewScrollBar.Minimum * 1.2);
                 }
+                
             }
 
             NoteView.Resize += (s, e) => UpdateThumbHeight();
@@ -288,7 +299,7 @@ namespace Ched.UI
             OperationManager.Clear();
             ExportManager.Load(book);
             NoteView.Initialize(book.Score);
-            NoteViewScrollBar.Value = NoteViewScrollBar.GetMaximumValue();
+            NoteViewScrollBar.Value = NoteView.PaddingHeadTick;//NoteViewScrollBar.GetMaximumValue();
             NoteViewScrollBar.Minimum = -Math.Max(NoteView.UnitBeatTick * 4 * 20, NoteView.Notes.GetLastTick());
             NoteViewScrollBar.SmallChange = NoteView.UnitBeatTick;
             if(ScoreBook.ChannelNames.Count < 11)
@@ -548,7 +559,7 @@ namespace Ched.UI
         private void UpdateThumbHeight()
         {
             NoteViewScrollBar.LargeChange = NoteView.TailTick - NoteView.HeadTick;
-            NoteViewScrollBar.Maximum = NoteViewScrollBar.LargeChange + NoteView.PaddingHeadTick;
+            NoteViewScrollBar.Maximum = NoteViewScrollBar.LargeChange + NoteView.PaddingHeadTick * 194;
         }
 
         private void PlayPreview()
@@ -670,7 +681,9 @@ namespace Ched.UI
             commandSource.RegisterCommand(Commands.Cut, MainFormStrings.Cut, () => NoteView.CutSelectedNotes());
             commandSource.RegisterCommand(Commands.Copy, MainFormStrings.Copy, () => NoteView.CopySelectedNotes());
             commandSource.RegisterCommand(Commands.Paste, MainFormStrings.Paste, () => NoteView.PasteNotes());
+            commandSource.RegisterCommand(Commands.PasteChannel, MainFormStrings.PasteChannel, () => NoteView.PasteChNotes());
             commandSource.RegisterCommand(Commands.PasteFlip, MainFormStrings.PasteFlipped, () => NoteView.PasteFlippedNotes());
+            commandSource.RegisterCommand(Commands.PasteFlipChannel, MainFormStrings.PasteFlipChannel, () => NoteView.PasteFlippedChNotes());
 
             commandSource.RegisterCommand(Commands.CutEvents, MainFormStrings.Event + MainFormStrings.Cut, () => NoteView.CutSelectedEvents());
             commandSource.RegisterCommand(Commands.CopyEvents, MainFormStrings.Event + MainFormStrings.Copy, () => NoteView.CopySelectedEvents());
@@ -721,25 +734,45 @@ namespace Ched.UI
             commandSource.RegisterCommand(Commands.InsertHighSpeedChange, MainFormStrings.HighSpeed, () =>
             {
                 var spratio = NoteView.ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == NoteView.Channel).OrderBy(p => p.Tick).LastOrDefault(p => p.Tick <= NoteView.CurrentTick)?.SpeedRatio ?? 1.0m;
+                var spcustom = NoteView.ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == NoteView.Channel).OrderBy(p => p.Tick).LastOrDefault(p => p.Tick <= NoteView.CurrentTick)?.CustomArgs ?? "";
 
                 if (!FormSpeedbyCh)
                 {
                     spratio = NoteView.ScoreEvents.HighSpeedChangeEvents.OrderBy(p => p.Tick).LastOrDefault(p => p.Tick <= NoteView.CurrentTick)?.SpeedRatio ?? 1.0m;
+                    spcustom = NoteView.ScoreEvents.HighSpeedChangeEvents.OrderBy(p => p.Tick).LastOrDefault(p => p.Tick <= NoteView.CurrentTick)?.CustomArgs ?? "";
                 }
 
                 var form = new HighSpeedSelectionForm()
                 {
                     SpeedRatio = spratio,
-                    SpeedCh = Channel
+                    SpeedCh = Channel,
+                    CustomArgs = spcustom
                 };
                 if (form.ShowDialog(this) != DialogResult.OK) return;
-
+                var speedratio = form.SpeedRatio;
+                var bpm = NoteView.ScoreEvents.BpmChangeEvents.OrderBy(p => p.Tick).LastOrDefault(p => p.Tick <= NoteView.CurrentTick)?.Bpm ?? 120;
+                var customArgs = form.CustomArgs;
+                if (form.CustomArgs.Length > 0)
+                {
+                    customArgs = customArgs.Replace("{channel}", NoteView.Channel.ToString()).Replace("{spchannel}", form.SpeedCh.ToString()).Replace("{bpm}", bpm.ToString());
+                    try
+                    {
+                        speedratio = Calculate1(customArgs);
+                    }
+                    catch
+                    {
+                        speedratio = form.SpeedRatio;
+                        MessageBox.Show(this, ErrorStrings.ArgsException, Program.ApplicationName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                 
+                }
                 var item = new HighSpeedChangeEvent()
                 {
                     Tick = NoteView.CurrentTick,
-                    SpeedRatio = form.SpeedRatio,
+                    SpeedRatio = speedratio,
                     SpeedCh = form.SpeedCh,
-                    Type = form.SpeedCh
+                    Type = form.SpeedCh,
+                    CustomArgs = form.CustomArgs
                 };
                 UpdateEvent(NoteView.ScoreEvents.HighSpeedChangeEvents, item);
             });
@@ -1117,6 +1150,8 @@ namespace Ched.UI
             var copyItem = shortcutItemBuilder.BuildItem(Commands.Copy, MainFormStrings.Copy);
             var pasteItem = shortcutItemBuilder.BuildItem(Commands.Paste, MainFormStrings.Paste);
             var pasteFlippedItem = shortcutItemBuilder.BuildItem(Commands.PasteFlip, MainFormStrings.PasteFlipped);
+            var pasteChannelItem = shortcutItemBuilder.BuildItem(Commands.PasteChannel, MainFormStrings.PasteChannel);
+            var pasteFlippedChannelItem = shortcutItemBuilder.BuildItem(Commands.PasteFlipChannel, MainFormStrings.PasteFlipChannel);
 
             var selectAllItem = shortcutItemBuilder.BuildItem(Commands.SelectAll, MainFormStrings.SelectAll);
             var selectToEndItem = shortcutItemBuilder.BuildItem(Commands.SelectToEnd, MainFormStrings.SelectToEnd);
@@ -1153,6 +1188,16 @@ namespace Ched.UI
             {
                 Checked = ApplicationSettings.Default.IsAllowStepChannel
             };
+            var anotherSelectMethodItem = new ToolStripMenuItem(MainFormStrings.AnotherSelectMethod, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                NoteView.SelectMethod = item.Checked;
+                ApplicationSettings.Default.SelectMethod = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.SelectMethod
+            };
 
             var pluginItems = PluginManager.ScorePlugins.Select(p => new ToolStripMenuItem(p.DisplayName, null, (s, e) =>
             {
@@ -1182,11 +1227,11 @@ namespace Ched.UI
             var editMenuItems = new ToolStripItem[]
             {
                 undoItem, redoItem, new ToolStripSeparator(),
-                cutItem, copyItem, pasteItem, pasteFlippedItem, new ToolStripSeparator(),
+                cutItem, copyItem, pasteItem, pasteFlippedItem, pasteChannelItem, pasteFlippedChannelItem, new ToolStripSeparator(),
                 selectAllItem, selectToEndItem, selectoToBeginningItem, new ToolStripSeparator(),
                 flipSelectedNotesItem, removeSelectedNotesItem,  new ToolStripSeparator(),
                 copyEventsItem, cutEventsItem, pasteEventsItem, pasteChEventsItem,removeEventsItem, new ToolStripSeparator(),
-                insertAirWithAirActionItem, allowStepChItem, new ToolStripSeparator(),
+                insertAirWithAirActionItem, allowStepChItem, anotherSelectMethodItem, new ToolStripSeparator(),
                 pluginItem
             };
 

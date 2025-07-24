@@ -32,6 +32,15 @@ namespace Ched.UI
             }
         }
 
+        public string CustomArgs
+        {
+            get { return (string)customBox.Text; }
+            set
+            {
+                customBox.Text = value;
+            }
+        }
+
         public HighSpeedSelectionForm()
         {
             InitializeComponent();
@@ -51,6 +60,10 @@ namespace Ched.UI
             speedChBox.Increment = 1;
             speedChBox.DecimalPlaces = 0;
             speedChBox.Value = 1;
+
+            ActiveControl = speedRatioBox;
+
+
         }
     }
 }

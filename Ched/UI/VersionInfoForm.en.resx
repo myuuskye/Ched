@@ -120,4 +120,57 @@
   <data name="$this.Text" xml:space="preserve">
     <value>Version Information</value>
   </data>
+  <data name="creditText_" xml:space="preserve">
+    <value>default</value>
+  </data>
+  <data name="creditText_0" xml:space="preserve">
+    <value>SKEdition Credits</value>
+  </data>
+  <data name="creditText_1" xml:space="preserve">
+    <value />
+  </data>
+  <data name="creditText_10" xml:space="preserve">
+    <value>ハイスピードチャンネルに名前を付けるアイデア:uni01(uni01.)</value>
+  </data>
+  <data name="creditText_11" xml:space="preserve">
+    <value>スライドの始点+中継点に直接振り下げAIRつけれる機能アイデア:すずねーう(suzuneu)</value>
+  </data>
+  <data name="creditText_12" xml:space="preserve">
+    <value>ノーツが重なってるかどうかをチェック出来る機能アイデア:naru(naru3810
+), Mila(mrn_syk)</value>
+  </data>
+  <data name="creditText_13" xml:space="preserve">
+    <value>幅小さい時にctrlとか押しながらでノーツ移動固定にできるアイデア:Mila(mrn_syk)</value>
+  </data>
+  <data name="creditText_14" xml:space="preserve">
+    <value>スライド•ガイド曲線のアイデア:uni01(uni01.)</value>
+  </data>
+  <data name="creditText_2" xml:space="preserve">
+    <value>選択していないノーツの識別アイデア: 名無し。(sevenc_nanashi)</value>
+  </data>
+  <data name="creditText_3" xml:space="preserve">
+    <value>選択していないハイスピードイベントの識別アイデア:uni01(uni01.)</value>
+  </data>
+  <data name="creditText_4" xml:space="preserve">
+    <value>小数操作のアイデアなど:uni01(uni01.)</value>
+  </data>
+  <data name="creditText_5" xml:space="preserve">
+    <value>デフォルトレーンオフセットのアイデア:えんそ(nihility_17)</value>
+  </data>
+  <data name="creditText_6" xml:space="preserve">
+    <value>usc,susエクスポートのショートカットのアイデア:Mila(mrn_syk)</value>
+  </data>
+  <data name="creditText_7" xml:space="preserve">
+    <value>カスタムフェードアウトガイドのアイデア:uni01(uni01.)</value>
+  </data>
+  <data name="creditText_8" xml:space="preserve">
+    <value>uscエクスポート実装の協力:名無し。(sevenc_nanashi)</value>
+  </data>
+  <data name="creditText_9" xml:space="preserve">
+    <value>ガイド範囲色変えのアイデア(ペイントツールの元):uni01(uni01.)</value>
+  </data>
+  <data name="creditText_last" xml:space="preserve">
+    <value>Other(Bug reports etc.):TootieJin(tootiejin), uni01(uni01.), kitune(kitune1512), すずねーう(suzuneu), こゆき(koyuki5608), AnonFe(anonymousferrum), Mila(mrn_syk), 名無し。(sevenc_nanashi), Lark(lark.jp), Shobokun0731(shobokun0731), よつばんchannel(yakitori_mm), ねこ(neco_yukari), アトラ(atorasan), よこしま。(nightree_) ,ℍ𝕪𝕕𝕣𝕠𝕘𝕖𝕟(hydro_gen_)
+Thank you for your cooperation!</value>
+  </data>
 </root>

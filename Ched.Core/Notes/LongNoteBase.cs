@@ -34,7 +34,7 @@ namespace Ched.Core.Notes
             set
             {
                 if (startTick == value) return;
-                if (value < 0) throw new ArgumentOutOfRangeException("value", "value must not be negative.");
+                //if (value < 0) throw new ArgumentOutOfRangeException("value", "value must not be negative.");
                 startTick = value;
             }
         }

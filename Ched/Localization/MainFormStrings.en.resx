@@ -663,4 +663,13 @@
   <data name="Type" xml:space="preserve">
     <value>Type</value>
   </data>
+  <data name="PasteChannel" xml:space="preserve">
+    <value>Paste to Current Channel</value>
+  </data>
+  <data name="PasteFlipChannel" xml:space="preserve">
+    <value>Paste Flipped to Current Channel</value>
+  </data>
+  <data name="AnotherSelectMethod" xml:space="preserve">
+    <value>Another Select Method</value>
+  </data>
 </root>

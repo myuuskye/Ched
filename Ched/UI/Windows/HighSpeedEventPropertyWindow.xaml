@@ -55,7 +55,7 @@
                         </Grid.ColumnDefinitions>
 
                         <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.Tick}" />
-                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding EventTick}" DecimalPlaces="0" Increment="1" Maximum="1000000000000000" />
+                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding EventTick}" DecimalPlaces="0" Increment="1" Maximum="1000000000000000" Minimum="-3686400" />
                     </Grid>
                     <Grid Style="{StaticResource ResourceKey=InputFieldRow}">
                         <Grid.ColumnDefinitions>
@@ -85,7 +85,16 @@
 
             <GroupBox Header="{x:Static localization:MainFormStrings.Other}" Margin="{StaticResource ContainerMargin}">
 
-                  
+                <Grid Style="{StaticResource ResourceKey=InputFieldRow}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.Custom}" />
+                    <TextBox Grid.Column="1" Text="{Binding EventCustomArgs}"  Height="60" />
+                </Grid>
+                
 
             </GroupBox>
 

@@ -678,4 +678,13 @@
   <data name="Type" xml:space="preserve">
     <value>種類</value>
   </data>
+  <data name="PasteChannel" xml:space="preserve">
+    <value>現在のチャンネルへ貼り付け</value>
+  </data>
+  <data name="PasteFlipChannel" xml:space="preserve">
+    <value>現在のチャンネルへ反転して貼り付け</value>
+  </data>
+  <data name="AnotherSelectMethod" xml:space="preserve">
+    <value>選択方法を変更</value>
+  </data>
 </root>

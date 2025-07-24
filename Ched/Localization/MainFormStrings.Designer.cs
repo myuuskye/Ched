@@ -160,6 +160,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   選択方法を変更 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string AnotherSelectMethod {
+            get {
+                return ResourceManager.GetString("AnotherSelectMethod", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   アーティスト に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Artist {
@@ -1240,6 +1249,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   現在のチャンネルへ貼り付け に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string PasteChannel {
+            get {
+                return ResourceManager.GetString("PasteChannel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   選択範囲内のイベントをペースト(現在のチャンネルへ) に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string PasteChEvents {
@@ -1254,6 +1272,15 @@ namespace Ched.Localization {
         public static string PasteEvents {
             get {
                 return ResourceManager.GetString("PasteEvents", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   現在のチャンネルへ反転して貼り付け に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string PasteFlipChannel {
+            get {
+                return ResourceManager.GetString("PasteFlipChannel", resourceCulture);
             }
         }
         

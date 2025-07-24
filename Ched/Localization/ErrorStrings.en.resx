@@ -120,6 +120,9 @@
   <data name="AirActionInfo" xml:space="preserve">
     <value>※Guide transparency adjustment using AirAction is only a pseudo-reproduction using 0 width, so please refrain from using it in cases where decimal points are prohibited, such as on exam scores.</value>
   </data>
+  <data name="ArgsException" xml:space="preserve">
+    <value>An invalid character string is used</value>
+  </data>
   <data name="ExportComplete" xml:space="preserve">
     <value>The export completed successfully.</value>
   </data>

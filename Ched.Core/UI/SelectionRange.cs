@@ -34,7 +34,7 @@ namespace Ched.UI
             get { return startTick; }
             set
             {
-                if (value < 0) throw new ArgumentOutOfRangeException("value must not be negative.");
+                //if (value < 0) throw new ArgumentOutOfRangeException("value must not be negative.");
                 startTick = value;
             }
         }

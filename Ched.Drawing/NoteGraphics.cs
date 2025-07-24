@@ -256,7 +256,6 @@ namespace Ched.Drawing
 
             var orderedSteps = steps.OrderBy(p => p.Point.Y).ToList();
             var orderedVisibleSteps = visibleSteps.OrderBy(p => p).ToList();
-            
 
 
             //スライド背景
@@ -267,7 +266,7 @@ namespace Ched.Drawing
 
 
                 float head = orderedVisibleSteps[0];
-                float height = orderedVisibleSteps[orderedVisibleSteps.Count - 1] - head;
+                float height = orderedSteps[orderedSteps.Count - 1].Point.Y - head;
                 var pathBounds = path.GetBounds();
                 var blendBounds = new RectangleF(pathBounds.X, head, pathBounds.Width + 0.1f, height + 0.1f);
                 
@@ -287,6 +286,7 @@ namespace Ched.Drawing
                         }
                     }
                     var lineSteps = orderedSteps.Where(q => !q.Skippable).ToList();
+                    
                     if (customized)
                     {
                         foreach (var step in orderedSteps)
@@ -296,7 +296,7 @@ namespace Ched.Drawing
                                 continue;
                             int leftcurvetype1 = 0;
                             int leftcurvetype2 = 0;
-                            var leftair = airs.Where(p => p.ParentNote.Tick == step.Tick && p.ParentNote.LaneIndex == step.LaneIndex).FirstOrDefault();
+                            var leftair = airs.Where(p => p.ParentNote.Tick == step.Tick && p.ParentNote.LaneIndex == step.LaneIndex && p.ParentNote.Channel == step.Channel).FirstOrDefault();
                             if (leftair != null)
                             {
                                 leftcurvetype1 = (int)leftair.HorizontalDirection + 1;
@@ -305,7 +305,7 @@ namespace Ched.Drawing
                             }
                             int rightcurvetype1 = 0;
                             int rightcurvetype2 = 0;
-                            var rightair = airs.Where(p => p.ParentNote.Tick == step.Tick && (p.ParentNote.LaneIndex + p.ParentNote.Width) == (step.LaneIndex + step.LaneWidth)).FirstOrDefault();                            if (rightair != null)
+                            var rightair = airs.Where(p => p.ParentNote.Tick == step.Tick && (p.ParentNote.LaneIndex + p.ParentNote.Width) == (step.LaneIndex + step.LaneWidth) && p.ParentNote.Channel == step.Channel).FirstOrDefault();                            if (rightair != null)
                             {
                                 rightcurvetype1 = (int)rightair.HorizontalDirection + 1;
                                 rightcurvetype2 = (int)rightair.VerticalDirection;
@@ -404,6 +404,7 @@ namespace Ched.Drawing
                                     end3 = new PointF(nextstep.Point.X, nextstep.Point.Y);
                                     step2 = new PointF(nextstep.Point.X + nextstep.Width, step.Point.Y + un / 5 * 2);
                                     step3 = new PointF(step.Point.X, step.Point.Y + un / 5 * 3);
+                                    step4 = new PointF(step.Point.X + step.Width, step.Point.Y + un / 5 * 2);
                                     switch (rightcurvetype1)
                                     {
                                         case 0:
@@ -417,11 +418,11 @@ namespace Ched.Drawing
                                             points = new[] { start, start, end, end, end, step2, end2, end2, end3, end3, end3, step3, start };
                                             break;
                                         case 4:
-                                            points = new[] { start, start, end, end, step1, step2, end2, end2, end3, end3, step3, start };
+                                            points = new[] { start, start, end, end, end, step1, end2, end2, end3, end3, end3, step3, start };
                                             break;
                                         case 5:
                                         case 6:
-                                            points = new[] { start, start, end, end, step2, step1, end2, end2, end3, end3, step3, start };
+                                            points = new[] { start, start, end, end, end, step1, end2, end2, end3, end3, end3, step3, start };
                                             break;
                                         default:
                                             points = new[] { step.Point, end, end3, end2 };
@@ -579,7 +580,7 @@ namespace Ched.Drawing
                                 continue;
                             int curvetype1 = 0;
                             int curvetype2 = 0;
-                            var air = airs.Where(p => p.ParentNote.Tick == step.Tick && p.ParentNote.LaneIndex == step.LaneIndex).FirstOrDefault();
+                            var air = airs.Where(p => p.ParentNote.Tick == step.Tick && p.ParentNote.LaneIndex == step.LaneIndex && p.ParentNote.Channel == step.Channel).FirstOrDefault();
                             if (air != null)
                             {
                                 curvetype1 = (int)air.HorizontalDirection + 1;
@@ -758,10 +759,7 @@ namespace Ched.Drawing
                 }
 
 
-
-
-
-
+                /*
                 using (var brush = new LinearGradientBrush(blendBounds, Color.Black, Color.Black, LinearGradientMode.Vertical))
                 {
                     var heights = orderedVisibleSteps.Zip(orderedVisibleSteps.Skip(1), (p, q) => Tuple.Create(p, q - p));
@@ -770,6 +768,30 @@ namespace Ched.Drawing
                     {
                         Positions = absPos.Select(p => (p - head) / height).ToArray(),
                         Colors = new[] { BackgroundEdgeColor }.Concat(Enumerable.Range(0, orderedVisibleSteps.Count - 1).SelectMany(p => new[] { BackgroundMiddleColor, BackgroundMiddleColor, BackgroundEdgeColor })).ToArray()
+                    };
+                    brush.InterpolationColors = blend;
+                    path.FillMode = FillMode.Winding;
+                    dc.Graphics.FillPath(brush, path);
+                }
+                */
+                var orderedDrawSteps = orderedVisibleSteps;
+
+                if (!orderedDrawSteps.Last().Equals(orderedSteps.Last().Point.Y)) //可視中継点が最後のステップでないとき
+                {
+                    orderedDrawSteps.RemoveAt(orderedDrawSteps.Count - 1);
+                    orderedDrawSteps.Add(orderedSteps.Last().Point.Y);
+                    
+                }
+                
+
+                using (var brush = new LinearGradientBrush(blendBounds, Color.Black, Color.Black, LinearGradientMode.Vertical))
+                {
+                    var heights = orderedDrawSteps.Zip(orderedDrawSteps.Skip(1), (p, q) => Tuple.Create(p, q - p));
+                    var absPos = new[] { head }.Concat(heights.SelectMany(p => new[] { p.Item1 + p.Item2 * 0.3f, p.Item1 + p.Item2 * 0.7f, p.Item1 + p.Item2 }));
+                    var blend = new ColorBlend()
+                    {
+                        Positions = absPos.Select(p => (p - head) / height).ToArray(),
+                        Colors = new[] { BackgroundEdgeColor }.Concat(Enumerable.Range(0, orderedDrawSteps.Count - 1).SelectMany(p => new[] { BackgroundMiddleColor, BackgroundMiddleColor, BackgroundEdgeColor })).ToArray()
                     };
                     brush.InterpolationColors = blend;
                     path.FillMode = FillMode.Winding;
@@ -1128,7 +1150,7 @@ namespace Ched.Drawing
                 var right = orderedSteps.Select(p => new PointF(p.Point.X + p.Width, p.Point.Y)).Reverse();
 
                 float head = orderedVisibleSteps[0];
-                float height = orderedVisibleSteps[orderedVisibleSteps.Count - 1] - head;
+                float height = orderedSteps[orderedSteps.Count - 1].Point.Y - head;
                 var pathBounds = path.GetBounds();
                 var blendBounds = new RectangleF(pathBounds.X, head, pathBounds.Width + 0.01f, height + 0.01f);
 
@@ -1322,16 +1344,27 @@ namespace Ched.Drawing
                     path.AddPolygon(left.Concat(right).ToArray());
                 }
 
+                var orderedDrawSteps = orderedVisibleSteps;
+
+                if (!orderedDrawSteps.Last().Equals(orderedSteps.Last().Point.Y)) //可視中継点が最後のステップでないとき
+                {
+                    orderedDrawSteps.RemoveAt(orderedDrawSteps.Count - 1);
+                    orderedDrawSteps.Add(orderedSteps.Last().Point.Y);
+
+                }
+
+
                 using (var brush = new LinearGradientBrush(blendBounds, Color.Black, Color.Black, LinearGradientMode.Vertical))
                 {
-                    var heights = orderedVisibleSteps.Zip(orderedVisibleSteps.Skip(1), (p, q) => Tuple.Create(p, q - p));
+                    var heights = orderedDrawSteps.Zip(orderedDrawSteps.Skip(1), (p, q) => Tuple.Create(p, q - p));
                     var absPos = new[] { head }.Concat(heights.SelectMany(p => new[] { p.Item1 + p.Item2 * 0.3f, p.Item1 + p.Item2 * 0.7f, p.Item1 + p.Item2 }));
                     var blend = new ColorBlend()
                     {
                         Positions = absPos.Select(p => (p - head) / height).ToArray(),
-                        Colors = new[] { BackgroundEdgeColor }.Concat(Enumerable.Range(0, orderedVisibleSteps.Count - 1).SelectMany(p => new[] { BackgroundMiddleColor, BackgroundMiddleColor, BackgroundEdgeColor })).ToArray()
+                        Colors = new[] { BackgroundEdgeColor }.Concat(Enumerable.Range(0, orderedDrawSteps.Count - 1).SelectMany(p => new[] { BackgroundMiddleColor, BackgroundMiddleColor, BackgroundEdgeColor })).ToArray()
                     };
                     brush.InterpolationColors = blend;
+                    path.FillMode = FillMode.Winding;
                     dc.Graphics.FillPath(brush, path);
                 }
             }
@@ -1719,6 +1752,7 @@ namespace Ched.Drawing
         public float Width { get; set; }
         public int CurveType {  get; set; }
         public bool Skippable { get; set; } = false;
+        public int Channel { get; set; }
     }
     public class GuideStepElement
     {
@@ -1728,5 +1762,6 @@ namespace Ched.Drawing
         public float LaneWidth { get; set; }
         public float Width { get; set; }
         public int CurveType { get; set; }
+        public int Channel { get; set; }
     }
 }

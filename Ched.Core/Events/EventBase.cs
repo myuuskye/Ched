@@ -27,7 +27,7 @@ namespace Ched.Core.Events
             get { return tick; }
             set
             {
-                if (value < 0) throw new ArgumentOutOfRangeException("value", "Tick must be greater than or equal to 0.");
+                //if (value < 0) throw new ArgumentOutOfRangeException("value", "Tick must be greater than or equal to 0.");
                 tick = value;
             }
         }

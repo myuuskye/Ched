@@ -117,106 +117,53 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="pictureBox1.Location" type="System.Drawing.Point, System.Drawing">
+    <value>40, 36</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="pictureBox1.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="pictureBox1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>48, 45</value>
+  </data>
   <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="pictureBox1.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
   </data>
-  <data name="&gt;&gt;labelVersion.Name" xml:space="preserve">
-    <value>labelVersion</value>
-  </data>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-  <data name="labelVersion.Location" type="System.Drawing.Point, System.Drawing">
-    <value>96, 44</value>
-  </data>
-  <data name="&gt;&gt;labelTitle.Name" xml:space="preserve">
-    <value>labelTitle</value>
-  </data>
-  <data name="pictureBox1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>36, 39</value>
-  </data>
-  <data name="labelTitle.Location" type="System.Drawing.Point, System.Drawing">
-    <value>96, 22</value>
-  </data>
-  <data name="&gt;&gt;labelProduct.ZOrder" xml:space="preserve">
-    <value>1</value>
+  <data name="&gt;&gt;pictureBox1.Name" xml:space="preserve">
+    <value>pictureBox1</value>
   </data>
   <data name="&gt;&gt;pictureBox1.Type" xml:space="preserve">
     <value>System.Windows.Forms.PictureBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="labelVersion.Text" xml:space="preserve">
-    <value>label2</value>
-  </data>
-  <data name="&gt;&gt;$this.Name" xml:space="preserve">
-    <value>VersionInfoForm</value>
-  </data>
-  <data name="labelTitle.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;labelProduct.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
   <data name="&gt;&gt;pictureBox1.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="labelProduct.TabIndex" type="System.Int32, mscorlib">
-    <value>3</value>
-  </data>
-  <data name="labelProduct.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="&gt;&gt;pictureBox1.Name" xml:space="preserve">
-    <value>pictureBox1</value>
-  </data>
-  <data name="&gt;&gt;buttonClose.ZOrder" xml:space="preserve">
-    <value>0</value>
-  </data>
-  <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>411, 102</value>
-  </data>
-  <data name="labelProduct.Size" type="System.Drawing.Size, System.Drawing">
-    <value>35, 13</value>
-  </data>
-  <data name="labelVersion.AutoSize" type="System.Boolean, mscorlib">
-    <value>True</value>
-  </data>
-  <data name="&gt;&gt;buttonClose.Name" xml:space="preserve">
-    <value>buttonClose</value>
+  <data name="&gt;&gt;pictureBox1.ZOrder" xml:space="preserve">
+    <value>5</value>
   </data>
   <data name="labelTitle.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
-  <data name="&gt;&gt;labelVersion.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="labelTitle.Location" type="System.Drawing.Point, System.Drawing">
+    <value>128, 25</value>
   </data>
-  <data name="&gt;&gt;labelVersion.ZOrder" xml:space="preserve">
-    <value>2</value>
+  <data name="labelTitle.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
   </data>
-  <data name="labelProduct.Text" xml:space="preserve">
-    <value>label3</value>
+  <data name="labelTitle.Size" type="System.Drawing.Size, System.Drawing">
+    <value>43, 15</value>
   </data>
-  <data name="&gt;&gt;labelVersion.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="labelVersion.Size" type="System.Drawing.Size, System.Drawing">
-    <value>35, 13</value>
-  </data>
-  <data name="&gt;&gt;pictureBox1.ZOrder" xml:space="preserve">
-    <value>4</value>
-  </data>
-  <data name="labelVersion.TabIndex" type="System.Int32, mscorlib">
-    <value>2</value>
-  </data>
-  <data name="buttonClose.Text" xml:space="preserve">
-    <value>OK</value>
+  <data name="labelTitle.TabIndex" type="System.Int32, mscorlib">
+    <value>1</value>
   </data>
   <data name="labelTitle.Text" xml:space="preserve">
     <value>label1</value>
   </data>
-  <data name="&gt;&gt;labelProduct.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;labelTitle.ZOrder" xml:space="preserve">
-    <value>3</value>
+  <data name="&gt;&gt;labelTitle.Name" xml:space="preserve">
+    <value>labelTitle</value>
   </data>
   <data name="&gt;&gt;labelTitle.Type" xml:space="preserve">
     <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
@@ -224,47 +171,201 @@
   <data name="&gt;&gt;labelTitle.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <data name="buttonClose.Location" type="System.Drawing.Point, System.Drawing">
-    <value>324, 13</value>
+  <data name="&gt;&gt;labelTitle.ZOrder" xml:space="preserve">
+    <value>4</value>
+  </data>
+  <data name="labelVersion.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelVersion.Location" type="System.Drawing.Point, System.Drawing">
+    <value>128, 51</value>
+  </data>
+  <data name="labelVersion.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelVersion.Size" type="System.Drawing.Size, System.Drawing">
+    <value>43, 15</value>
+  </data>
+  <data name="labelVersion.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="labelVersion.Text" xml:space="preserve">
+    <value>label2</value>
+  </data>
+  <data name="&gt;&gt;labelVersion.Name" xml:space="preserve">
+    <value>labelVersion</value>
+  </data>
+  <data name="&gt;&gt;labelVersion.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelVersion.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;labelVersion.ZOrder" xml:space="preserve">
+    <value>3</value>
+  </data>
+  <data name="labelProduct.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="labelProduct.Location" type="System.Drawing.Point, System.Drawing">
+    <value>128, 77</value>
+  </data>
+  <data name="labelProduct.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 0, 4, 0</value>
+  </data>
+  <data name="labelProduct.Size" type="System.Drawing.Size, System.Drawing">
+    <value>43, 15</value>
+  </data>
+  <data name="labelProduct.TabIndex" type="System.Int32, mscorlib">
+    <value>3</value>
+  </data>
+  <data name="labelProduct.Text" xml:space="preserve">
+    <value>label3</value>
   </data>
   <data name="&gt;&gt;labelProduct.Name" xml:space="preserve">
     <value>labelProduct</value>
   </data>
-  <data name="&gt;&gt;buttonClose.Parent" xml:space="preserve">
+  <data name="&gt;&gt;labelProduct.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Label, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;labelProduct.Parent" xml:space="preserve">
     <value>$this</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="&gt;&gt;labelProduct.ZOrder" xml:space="preserve">
+    <value>2</value>
+  </data>
   <data name="buttonClose.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Right</value>
   </data>
+  <data name="buttonClose.Location" type="System.Drawing.Point, System.Drawing">
+    <value>432, 15</value>
+  </data>
+  <data name="buttonClose.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
   <data name="buttonClose.Size" type="System.Drawing.Size, System.Drawing">
-    <value>75, 25</value>
-  </data>
-  <data name="pictureBox1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>30, 31</value>
-  </data>
-  <data name="labelTitle.Size" type="System.Drawing.Size, System.Drawing">
-    <value>35, 13</value>
+    <value>100, 29</value>
   </data>
   <data name="buttonClose.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
   </data>
-  <data name="&gt;&gt;$this.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Form, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="buttonClose.Text" xml:space="preserve">
+    <value>OK</value>
   </data>
-  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
-    <value>6, 13</value>
+  <data name="&gt;&gt;buttonClose.Name" xml:space="preserve">
+    <value>buttonClose</value>
   </data>
   <data name="&gt;&gt;buttonClose.Type" xml:space="preserve">
     <value>System.Windows.Forms.Button, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;buttonClose.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;buttonClose.ZOrder" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="credits.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>Disable</value>
+  </data>
+  <data name="credits.Location" type="System.Drawing.Point, System.Drawing">
+    <value>40, 129</value>
+  </data>
+  <data name="credits.Multiline" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="credits.ScrollBars" type="System.Windows.Forms.ScrollBars, System.Windows.Forms">
+    <value>Vertical</value>
+  </data>
+  <data name="credits.Size" type="System.Drawing.Size, System.Drawing">
+    <value>492, 176</value>
+  </data>
+  <data name="credits.TabIndex" type="System.Int32, mscorlib">
+    <value>0</value>
+  </data>
+  <data name="&gt;&gt;credits.Name" xml:space="preserve">
+    <value>credits</value>
+  </data>
+  <data name="&gt;&gt;credits.Type" xml:space="preserve">
+    <value>System.Windows.Forms.TextBox, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;credits.Parent" xml:space="preserve">
+    <value>$this</value>
+  </data>
+  <data name="&gt;&gt;credits.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
+  <data name="$this.Localizable" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="$this.AutoScaleDimensions" type="System.Drawing.SizeF, System.Drawing">
+    <value>8, 15</value>
+  </data>
+  <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
+    <value>548, 354</value>
+  </data>
+  <data name="$this.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
   <data name="$this.Text" xml:space="preserve">
     <value>バージョン情報</value>
   </data>
-  <data name="labelProduct.Location" type="System.Drawing.Point, System.Drawing">
-    <value>96, 67</value>
+  <data name="&gt;&gt;$this.Name" xml:space="preserve">
+    <value>VersionInfoForm</value>
   </data>
-  <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
+  <data name="&gt;&gt;$this.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Form, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="creditText_" xml:space="preserve">
+    <value>default</value>
+  </data>
+  <data name="creditText_0" xml:space="preserve">
+    <value>SKEdition クレジット</value>
+  </data>
+  <data name="creditText_1" xml:space="preserve">
+    <value />
+  </data>
+  <data name="creditText_10" xml:space="preserve">
+    <value>ハイスピードチャンネルに名前を付けるアイデア:uni01(uni01.)</value>
+  </data>
+  <data name="creditText_11" xml:space="preserve">
+    <value>スライドの始点+中継点に直接振り下げAIRつけれる機能アイデア:すずねーう(suzuneu)</value>
+  </data>
+  <data name="creditText_12" xml:space="preserve">
+    <value>ノーツが重なってるかどうかをチェック出来る機能アイデア:naru(naru3810
+), Mila(mrn_syk)</value>
+  </data>
+  <data name="creditText_13" xml:space="preserve">
+    <value>幅小さい時にctrlとか押しながらでノーツ移動固定にできるアイデア:Mila(mrn_syk)</value>
+  </data>
+  <data name="creditText_14" xml:space="preserve">
+    <value>スライド•ガイド曲線のアイデア:uni01(uni01.)</value>
+  </data>
+  <data name="creditText_2" xml:space="preserve">
+    <value>選択していないノーツの識別アイデア: 名無し。(sevenc_nanashi)</value>
+  </data>
+  <data name="creditText_3" xml:space="preserve">
+    <value>選択していないハイスピードイベントの識別アイデア:uni01(uni01.)</value>
+  </data>
+  <data name="creditText_4" xml:space="preserve">
+    <value>小数操作のアイデアなど:uni01(uni01.)</value>
+  </data>
+  <data name="creditText_5" xml:space="preserve">
+    <value>デフォルトレーンオフセットのアイデア:えんそ(nihility_17)</value>
+  </data>
+  <data name="creditText_6" xml:space="preserve">
+    <value>usc,susエクスポートのショートカットのアイデア:Mila(mrn_syk)</value>
+  </data>
+  <data name="creditText_7" xml:space="preserve">
+    <value>カスタムフェードアウトガイドのアイデア:uni01(uni01.)</value>
+  </data>
+  <data name="creditText_8" xml:space="preserve">
+    <value>uscエクスポート実装の協力:名無し。(sevenc_nanashi)</value>
+  </data>
+  <data name="creditText_9" xml:space="preserve">
+    <value>ガイド範囲色変えのアイデア(ペイントツールの元):uni01(uni01.)</value>
+  </data>
+  <data name="creditText_last" xml:space="preserve">
+    <value>その他(バグ報告など):TootieJin(tootiejin), uni01(uni01.), kitune(kitune1512), すずねーう(suzuneu), こゆき(koyuki5608), AnonFe(anonymousferrum), Mila(mrn_syk), 名無し。(sevenc_nanashi), Lark(lark.jp), Shobokun0731(shobokun0731), よつばんchannel(yakitori_mm), ねこ(neco_yukari), アトラ(atorasan), よこしま。(nightree_),ℍ𝕪𝕕𝕣𝕠𝕘𝕖𝕟(hydro_gen_)
+ありがとうございました！</value>
+  </data>
 </root>

@@ -70,6 +70,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   使用できない文字列が使われています に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ArgsException {
+            get {
+                return ResourceManager.GetString("ArgsException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   エクスポートが完了しました。 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string ExportComplete {
