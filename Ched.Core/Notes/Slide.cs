@@ -59,6 +59,7 @@ namespace Ched.Core.Notes
             }
         }
 
+
         public List<StepTap> StepNotes { get { return stepNotes; } }
         public StartTap StartNote { get; }
 
@@ -227,6 +228,7 @@ namespace Ched.Core.Notes
             }
 
             public override float Width { get { return float.Parse((ParentNote.StartWidth + WidthChange).ToString("0.0000")); } }
+
 
             public StepTap(Slide parent) : base(parent)
             {

@@ -256,6 +256,7 @@ namespace Ched.Core.Notes
             }
 
             public override float Width { get { return ParentNote.StartWidth + WidthChange; } }
+            //public override float Opacity { get { return 1; } }
 
             public StepTap(Marker parent) : base(parent)
             {

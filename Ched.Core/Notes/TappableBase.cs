@@ -42,7 +42,6 @@ namespace Ched.Core.Notes
             get { return laneIndex; }
             set
             {
-                CheckPosition(value, Width);
                 laneIndex = value;
             }
         }
@@ -55,7 +54,6 @@ namespace Ched.Core.Notes
             get { return width; }
             set
             {
-                CheckPosition(LaneIndex, value);
                 width = value;
             }
         }
@@ -84,22 +82,23 @@ namespace Ched.Core.Notes
             }
         }
 
+
         protected void CheckPosition(float laneIndex, float width)
         {
-            //if (width < 0.1 )
-                //throw new ArgumentOutOfRangeException("width", "Invalid width.");
+            if (width < 0.1 )
+                throw new ArgumentOutOfRangeException("width", "Invalid width.");
             
         }
 
         public void SetPosition(float laneIndex, float width)
         {
-            CheckPosition(laneIndex, width);
+            //CheckPosition(laneIndex, width);
             this.laneIndex = laneIndex;
             this.width = width;
         }
         public void SetPosition(int laneIndex, int width)
         {
-            CheckPosition(laneIndex, width);
+            //CheckPosition(laneIndex, width);
             this.laneIndex = laneIndex;
             this.width = width;
         }

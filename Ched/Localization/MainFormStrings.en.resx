@@ -672,4 +672,7 @@
   <data name="AnotherSelectMethod" xml:space="preserve">
     <value>Another Select Method</value>
   </data>
+  <data name="Opacity" xml:space="preserve">
+    <value>Opacity</value>
+  </data>
 </root>

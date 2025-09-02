@@ -1204,6 +1204,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   不透明度 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Opacity {
+            get {
+                return ResourceManager.GetString("Opacity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   開く に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string OpenFile {

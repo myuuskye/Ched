@@ -59,6 +59,7 @@ namespace Ched.Core
             this.critical = critical;
             this.timeScaleGroup = timeScaleGroup;
             this.trace = trace;
+            
         }
     }
 

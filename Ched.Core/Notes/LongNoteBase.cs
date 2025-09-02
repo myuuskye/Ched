@@ -53,7 +53,7 @@ namespace Ched.Core.Notes
         public abstract float Width { get; }
         public abstract int Channel { get; set; }
 
-        
+
     }
 
 }

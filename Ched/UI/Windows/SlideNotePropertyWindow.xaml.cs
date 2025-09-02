@@ -38,6 +38,7 @@ namespace Ched.UI.Windows
         private int noteChannel;
         private int lanedecimalPlaces;
         private int widthdecimalPlaces;
+        private float noteOpacity;
 
         public int NoteTick
         {
@@ -102,7 +103,16 @@ namespace Ched.UI.Windows
                 NotifyPropertyChanged();
             }
         }
-
+        public float NoteOpacity
+        {
+            get => noteOpacity;
+            set
+            {
+                if (value == noteOpacity) return;
+                noteOpacity = value;
+                NotifyPropertyChanged();
+            }
+        }
 
         public SlideNotePropertiesWindowViewModel()
         {

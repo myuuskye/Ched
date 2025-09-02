@@ -86,6 +86,7 @@
     <Compile Include="Notes\LongNoteBase.cs" />
     <Compile Include="Notes\Guide.cs" />
     <Compile Include="Notes\Slide.cs" />
+    <Compile Include="Notes\DummyTap.cs" />
     <Compile Include="Notes\Tap.cs" />
     <Compile Include="Notes\TappableBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

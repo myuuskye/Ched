@@ -78,7 +78,7 @@ namespace Ched.UI.Windows
             set
             {
                 if (value == noteWidth) return;
-                noteWidth = value;
+                noteWidth = Math.Max(-Note.ParentNote.StartWidth, value);
                 NotifyPropertyChanged();
             }
         }
@@ -141,10 +141,6 @@ namespace Ched.UI.Windows
 
         public void CommitEdit()
         {
-            if (NoteWidth + Note.ParentNote.StartWidth < 0.01)
-            {
-                NoteWidth = -Note.ParentNote.StartWidth + 0.1f;
-            }
 
             Note.TickOffset = NoteTick;
             Note.Channel = NoteChannel;

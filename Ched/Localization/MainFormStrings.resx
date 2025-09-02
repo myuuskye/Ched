@@ -687,4 +687,7 @@
   <data name="AnotherSelectMethod" xml:space="preserve">
     <value>選択方法を変更</value>
   </data>
+  <data name="Opacity" xml:space="preserve">
+    <value>不透明度</value>
+  </data>
 </root>

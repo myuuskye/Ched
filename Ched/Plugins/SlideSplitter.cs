@@ -27,7 +27,7 @@ namespace Ched.Plugins
                .Where(p => endStepDic.Values.Contains(p.ParentNote))
                .ToDictionary(p => p.ParentNote as Slide.StepTap, p => p);
             
-
+            
             foreach (var slide in targets.ToList())
             {
                 // カーソル位置に中継点が存在しなければ処理しない
@@ -95,6 +95,7 @@ namespace Ched.Plugins
                 score.Notes.Slides.Remove(slide);
                 modified = true;
             }
+            //エラーここ！！！！！
             if (modified) args.UpdateScore(score);
         }
     }

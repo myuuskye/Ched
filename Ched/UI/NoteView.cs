@@ -797,6 +797,27 @@ namespace Ched.UI
                         .SelectMany(q => q.StepNotes.OrderByDescending(r => r.TickOffset).Concat(new LongNoteTapBase[] { q.StartNote }))
                         .Where(q => visibleTick(q.Tick))
                         .Select(q => GetClickableRectFromNotePosition(q.Tick, q.LaneIndex, q.Width));
+                    if (editablebyCh)
+                    {
+                        shortNotes = Enumerable.Empty<TappableBase>()
+                        .Concat(Notes.Damages.Reverse())
+                        .Concat(Notes.ExTaps.Reverse())
+                        .Concat(Notes.Taps.Reverse())
+                        .Concat(Notes.Flicks.Reverse())
+                        .Concat(Notes.StepNoteTaps.Reverse())
+                        .Where(q => visibleTick(q.Tick) && q.Channel == channel)
+                        .Select(q => GetClickableRectFromNotePosition(q.Tick, q.LaneIndex, q.Width));
+
+                        slides = Notes.Slides.Reverse()
+                            .SelectMany(q => q.StepNotes.OrderByDescending(r => r.TickOffset).Concat(new LongNoteTapBase[] { q.StartNote }))
+                            .Where(q => visibleTick(q.Tick) && q.Channel == channel)
+                            .Select(q => GetClickableRectFromNotePosition(q.Tick, q.LaneIndex, q.Width));
+
+                        guides = Notes.Guides.Reverse()
+                            .SelectMany(q => q.StepNotes.OrderByDescending(r => r.TickOffset).Concat(new LongNoteTapBase[] { q.StartNote }))
+                            .Where(q => visibleTick(q.Tick) && q.Channel == channel)
+                            .Select(q => GetClickableRectFromNotePosition(q.Tick, q.LaneIndex, q.Width));
+                    }
                     
                     foreach (RectangleF rect in airActions)
                     {
@@ -848,8 +869,9 @@ namespace Ched.UI
                         .Concat(Notes.Taps.Reverse())
                         .Concat(Notes.Flicks.Reverse())
                         .Concat(Notes.StepNoteTaps.Reverse())
-                        .Where(q => visibleTick(q.Tick))
+                        .Where(q => visibleTick(q.Tick) )
                         .Select(q => GetClickableRectFromNotePosition(q.Tick, q.LaneIndex, q.Width));
+
 
                     var slides = Notes.Slides.Reverse()
                         .SelectMany(q => q.StepNotes.OrderByDescending(r => r.TickOffset).Concat(new LongNoteTapBase[] { q.StartNote }))
@@ -876,6 +898,28 @@ namespace Ched.UI
                     .Where(q => visibleTick(q.Tick))
                     .Select(q => GetClickableRectFromEventPosition3(q.Tick));
 
+                    if (editablebyCh)
+                    {
+                        shortNotes = Enumerable.Empty<TappableBase>()
+                        .Concat(Notes.Damages.Reverse())
+                        .Concat(Notes.ExTaps.Reverse())
+                        .Concat(Notes.Taps.Reverse())
+                        .Concat(Notes.Flicks.Reverse())
+                        .Concat(Notes.StepNoteTaps.Reverse())
+                        .Where(q => visibleTick(q.Tick) && q.Channel == channel)
+                        .Select(q => GetClickableRectFromNotePosition(q.Tick, q.LaneIndex, q.Width));
+
+                        slides = Notes.Slides.Reverse()
+                        .SelectMany(q => q.StepNotes.OrderByDescending(r => r.TickOffset).Concat(new LongNoteTapBase[] { q.StartNote }))
+                        .Where(q => visibleTick(q.Tick) && q.Channel == channel)
+                        .Select(q => GetClickableRectFromNotePosition(q.Tick, q.LaneIndex, q.Width));
+
+                        guides = Notes.Guides.Reverse()
+                            .SelectMany(q => q.StepNotes.OrderByDescending(r => r.TickOffset).Concat(new LongNoteTapBase[] { q.StartNote }))
+                            .Where(q => visibleTick(q.Tick) && q.Channel == channel)
+                            .Select(q => GetClickableRectFromNotePosition(q.Tick, q.LaneIndex, q.Width));
+
+                    }
 
 
 
@@ -3388,7 +3432,7 @@ namespace Ched.UI
                             .TakeUntil(mouseUp)
                             .Do(q =>
                             {
-                                if ((note.Channel != channel) && (editablebyCh == true)) return;
+                                if (editablebyCh && (note.Channel != channel) ) return;
                                 var vm = new ShortNotePropertiesWindowViewModel(note);
                                 var window = new ShortNotePropertiesWindow() { DataContext = vm};
                                 window.ShowDialog();
@@ -3426,7 +3470,7 @@ namespace Ched.UI
                             .TakeUntil(mouseUp)
                             .Do(q =>
                             {
-                                if ((step.Channel != Channel) && (editablebyCh)) return;
+                                if (editablebyCh && step.Channel != Channel) return;
                                 bool isend = (step == step.ParentNote.StepNotes.OrderBy(s => s.TickOffset).Last());
 
                                 var vm = new SlideStepNotePropertiesWindowViewModel(step, isend);
@@ -3466,7 +3510,7 @@ namespace Ched.UI
                                 .TakeUntil(mouseUp)
                                 .Do(q =>
                                 {
-                                    if ((slide.Channel != Channel) && (editablebyCh)) return;
+                                    if (editablebyCh && slide.Channel != Channel) return;
                                     var vm = new SlideNotePropertiesWindowViewModel(slide);
                                     var window = new SlideNotePropertiesWindow() { DataContext = vm };
                                     window.ShowDialog();
@@ -3485,7 +3529,7 @@ namespace Ched.UI
                             .TakeUntil(mouseUp)
                             .Do(q =>
                             {
-                                if ((step.Channel != Channel) && (editablebyCh)) return;
+                                if (editablebyCh && step.Channel != Channel) return;
 
                                 var vm = new GuideStepNotePropertiesWindowViewModel(step);
                                 var window = new GuideStepNotePropertiesWindow() { DataContext = vm };
@@ -3524,7 +3568,7 @@ namespace Ched.UI
                                 .TakeUntil(mouseUp)
                                 .Do(q =>
                                 {
-                                    if ((guide.Channel != Channel) && (editablebyCh)) return;
+                                    if (editablebyCh && guide.Channel != Channel) return;
                                     var vm = new GuideNotePropertiesWindowViewModel(guide);
                                     var window = new GuideNotePropertiesWindow() { DataContext = vm };
                                     window.ShowDialog();
@@ -3578,6 +3622,7 @@ namespace Ched.UI
                             .TakeUntil(mouseUp)
                             .Do(q =>
                             {
+                                if (editablebyCh && @event.SpeedCh != Channel) return;
 
                                 var vm = new HighSpeedEventPropertiesWindowViewModel(@event, this);
                                 var window = new HighSpeedEventPropertiesWindow() { DataContext = vm };
@@ -3649,40 +3694,41 @@ namespace Ched.UI
                     {
                         foreach (var note in Notes.Damages.Reverse().Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
                         {
-                            if (editablebyCh && note.Channel != Channel) return null;
+                            if (editablebyCh && note.Channel != Channel) continue;
                             var subscription = shortNoteHandler(note);
                             if (subscription != null) return subscription;
                         }
 
                         foreach (var note in Notes.ExTaps.Reverse().Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
                         {
-                            if (editablebyCh && note.Channel != Channel) return null;
+                            if (editablebyCh && note.Channel != Channel) continue;
                             var subscription = shortNoteHandler(note);
                             if (subscription != null) return subscription;
                         }
                         foreach (var note in Notes.StepNoteTaps.Reverse().Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
                         {
-                            if (editablebyCh && note.Channel != Channel) return null;
+                            if (editablebyCh && note.Channel != Channel) continue;
                             var subscription = shortNoteHandler(note);
                             if (subscription != null) return subscription;
                         }
 
                         foreach (var note in Notes.Taps.Reverse().Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
                         {
-                            if (editablebyCh && note.Channel != Channel) return null;
+                            if (editablebyCh && note.Channel != Channel) continue;
                             var subscription = shortNoteHandler(note);
                             if (subscription != null) return subscription;
                         }
 
                         foreach (var note in Notes.Flicks.Reverse().Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
                         {
-                            if (editablebyCh && note.Channel != Channel) return null;
+                            if (editablebyCh && note.Channel != Channel) continue;
                             var subscription = shortNoteHandler(note);
                             if (subscription != null) return subscription;
                         }
 
                         foreach (var note in Notes.Slides.Reverse().Where(q => q.StartTick <= tailTick && q.StartTick + q.GetDuration() >= HeadTick))
                         {
+
                             var subscription = slideHandler(note);
                             if (subscription != null) return subscription;
                         }
@@ -4920,7 +4966,7 @@ namespace Ched.UI
                         if (note.Tick == note2.StartTick && note.LaneIndex == note2.StartLaneIndex && note.Width == note2.StartWidth) isOverlap = true;
                         var end = note2.StepNotes.OrderBy(p => p.TickOffset).Last();
                         if (note.Tick == end.Tick && note.LaneIndex.Equals(end.LaneIndex) && note.Width.Equals(end.Width)) isOverlap = true;
-                        Console.WriteLine(note.Tick + " " + end.Tick + " " + note.LaneIndex + " " + end.LaneIndex + " " + note.Width + " " + end.Width + " " + (note.Tick == end.Tick) + " " + (note.LaneIndex.Equals(end.LaneIndex)) + " " + (note.Width.Equals(end.Width)));
+                        //Console.WriteLine(note.Tick + " " + end.Tick + " " + note.LaneIndex + " " + end.LaneIndex + " " + note.Width + " " + end.Width + " " + (note.Tick == end.Tick) + " " + (note.LaneIndex.Equals(end.LaneIndex)) + " " + (note.Width.Equals(end.Width)));
                     }
                     if (isOverlap)
                     {

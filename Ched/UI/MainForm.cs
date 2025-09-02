@@ -1204,6 +1204,7 @@ namespace Ched.UI
                 CommitChanges();
                 void updateScore(Score newScore)
                 {
+
                     var op = new UpdateScoreOperation(ScoreBook.Score, newScore, score =>
                     {
                         ScoreBook.Score = score;

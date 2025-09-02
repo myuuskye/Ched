@@ -31,7 +31,7 @@ namespace Ched.Plugins
         {
             CheckEventDuplicate(score.Events.BpmChangeEvents);
             CheckEventDuplicate(score.Events.TimeSignatureChangeEvents);
-            CheckEventDuplicate(score.Events.HighSpeedChangeEvents);
+            CheckEventDuplicateChannel(score.Events.HighSpeedChangeEvents);
             updateScoreAction(score);
         }
 
@@ -40,6 +40,20 @@ namespace Ched.Plugins
             var set = new HashSet<int>();
             if (src.All(p => set.Add(p.Tick))) return;
             throw new ArgumentException("There are some events in same ticks.");
+        }
+
+        private void CheckEventDuplicateChannel<T>(IList<T> src) where T : HighSpeedChangeEvent
+        {
+            if (src.Count == 0) return;
+            var lastCh = src.OrderBy(p => p.SpeedCh).LastOrDefault().SpeedCh;
+            for (int i = 0; i <= lastCh; i++)
+            {
+                var set = new HashSet<int>();
+                if (src.Where(p => p.SpeedCh == i).All(p => set.Add(p.Tick))) return;
+                throw new ArgumentException("There are some events in same ticks.");
+
+            }
+            
         }
     }
 }
