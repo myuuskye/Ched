@@ -140,6 +140,7 @@
   <ItemGroup>
     <Compile Include="Base64Converter.cs" />
     <Compile Include="Components\Exporter\SusExporter.cs" />
+    <Compile Include="Components\Exporter\LevelDataExporter .cs" />
     <Compile Include="Components\Exporter\UscExporter.cs" />
     <Compile Include="Configuration\ApplicationSettings.cs" />
     <Compile Include="Configuration\SettingsBase.cs" />
@@ -154,10 +155,20 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>FileFilterStrings.resx</DependentUpon>
     </Compile>
+    <Compile Include="Localization\DescriptionStrings.Designer.cs">
+      <DependentUpon>DescriptionStrings.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+    </Compile>
     <Compile Include="Localization\MainFormStrings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>MainFormStrings.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Localization\DescriptionStrings.en.Designer.cs">
+      <DependentUpon>DescriptionStrings.en.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Localization\MainFormStrings.en.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -191,6 +202,7 @@
     <Compile Include="Plugins\SlideReverser.cs" />
     <Compile Include="Plugins\GuideSplitter.cs" />
     <Compile Include="Plugins\SlideSplitter.cs" />
+    <Compile Include="Plugins\LevelDataExportPlugin.cs" />
     <Compile Include="Plugins\UscImportPlugin.cs" />
     <Compile Include="Plugins\UscExportPlugin.cs" />
     <Compile Include="Plugins\SusExportPlugin.cs" />
@@ -200,13 +212,25 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="RadixConvert.cs" />
+    <Compile Include="UI\FeverEventForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\FeverEventForm.Designer.cs">
+      <DependentUpon>FeverEventForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UI\SkillEventForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\SkillEventForm.Designer.cs">
+      <DependentUpon>SkillEventForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="UI\CustomWidthSetSelectionForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="UI\CustomWidthSetSelectionForm.Designer.cs">
       <DependentUpon>CustomWidthSetSelectionForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="UI\IExportSetting.cs" />
+    <Compile Include="UI\ExportListSetting.cs" />
     <Compile Include="UI\ExportIntSetting.cs" />
     <Compile Include="UI\ExportSetting.cs" />
     <Compile Include="UI\MarkerInsertForm.cs">
@@ -403,6 +427,14 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>FileFilterStrings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Include="Localization\DescriptionStrings.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>DescriptionStrings.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Localization\DescriptionStrings.en.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>DescriptionStrings.en.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="Localization\MainFormStrings.en.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>MainFormStrings.en.Designer.cs</LastGenOutput>
@@ -423,6 +455,18 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\FeverEventForm.en.resx">
+      <DependentUpon>FeverEventForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\FeverEventForm.resx">
+      <DependentUpon>FeverEventForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\SkillEventForm.en.resx">
+      <DependentUpon>SkillEventForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\SkillEventForm.resx">
+      <DependentUpon>SkillEventForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\CustomWidthSetSelectionForm.en.resx">
       <DependentUpon>CustomWidthSetSelectionForm.cs</DependentUpon>

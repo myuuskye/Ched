@@ -202,6 +202,7 @@ namespace Ched.UI
             {
                 unitLaneWidth = value;
                 Invalidate();
+                
                 UnitLaneWidthChanged?.Invoke(this, EventArgs.Empty);
             }
         }
@@ -612,7 +613,6 @@ namespace Ched.UI
                 selectMethod = value;
             }
         }
-
 
 
 
@@ -3779,88 +3779,10 @@ namespace Ched.UI
                     
 
 
-                    IObservable<MouseEventArgs> leftSlideStepNoteHandler(Slide.StepTap step)
-                    {
-                        var beforeStepPos = new MoveSlideStepNoteOperation.NotePosition(step.TickOffset, step.LaneIndexOffset, step.WidthChange);
-
-                        return mouseMove
-                            .TakeUntil(mouseUp)
-                            .Do(q =>
-                            {
-                                if ((step.Channel != channel) && (editablebyCh == true)) return;
-                                var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
-                                float xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
-                                {
-                                    xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                }
-                                else
-                                {
-                                    xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                }
-
-                                float laneIndexOffset = beforeStepPos.LaneIndexOffset + xdiff;
-                                float widthChange = beforeStepPos.WidthChange - xdiff;
-                                laneIndexOffset = Math.Min(beforeStepPos.LaneIndexOffset + step.ParentNote.StartWidth + beforeStepPos.WidthChange - 0.1f, Math.Max(-step.ParentNote.StartLaneIndex, laneIndexOffset));
-                                widthChange = Math.Min(step.ParentNote.StartLaneIndex + beforeStepPos.LaneIndexOffset + step.ParentNote.StartWidth + beforeStepPos.WidthChange - step.ParentNote.StartWidth, Math.Max(-step.ParentNote.StartWidth + 0.1f, widthChange));
-                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.Tab) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift))
-                                {
-                                    laneIndexOffset = 1;
-                                    widthChange = 3;
-                                }
-                                step.SetPosition(laneIndexOffset, widthChange);
-                                if (!allowstepCh) step.Channel = step.ParentNote.Channel;
-                                Cursor.Current = Cursors.SizeWE;
-                            })
-                            .Finally(() =>
-                            {
-                                Cursor.Current = Cursors.Default;
-                                var afterPos = new MoveSlideStepNoteOperation.NotePosition(step.TickOffset, step.LaneIndexOffset, step.WidthChange);
-                                if (beforeStepPos == afterPos) return;
-                                OperationManager.Push(new MoveSlideStepNoteOperation(step, beforeStepPos, afterPos));
-                            });
-                    }
-
-                    IObservable<MouseEventArgs> rightSlideStepNoteHandler(Slide.StepTap step)
-                    {
-                        var beforeStepPos = new MoveSlideStepNoteOperation.NotePosition(step.TickOffset, step.LaneIndexOffset, step.WidthChange);
-
-                        return mouseMove
-                            .TakeUntil(mouseUp)
-                            .Do(q =>
-                            {
-                                if ((step.Channel != channel) && (editablebyCh == true)) return;
-                                var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
-                                float xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
-                                {
-                                    xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                }
-                                else
-                                {
-                                    xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                }
-                                float widthChange = beforeStepPos.WidthChange + xdiff;
-
-                                step.WidthChange = Math.Min(Constants.LanesCount - step.LaneIndex - step.ParentNote.StartWidth, Math.Max(-step.ParentNote.StartWidth + 0.1f, widthChange));
-                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.Tab) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift))
-                                {
-                                    step.WidthChange = 0;
-                                }
-                                if (!allowstepCh) step.Channel = step.ParentNote.Channel;
-                                Cursor.Current = Cursors.SizeWE;
-                            })
-                            .Finally(() =>
-                            {
-                                Cursor.Current = Cursors.Default;
-                                var afterPos = new MoveSlideStepNoteOperation.NotePosition(step.TickOffset, step.LaneIndexOffset, step.WidthChange);
-                                if (beforeStepPos == afterPos) return;
-                                OperationManager.Push(new MoveSlideStepNoteOperation(step, beforeStepPos, afterPos));
-                            });
-                    }
+                    
 
                     // 挿入時のハンドラにも流用するのでFinallyつけられない
-                    IObservable<MouseEventArgs> moveSlideStepNoteHandler(Slide.StepTap step)
+                    IObservable<MouseEventArgs> moveSlideStepNoteHandler(Marker.StepTap step)
                     {
                         var beforeStepPos = new MoveSlideStepNoteOperation.NotePosition(step.TickOffset, step.LaneIndexOffset, step.WidthChange);
                         var offsets = new HashSet<int>(step.ParentNote.StepNotes.Select(q => q.TickOffset));
@@ -3915,7 +3837,7 @@ namespace Ched.UI
                             });
                     }
 
-                    IObservable<MouseEventArgs> slideHandler(Slide slide)
+                    IObservable<MouseEventArgs> slideHandler(Marker slide)
                     {
                         foreach (var step in slide.StepNotes.OrderByDescending(q => q.TickOffset))
                         {
@@ -3925,18 +3847,6 @@ namespace Ched.UI
 
                             if (stepRect.Contains(scorePos))
                             {
-                                if (!(System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift)))
-                                {
-                                    if (stepRect.GetLeftThumb(EdgeHitWidthRate, MinimumEdgeHitWidth).Contains(scorePos))
-                                    {
-                                        return leftSlideStepNoteHandler(step);
-                                    }
-
-                                    if (stepRect.GetRightThumb(EdgeHitWidthRate, MinimumEdgeHitWidth).Contains(scorePos))
-                                    {
-                                        return rightSlideStepNoteHandler(step);
-                                    }
-                                }
 
 
                                 if (stepRect.Contains(scorePos))
@@ -3947,7 +3857,7 @@ namespace Ched.UI
                                             Cursor.Current = Cursors.Default;
                                             var afterPos = new MoveSlideStepNoteOperation.NotePosition(step.TickOffset, step.LaneIndexOffset, step.WidthChange);
                                             if (beforeStepPos == afterPos) return;
-                                            OperationManager.Push(new MoveSlideStepNoteOperation(step, beforeStepPos, afterPos));
+                                            //OperationManager.Push(new MoveSlideStepNoteOperation(step, beforeStepPos, afterPos));
                                         });
                                 }
                             }
@@ -4003,7 +3913,7 @@ namespace Ched.UI
                                         LastWidth = slide.StartWidth;
                                         var afterPos = new MoveSlideOperation.NotePosition(slide.StartTick, slide.StartLaneIndex, slide.StartWidth);
                                         if (beforePos == afterPos) return;
-                                        OperationManager.Push(new MoveSlideOperation(slide, beforePos, afterPos));
+                                        //OperationManager.Push(new MoveSlideOperation(slide, beforePos, afterPos));
                                     });
                             }
 
@@ -4038,7 +3948,7 @@ namespace Ched.UI
                                         LastWidth = slide.StartWidth;
                                         var afterPos = new MoveSlideOperation.NotePosition(slide.StartTick, slide.StartLaneIndex, slide.StartWidth);
                                         if (beforePos == afterPos) return;
-                                        OperationManager.Push(new MoveSlideOperation(slide, beforePos, afterPos));
+                                        //OperationManager.Push(new MoveSlideOperation(slide, beforePos, afterPos));
                                     });
                             }
                         }
@@ -4078,9 +3988,9 @@ namespace Ched.UI
                                     LastWidth = slide.StartWidth;
                                     var afterPos = new MoveSlideOperation.NotePosition(slide.StartTick, slide.StartLaneIndex, slide.StartWidth);
                                     var afterCh = new ChangeSlideChannelOperation.NoteChannel(slide.Channel);
-                                    OperationManager.Push(new ChangeSlideChannelOperation(slide, beforeCh, afterCh));
+                                    //OperationManager.Push(new ChangeSlideChannelOperation(slide, beforeCh, afterCh));
                                     if (beforePos == afterPos) return;
-                                    OperationManager.Push(new MoveSlideOperation(slide, beforePos, afterPos));
+                                    //OperationManager.Push(new MoveSlideOperation(slide, beforePos, afterPos));
 
                                 });
 
@@ -4094,7 +4004,7 @@ namespace Ched.UI
                     IObservable<MouseEventArgs> surfaceNotesHandler()
                     {
 
-                        foreach (var note in Notes.Slides.Reverse().Where(q => q.StartTick <= tailTick && q.StartTick + q.GetDuration() >= HeadTick))
+                        foreach (var note in Notes.Markers.Reverse().Where(q => q.StartTick <= tailTick && q.StartTick + q.GetDuration() >= HeadTick))
                         {
                             if (editablebyCh && note.Channel != channel) continue;
                             if (note.Channel != channel && NoteVisualMode == 0) continue;
@@ -4106,6 +4016,25 @@ namespace Ched.UI
                     }
                     var subscription2 = surfaceNotesHandler();
                     if (subscription2 != null) return subscription2;
+
+
+
+                    var marker = new Marker()
+                    {
+                        StartTick = Math.Max(GetQuantizedTick(GetTickFromYPosition(scorePos.Y)), 0),
+                        StartWidth = LastWidth,
+                        Channel = channel
+                    };
+                    marker.StartLaneIndex = GetNewNoteLaneIndex(scorePos.X, marker.StartWidth);
+                    marker.Channel = channel;
+                    var mstep = new Marker.StepTap(marker) { TickOffset = (int)QuantizeTick };
+                    marker.StepNotes.Add(mstep);
+                    mstep.Channel = mstep.ParentNote.Channel;
+                    Notes.Add(marker);
+                    Invalidate();
+                    return moveSlideStepNoteHandler(mstep)
+                        .Finally(() => OperationManager.Push(new InsertMarkerOperation(Notes, marker)));
+
 
                     /*
 
@@ -5118,7 +5047,36 @@ namespace Ched.UI
                     var point = new PointF(rightBase + strSize.Width * 5 + 5f, -GetYPositionFromTick(item.Tick) - strSize.Height);
                     pe.Graphics.DrawString(item.Comment, cmfont, commentBrush, point);
                 }
-                
+
+                // Skill描画
+                using (var skillBrush = new SolidBrush(Color.FromArgb(0, 190, 255)))
+                {
+                    foreach (var item in ScoreEvents.SkillEvents.Where(p => p.Tick >= HeadTick && p.Tick < tailTick))
+                    {
+                        var point = new PointF(-strSize.Width * 4, -GetYPositionFromTick(item.Tick) - strSize.Height);
+                        pe.Graphics.DrawString(Regex.Replace(item.Skill.ToString() + " " + item.Level, @"\.0$", "").PadLeft(3), font, skillBrush, point);
+                    }
+                }
+
+                // FeverChance描画
+                using (var feverBrush = new SolidBrush(Color.FromArgb(100, 100, 255)))
+                {
+                    foreach (var item in ScoreEvents.FeverEvents.Where(p => !p.Start).Where(p => p.Tick >= HeadTick && p.Tick < tailTick))
+                    {
+                        var point = new PointF(-strSize.Width * 6, -GetYPositionFromTick(item.Tick) - strSize.Height);
+                        pe.Graphics.DrawString(Regex.Replace("FeverC", @"\.0$", "").PadLeft(3), font, feverBrush, point);
+                    }
+                }
+                // FeverStart描画
+                using (var feverBrush = new SolidBrush(Color.FromArgb(255, 70, 255)))
+                {
+                    foreach (var item in ScoreEvents.FeverEvents.Where(p => p.Start).Where(p => p.Tick >= HeadTick && p.Tick < tailTick))
+                    {
+                        var point = new PointF(-strSize.Width * 6, -GetYPositionFromTick(item.Tick) - strSize.Height);
+                        pe.Graphics.DrawString(Regex.Replace("FeverS", @"\.0$", "").PadLeft(3), font, feverBrush, point);
+                    }
+                }
+
 
 
             }
@@ -5508,6 +5466,8 @@ namespace Ched.UI
             c.BpmChangeEvents.AddRange(events.BpmChangeEvents.Where(p => isContained(p)));
             c.TimeSignatureChangeEvents.AddRange(events.TimeSignatureChangeEvents.Where(p => isContained(p)));
             c.CommentEvents.AddRange(events.CommentEvents.Where(p => isContained(p)));
+            c.SkillEvents.AddRange(events.SkillEvents.Where(p => isContained(p)));
+            c.FeverEvents.AddRange(events.FeverEvents.Where(p => isContained(p)));
 
             if (byCh)
             {
@@ -5883,13 +5843,45 @@ namespace Ched.UI
                     prev.Comment = @event.Comment;
                 }
             }
+            foreach (var @event in data.SelectedEvents.SkillEvents)
+            {
+                var prev = ScoreEvents.SkillEvents.SingleOrDefault(p => p.Tick == @event.Tick - originTick + CurrentTick);
+                if (prev == null)
+                { //存在しなかったら
+                    @event.Tick = @event.Tick - originTick + CurrentTick;
+                }
+                else
+                { //存在したら
+                    prev.Tick = @event.Tick - originTick + CurrentTick;
+                    prev.Skill = @event.Skill;
+                    prev.Level = @event.Level;
+                }
+
+            }
+            foreach (var @event in data.SelectedEvents.FeverEvents)
+            {
+                var prev = ScoreEvents.FeverEvents.SingleOrDefault(p => p.Tick == @event.Tick - originTick + CurrentTick);
+                if (prev == null)
+                { //存在しなかったら
+                    @event.Tick = @event.Tick - originTick + CurrentTick;
+                }
+                else
+                { //存在したら
+                    prev.Tick = @event.Tick - originTick + CurrentTick;
+                    prev.Start = @event.Start;
+                    prev.Force = @event.Force;
+                }
+
+            }
 
             action(data);
 
             var op = data.SelectedEvents.BpmChangeEvents.Select(p => new InsertEventOperation<BpmChangeEvent>(ScoreEvents.BpmChangeEvents, p)).Cast<IOperation>()
                 .Concat(data.SelectedEvents.TimeSignatureChangeEvents.Select(p => new InsertEventOperation<TimeSignatureChangeEvent>(ScoreEvents.TimeSignatureChangeEvents, p)))
                 .Concat(data.SelectedEvents.HighSpeedChangeEvents.Select(p => new InsertEventOperation<HighSpeedChangeEvent>(ScoreEvents.HighSpeedChangeEvents, p)))
-                .Concat(data.SelectedEvents.CommentEvents.Select(p => new InsertEventOperation<CommentEvent>(ScoreEvents.CommentEvents, p)));
+                .Concat(data.SelectedEvents.CommentEvents.Select(p => new InsertEventOperation<CommentEvent>(ScoreEvents.CommentEvents, p)))
+                .Concat(data.SelectedEvents.SkillEvents.Select(p => new InsertEventOperation<SkillEvent>(ScoreEvents.SkillEvents, p)))
+                .Concat(data.SelectedEvents.FeverEvents.Select(p => new InsertEventOperation<FeverEvent>(ScoreEvents.FeverEvents, p)));
             var composite = new CompositeOperation("クリップボードからペースト", op.ToList());
             composite.Redo(); // 追加書くの面倒になったので許せ
             return composite;
@@ -5994,13 +5986,45 @@ namespace Ched.UI
                     prev.Comment = @event.Comment;
                 }
             }
+            foreach (var @event in data.SelectedEvents.SkillEvents)
+            {
+                var prev = ScoreEvents.SkillEvents.SingleOrDefault(p => p.Tick == @event.Tick - originTick + CurrentTick);
+                if (prev == null)
+                { //存在しなかったら
+                    @event.Tick = @event.Tick - originTick + CurrentTick;
+                }
+                else
+                { //存在したら
+                    prev.Tick = @event.Tick - originTick + CurrentTick;
+                    prev.Skill = @event.Skill;
+                    prev.Level = @event.Level;
+                }
+
+            }
+            foreach (var @event in data.SelectedEvents.FeverEvents)
+            {
+                var prev = ScoreEvents.FeverEvents.SingleOrDefault(p => p.Tick == @event.Tick - originTick + CurrentTick);
+                if (prev == null)
+                { //存在しなかったら
+                    @event.Tick = @event.Tick - originTick + CurrentTick;
+                }
+                else
+                { //存在したら
+                    prev.Tick = @event.Tick - originTick + CurrentTick;
+                    prev.Start = @event.Start;
+                    prev.Force = @event.Force;
+                }
+
+            }
 
             action(data);
 
             var op = data.SelectedEvents.BpmChangeEvents.Select(p => new InsertEventOperation<BpmChangeEvent>(ScoreEvents.BpmChangeEvents, p)).Cast<IOperation>()
                 .Concat(data.SelectedEvents.TimeSignatureChangeEvents.Select(p => new InsertEventOperation<TimeSignatureChangeEvent>(ScoreEvents.TimeSignatureChangeEvents, p)))
                 .Concat(data.SelectedEvents.HighSpeedChangeEvents.Select(p => new InsertEventOperation<HighSpeedChangeEvent>(ScoreEvents.HighSpeedChangeEvents, p)))
-                .Concat(data.SelectedEvents.CommentEvents.Select(p => new InsertEventOperation<CommentEvent>(ScoreEvents.CommentEvents, p)));
+                .Concat(data.SelectedEvents.CommentEvents.Select(p => new InsertEventOperation<CommentEvent>(ScoreEvents.CommentEvents, p)))
+                .Concat(data.SelectedEvents.SkillEvents.Select(p => new InsertEventOperation<SkillEvent>(ScoreEvents.SkillEvents, p)))
+                .Concat(data.SelectedEvents.FeverEvents.Select(p => new InsertEventOperation<FeverEvent>(ScoreEvents.FeverEvents, p)));
             var composite = new CompositeOperation("クリップボードからペースト", op.ToList());
             composite.Redo(); // 追加書くの面倒になったので許せ
             return composite;
@@ -6099,8 +6123,16 @@ namespace Ched.UI
             {
                 return new RemoveEventOperation<CommentEvent>(events.CommentEvents, p);
             });
+            var skillOp = selected.SkillEvents.ToList().Select(p =>
+            {
+                return new RemoveEventOperation<SkillEvent>(events.SkillEvents, p);
+            });
+            var feverOp = selected.FeverEvents.ToList().Select(p =>
+            {
+                return new RemoveEventOperation<FeverEvent>(events.FeverEvents, p);
+            });
 
-            OperationManager.InvokeAndPush(new CompositeOperation("イベント削除", bpmOp.Cast<IOperation>().Concat(speedOp).Concat(signatureOp).Concat(commentOp).ToList()));
+            OperationManager.InvokeAndPush(new CompositeOperation("イベント削除", bpmOp.Cast<IOperation>().Concat(speedOp).Concat(signatureOp).Concat(commentOp).Concat(skillOp).Concat(feverOp).ToList()));
             Invalidate();
         }
 

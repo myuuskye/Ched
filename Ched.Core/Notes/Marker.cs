@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static Ched.Core.Notes.Guide;
 
 namespace Ched.Core.Notes
 {
@@ -15,22 +14,11 @@ namespace Ched.Core.Notes
         [Newtonsoft.Json.JsonProperty]
         private float startLaneIndex;
         [Newtonsoft.Json.JsonProperty]
-        private int channel = 1;
-        [Newtonsoft.Json.JsonProperty]
-        private int duration = 1;
-        [Newtonsoft.Json.JsonProperty]
-        private List<string> tags = new List<string>();
-        [Newtonsoft.Json.JsonProperty]
-        private string name = "New Line";
-        [Newtonsoft.Json.JsonProperty]
-        private int colorR;
-        [Newtonsoft.Json.JsonProperty]
-        private int colorG;
-        [Newtonsoft.Json.JsonProperty]
-        private int colorB;
-
+        private int channel;
         [Newtonsoft.Json.JsonProperty]
         private List<StepTap> stepNotes = new List<StepTap>();
+        [Newtonsoft.Json.JsonProperty]
+        private string name;
 
 
         /// <summary>
@@ -58,28 +46,9 @@ namespace Ched.Core.Notes
                 startWidth = value;
             }
         }
-        public List<string> Tags
-        {
-            get { return tags; }
-            set
-            {
-                tags = value;
-            }
-        }
-        /// <summary>
-        /// ノートのレーン幅を設定します。
-        /// </summary>
-        public string Name
-        {
-            get { return name; }
-            set
-            {
-                name = value;
-            }
-        }
 
         /// <summary>
-        /// ノートのチャンネルを設定します。
+        /// チャンネルを設定します。
         /// </summary>
         public int Channel
         {
@@ -90,43 +59,28 @@ namespace Ched.Core.Notes
             }
         }
 
-        /// <summary>
-        /// ノートの長さを設定します。
-        /// </summary>
-        public int Duration
+        public string Name
         {
-            get { return duration; }
+            get { return name; }
             set
             {
-                if (duration == value) return;
-                if (duration <= 0) throw new ArgumentOutOfRangeException("value", "value must be positive.");
-                duration = value;
+                name = value;
             }
         }
 
-        /// <summary>
-        /// カラーを設定します。
-        /// </summary>
-        public int MarkerColorR
+
+        public List<StepTap> StepNotes { get { return stepNotes; } }
+        public StartTap StartNote { get; }
+
+        public int Tick  { get { return StartTick; } }
+
+        public float LaneIndex { get { return StartLaneIndex; } }
+
+        public float Width { get { return StartWidth; } }
+
+        public Marker()
         {
-            get { return colorR; }
-            set { colorR = value; }
-        }
-        /// <summary>
-        /// カラーを設定します。
-        /// </summary>
-        public int MarkerColorG
-        {
-            get { return colorG; }
-            set { colorG = value; }
-        }
-        /// <summary>
-        /// カラーを設定します。
-        /// </summary>
-        public int MarkerColorB
-        {
-            get { return colorB; }
-            set { colorB = value; }
+            StartNote = new StartTap(this);
         }
 
         protected void CheckPosition(float startLaneIndex, float startWidthth)
@@ -146,57 +100,71 @@ namespace Ched.Core.Notes
             */
         }
 
-        public void SetPosition(float lane, float width)
+        public void SetPosition(float startLaneIndex, float startWidth)
         {
-            CheckPosition(lane, width);
-            this.startLaneIndex = lane;
-            this.startWidth = width;
+            CheckPosition(startLaneIndex, startWidth);
+            this.startLaneIndex = startLaneIndex;
+            this.startWidth = startWidth;
+        }
+        public void SetPosition(int startLaneIndex, int startWidth)
+        {
+            CheckPosition(startLaneIndex, startWidth);
+            this.startLaneIndex = startLaneIndex;
+            this.startWidth = startWidth;
         }
 
-        public List<StepTap> StepNotes { get { return stepNotes; } }
-        public StartTap StartNote { get; }
-
-        public Marker()
+        public void SetChannel(int Channel)
         {
-            StartNote = new StartTap(this);
+            this.channel = Channel;
         }
 
+        /// <summary>
+        /// このスライドを反転します。
+        /// </summary>
+        public void Flip()
+        {
+            startLaneIndex = Constants.LanesCount - startLaneIndex - startWidth;
+            foreach (var step in StepNotes)
+            {
+                step.LaneIndexOffset =  -step.LaneIndexOffset - step.WidthChange;
+            }
+        }
 
         public override int GetDuration()
         {
-            return Duration;
+            return StepNotes.Max(p => p.TickOffset);
         }
 
         [Newtonsoft.Json.JsonObject(Newtonsoft.Json.MemberSerialization.OptIn)]
-        public abstract class TapBase : LongNoteTapBase
+        public abstract class TapBase : LongNoteTapBase, IAirable
         {
             [Newtonsoft.Json.JsonProperty]
-            protected Marker parent;
+            private Marker parentNote;
 
-            public Marker ParentNote { get { return parent; } }
+            public Marker ParentNote { get { return parentNote; } }
+            
 
             public TapBase(Marker parent)
             {
-                this.parent = parent;
+                parentNote = parent;
             }
         }
 
         public class StartTap : TapBase, IAirable
         {
-
-            public override bool IsTap { get { return false; } }
+            public override bool IsTap { get { return true; } }
 
             public override int Tick { get { return ParentNote.StartTick; } }
 
-            public override float LaneIndex { get { return ParentNote.StartLaneIndex; } }
+            public override float LaneIndex { get { return ParentNote.StartLaneIndex; }  }
 
-            public override float Width { get { return ParentNote.StartWidth; } }
+            public override float Width { get { return ParentNote.StartWidth; }  }
 
             public override int Channel { get { return ParentNote.Channel; } set { ParentNote.Channel = value; } }
 
+
             public StartTap(Marker parent) : base(parent)
             {
-                
             }
         }
 
@@ -211,8 +179,10 @@ namespace Ched.Core.Notes
             private int tickOffset = 1;
             [Newtonsoft.Json.JsonProperty]
             private int channel;
+            [Newtonsoft.Json.JsonProperty]
+            private bool isVisible = true;
 
-
+            private Constants constants = new Constants();
 
             public int TickOffset
             {
@@ -224,10 +194,18 @@ namespace Ched.Core.Notes
                 }
             }
 
-            public override int Tick { get { return parent.StartTick + TickOffset; } }
+
+            public bool IsVisible
+            {
+                get { return isVisible; }
+                set { isVisible = value; }
+            }
+
             public override bool IsTap { get { return false; } }
 
-            public override float LaneIndex { get { return parent.StartLaneIndex + LaneIndexOffset; } }
+            public override int Tick { get { return ParentNote.StartTick + TickOffset; } }
+
+            public override float LaneIndex { get { return float.Parse((ParentNote.StartLaneIndex + LaneIndexOffset).ToString("0.0000")); } }
 
             public override int Channel
             {
@@ -255,8 +233,8 @@ namespace Ched.Core.Notes
                 }
             }
 
-            public override float Width { get { return ParentNote.StartWidth + WidthChange; } }
-            //public override float Opacity { get { return 1; } }
+            public override float Width { get { return float.Parse((ParentNote.StartWidth + WidthChange).ToString("0.0000")); } }
+
 
             public StepTap(Marker parent) : base(parent)
             {
@@ -274,21 +252,12 @@ namespace Ched.Core.Notes
             {
                 float laneIndex = ParentNote.StartNote.LaneIndex + laneIndexOffset;
                 //if (laneIndex < constants.MinusLaneCount || laneIndex + (ParentNote.StartWidth + widthChange) > constants.LaneCount)
-                //throw new ArgumentOutOfRangeException("laneIndexOffset", "Invalid lane index offset.");
+                    //throw new ArgumentOutOfRangeException("laneIndexOffset", "Invalid lane index offset.");
 
                 float actualWidth = widthChange + ParentNote.StartWidth;
                 //if (actualWidth < 0.01 )
-                //throw new ArgumentOutOfRangeException("widthChange", "Invalid width change value.");
+                    //throw new ArgumentOutOfRangeException("widthChange", "Invalid width change value.");
             }
-        }
-
-        public enum MarkerColor
-        {
-            pink,
-            lime,
-            blue,
-            orange,
-            custom
         }
     }
 }

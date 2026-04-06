@@ -78,7 +78,7 @@ namespace Ched.Plugins
             {
                 var args = new ScoreBookExportPluginArgs(book, ms, IsQuick, GetCustomData, SetCustomData);
                 Diagnostics = args.Diagnostics;
-                ExportPlugin.Export(args);
+                ExportPlugin.Export(args, OutputPath);
                 using (var fs = new FileStream(OutputPath, FileMode.Create, FileAccess.Write))
                 {
                     var res = ms.ToArray();

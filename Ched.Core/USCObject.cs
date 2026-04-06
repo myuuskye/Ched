@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Ched.Core.Events;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -363,6 +364,35 @@ namespace Ched.Core
         {
             this.beat = beat;
             this.timeScale = timeScale;
+        }
+    }
+
+    public class USCSkill : USCObject
+    {
+        public double beat { get; set; }
+        public string type = "skill";
+        public string effect { get; set; }
+        public int level { get; set; }
+
+        public USCSkill(double beat, SkillTypes effect, int level)
+        {
+            this.beat = beat;
+            this.effect = effect.ToString();
+            this.level = level;
+        }
+    }
+    public class USCFever : USCObject
+    {
+        public double beat { get; set; }
+        public string type = "feverChance";
+        public bool force { get; set; }
+
+
+        public USCFever(double beat, bool start, bool force)
+        {
+            this.beat = beat;
+            this.force = force;
+            if (start) this.type = "feverStart"; else this.type = "feverChance";
         }
     }
 }

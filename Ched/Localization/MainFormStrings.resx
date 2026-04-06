@@ -690,4 +690,37 @@
   <data name="Opacity" xml:space="preserve">
     <value>不透明度</value>
   </data>
+  <data name="GuideEnd" xml:space="preserve">
+    <value>ガイド終点</value>
+  </data>
+  <data name="GuideStart" xml:space="preserve">
+    <value>ガイド始点</value>
+  </data>
+  <data name="GuideStep" xml:space="preserve">
+    <value>ガイド中継点</value>
+  </data>
+  <data name="GenerateByThisNote" xml:space="preserve">
+    <value>このノーツで生成されるノーツ</value>
+  </data>
+  <data name="DAMAGE" xml:space="preserve">
+    <value>ダメージ</value>
+  </data>
+  <data name="ExTAP" xml:space="preserve">
+    <value>タップ(クリティカル)</value>
+  </data>
+  <data name="TAP" xml:space="preserve">
+    <value>タップ</value>
+  </data>
+  <data name="TRACE" xml:space="preserve">
+    <value>トレース</value>
+  </data>
+  <data name="EP_Category" xml:space="preserve">
+    <value>カテゴリー</value>
+  </data>
+  <data name="ResetSettings" xml:space="preserve">
+    <value>設定をリセット</value>
+  </data>
+  <data name="isOnNotes" xml:space="preserve">
+    <value>他のノーツと重なった時</value>
+  </data>
 </root>

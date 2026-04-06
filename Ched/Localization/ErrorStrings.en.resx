@@ -182,6 +182,9 @@ Select "Yes" to upgrade this file.
   <data name="PreviewNotSupported" xml:space="preserve">
     <value>Preview cannot be used.</value>
   </data>
+  <data name="Reset" xml:space="preserve">
+    <value>Do you want to reset?</value>
+  </data>
   <data name="SourceFileNotFound" xml:space="preserve">
     <value>The audio file was not found.</value>
   </data>

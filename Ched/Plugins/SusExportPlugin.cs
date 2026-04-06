@@ -18,7 +18,7 @@ namespace Ched.Plugins
         public string FileFilter => "Sliding Universal Score (*.sus)|*.sus";
         public int ID => 0;
 
-        public void Export(IScoreBookExportPluginArgs args)
+        public void Export(IScoreBookExportPluginArgs args, string p)
         {
             var book = args.GetScoreBook();
             SusArgs susArgs = JsonConvert.DeserializeObject<SusArgs>(args.GetCustomData() ?? "") ?? new SusArgs();

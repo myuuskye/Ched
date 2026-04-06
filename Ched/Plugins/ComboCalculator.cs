@@ -15,7 +15,7 @@ namespace Ched.Plugins
     {
         public string DisplayName => PluginStrings.ComboCalculator;
 
-        public void Run(IScorePluginArgs args)
+        public void Run(IScorePluginArgs args, bool bych, int cch)
         {
             var score = args.GetCurrentScore();
             var combo = CalculateCombo(score);

@@ -252,6 +252,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   リセットしますか？ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Reset {
+            get {
+                return ResourceManager.GetString("Reset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   音源ファイルが見つかりません。 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string SourceFileNotFound {

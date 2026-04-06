@@ -13,7 +13,7 @@ namespace Ched.Plugins
     {
         public string DisplayName => PluginStrings.GuideMerger;
 
-        public void Run(IScorePluginArgs args)
+        public void Run(IScorePluginArgs args, bool bych, int cch)
         {
             var score = args.GetCurrentScore();
             var range = args.GetSelectedRange();
@@ -24,6 +24,7 @@ namespace Ched.Plugins
 
             foreach(var slide in score.Notes.Guides)
             {
+                if (bych && cch != slide.Channel) continue;
                 StepList.AddRange(slide.StepNotes);
             }
 
@@ -73,7 +74,7 @@ namespace Ched.Plugins
                     var trailingOldSteps = trailing.StepNotes.OrderBy(p => p.TickOffset).ToList();
                     heading.StepNotes.AddRange(trailingOldSteps.Select(p =>
                     {
-                        var step = new Guide.StepTap(heading) { TickOffset = p.Tick - heading.StartTick, IsVisible = p.IsVisible };
+                        var step = new Guide.StepTap(heading) { TickOffset = p.Tick - heading.StartTick, IsVisible = p.IsVisible, Channel = heading.Channel };
                         step.SetPosition(p.LaneIndex - heading.StartLaneIndex, p.Width - heading.StartWidth);
                         if (airStepDic2.ContainsKey(p))
                         {

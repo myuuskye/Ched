@@ -13,7 +13,7 @@ namespace Ched.Plugins
     {
         public string DisplayName => PluginStrings.SlideConverter;
 
-        public void Run(IScorePluginArgs args)
+        public void Run(IScorePluginArgs args, bool bych, int cch)
         {
             var score = args.GetCurrentScore();
             var range = args.GetSelectedRange();
@@ -28,6 +28,14 @@ namespace Ched.Plugins
                 .ToDictionary(p => p.ParentNote as Slide.StepTap, p => p);
 
             var targets = score.Notes.Slides
+                .Where(p => p.StartTick >= startTick && p.StartTick + p.GetDuration() <= endTick)
+                .Where(p => p.StartLaneIndex >= range.StartLaneIndex && p.StartLaneIndex + p.StartWidth <= range.StartLaneIndex + range.SelectedLanesCount)
+                .Where(p => p.StepNotes.All(q => q.LaneIndex >= range.StartLaneIndex && q.LaneIndex + q.Width <= range.StartLaneIndex + range.SelectedLanesCount))
+                .Where(p => !airStepDic.ContainsKey(endStepDic[p]) && !airActionStepDic.ContainsKey(endStepDic[p]))
+                .ToList();
+            if (bych)
+                targets = score.Notes.Slides
+                .Where(p => p.Channel == cch)
                 .Where(p => p.StartTick >= startTick && p.StartTick + p.GetDuration() <= endTick)
                 .Where(p => p.StartLaneIndex >= range.StartLaneIndex && p.StartLaneIndex + p.StartWidth <= range.StartLaneIndex + range.SelectedLanesCount)
                 .Where(p => p.StepNotes.All(q => q.LaneIndex >= range.StartLaneIndex && q.LaneIndex + q.Width <= range.StartLaneIndex + range.SelectedLanesCount))
@@ -50,9 +58,10 @@ namespace Ched.Plugins
                 res.SetPosition(p.StartLaneIndex, p.StartWidth);
                 var trailing = new Guide.StepTap(res) { IsVisible = true, TickOffset = ordered[0].TickOffset };
                 trailing.SetPosition(ordered[0].LaneIndexOffset, ordered[0].WidthChange );
+                trailing.Channel = ordered[0].Channel;
                 var steps = ordered.Skip(1).Select(q =>
                 {
-                    var step = new Guide.StepTap(res) { IsVisible = q.IsVisible, TickOffset = q.TickOffset};
+                    var step = new Guide.StepTap(res) { IsVisible = q.IsVisible, TickOffset = q.TickOffset, Channel = q.Channel };
                     step.SetPosition(q.LaneIndexOffset , q.WidthChange);
                     if (airedStepDic.ContainsKey(q))
                     {

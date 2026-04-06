@@ -32,6 +32,7 @@ namespace Ched.UI.Windows
 
         public string SoundSourceFilter { get; } = Helpers.GetFilterString(FileFilterStrings.AudioFilter, SoundSource.SupportedExtensions);
         public Action<string> SetMusicSourceFileAction => path => MusicSourcePath = path;
+        public Action<Dictionary<int, IExportSetting>> SetExportSettingsAction => setting => ExportSettings = setting;
 
 
 
@@ -161,8 +162,8 @@ namespace Ched.UI.Windows
             }
         }
 
-        private Dictionary<int, bool> exportSettings;
-        public Dictionary<int, bool> ExportSettings
+        private Dictionary<int, IExportSetting> exportSettings;
+        public Dictionary<int, IExportSetting> ExportSettings
         {
             get => exportSettings;
             set
@@ -198,6 +199,8 @@ namespace Ched.UI.Windows
             MusicVolume = MusicSource.Volume;
             GuideVolume = Configuration.SoundSettings.Default.GuideSound.Volume;
 
+            ExportSettings = ScoreBook.ExportSettings;
+
         }
 
         public void CommitEdit()
@@ -221,6 +224,8 @@ namespace Ched.UI.Windows
             Configuration.SoundSettings.Default.GuideSound = guide;
             Configuration.SoundSettings.Default.TapSound = tap;
             Configuration.SoundSettings.Default.Save();
+
+            ScoreBook.ExportSettings = ExportSettings;
         }
     }
 }

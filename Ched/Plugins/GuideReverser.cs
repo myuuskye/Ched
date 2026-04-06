@@ -13,7 +13,7 @@ namespace Ched.Plugins
     {
         public string DisplayName => PluginStrings.GuideReverser;
 
-        public void Run(IScorePluginArgs args)
+        public void Run(IScorePluginArgs args, bool bych, int cch)
         {
             var score = args.GetCurrentScore();
             var range = args.GetSelectedRange();
@@ -37,6 +37,7 @@ namespace Ched.Plugins
 
             foreach (var slide in targets)
             {
+                if (bych && cch != slide.Channel) continue;
                 StepList.AddRange(slide.StepNotes);
             }
             var airedStepDic = score.Notes.Airs
@@ -48,12 +49,15 @@ namespace Ched.Plugins
                 var ordered = p.StepNotes.OrderByDescending(q => q.TickOffset).ToList();
                 var res = new Guide() { StartTick = startTick + (endTick - ordered[0].Tick) };
                 res.SetPosition(ordered[0].LaneIndex, ordered[0].Width);
+                res.Channel = ordered[0].Channel;
                 var trailing = new Guide.StepTap(res) { IsVisible = true, TickOffset = startTick + (endTick - p.StartTick) - res.StartTick };
                 trailing.SetPosition(p.StartLaneIndex - res.StartLaneIndex, p.StartWidth - res.StartWidth);
+                trailing.Channel = res.Channel;
                 var steps = ordered.Skip(1).Select(q =>
                 {
                     var step = new Guide.StepTap(res) { IsVisible = q.IsVisible, TickOffset = startTick + (endTick - q.Tick) - res.StartTick };
                     step.SetPosition(q.LaneIndex - res.StartLaneIndex, q.Width - res.StartWidth);
+                    step.Channel = q.Channel;
                     if (airedStepDic.ContainsKey(q))
                     {
                         score.Notes.Airs.Add(new Air(step) { HorizontalDirection = airedStepDic[q].HorizontalDirection, VerticalDirection = airedStepDic[q].VerticalDirection });

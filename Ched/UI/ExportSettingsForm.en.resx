@@ -126,4 +126,7 @@
   <data name="buttonConfirm.Text" xml:space="preserve">
     <value>Confirm</value>
   </data>
+  <data name="buttonReset.Text" xml:space="preserve">
+    <value>リセット</value>
+  </data>
 </root>

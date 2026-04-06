@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting.Channels;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -172,7 +173,8 @@ namespace Ched.Core
             foreach (var marker in Markers)
             {
                 marker.StartTick = (int)(marker.StartTick * factor);
-                marker.Duration = (int)(marker.Duration * factor);
+                foreach (var step in marker.StepNotes)
+                    step.TickOffset = (int)(step.TickOffset * factor);
             }
 
             foreach (var slide in Slides)

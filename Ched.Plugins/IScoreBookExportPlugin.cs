@@ -29,7 +29,7 @@ namespace Ched.Plugins
         /// </summary>
         /// <param name="args">エクスポート時の情報を取得する<see cref="IScoreBookExportPluginArgs"/></param>
         /// <remarks>メソッドの呼び出し後に処理をキャンセルする場合、<see cref="UserCancelledException"/>をスローします。</remarks>
-        void Export(IScoreBookExportPluginArgs args);
+        void Export(IScoreBookExportPluginArgs args, string path);
     }
 
     /// <summary>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using Ched.Core.Notes;
 using Ched.Localization;
 
@@ -12,13 +13,15 @@ namespace Ched.Plugins
     {
         public string DisplayName => PluginStrings.GuideKnitter;
 
-        public void Run(IScorePluginArgs args)
+        public void Run(IScorePluginArgs args, bool bych, int cch)
         {
             var score = args.GetCurrentScore();
             var range = args.GetSelectedRange();
             var guides = score.Notes.Guides
                 .Where(p => p.StartTick <= range.StartTick && p.StepNotes.OrderByDescending(q => q.Tick).First().Tick >= range.StartTick);
-            
+            if (bych) guides = score.Notes.Guides
+                .Where(p => p.Channel == cch)
+                .Where(p => p.StartTick <= range.StartTick && p.StepNotes.OrderByDescending(q => q.Tick).First().Tick >= range.StartTick);
 
             foreach (var slide in guides.Where(p => p.StepNotes.Count == 3))
             {
@@ -46,7 +49,8 @@ namespace Ched.Plugins
                     };
                     step.SetPosition(steps[i % 2].LaneIndexOffset, steps[i % 2].WidthChange);
                     step.IsVisible = steps[i % 2].IsVisible;
-                    if(i % 2 == 0)
+                    step.Channel = steps[i % 2].Channel;
+                    if (i % 2 == 0)
                     {
                         if (air1 != null)
                         {

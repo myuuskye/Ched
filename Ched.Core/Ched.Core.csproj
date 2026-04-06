@@ -56,6 +56,7 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -68,12 +69,15 @@
     <Compile Include="BaseUSCObject.cs" />
     <Compile Include="Constants.cs" />
     <Compile Include="EventCollection.cs" />
+    <Compile Include="Events\FeverEvent.cs" />
+    <Compile Include="Events\SkillEvent.cs" />
     <Compile Include="Events\CommentEvent.cs" />
     <Compile Include="Events\BpmChangeEvent.cs" />
     <Compile Include="Events\EventBase.cs" />
     <Compile Include="Events\HighSpeedChangeEvent.cs" />
     <Compile Include="Events\InvalidTimeSignatureException.cs" />
     <Compile Include="Events\TimeSignatureChangeEvent.cs" />
+    <Compile Include="IExportSetting.cs" />
     <Compile Include="NoteCollection.cs" />
     <Compile Include="Notes\Air.cs" />
     <Compile Include="Notes\AirAction.cs" />
@@ -94,7 +98,9 @@
     <Compile Include="ScoreBook.cs" />
     <Compile Include="TimeCalculator.cs" />
     <Compile Include="UI\SelectionRange.cs" />
+    <Compile Include="LevleData.cs" />
     <Compile Include="USC.cs" />
+    <Compile Include="LevelDataObject.cs" />
     <Compile Include="USCObject.cs" />
   </ItemGroup>
   <ItemGroup>

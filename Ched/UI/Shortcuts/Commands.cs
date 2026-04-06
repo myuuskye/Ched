@@ -53,6 +53,8 @@ namespace Ched.UI.Shortcuts
         public static string InsertHighSpeedChange => "editor.action.insertHighSpeedChange";
         public static string InsertComment => "editor.action.insertComment";
         public static string InsertMarker => "editor.action.insertMarker";
+        public static string InsertSkill => "editor.action.insertSkill";
+        public static string InsertFever => "editor.action.insertFever";
 
         public static string PlayPreview => "editor.view.playPreview";
 

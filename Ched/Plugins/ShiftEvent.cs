@@ -16,7 +16,7 @@ namespace Ched.Plugins
     {
         public string DisplayName => "イベント移動";
 
-        public void Run(IScorePluginArgs args)
+        public void Run(IScorePluginArgs args, bool bych, int cch)
         {
             var form = new ShiftTimeSelectionForm();
             if (form.ShowDialog() != DialogResult.OK) return;

@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Runtime.InteropServices.Expando;
+
+using Ched.UI;
 
 namespace Ched.Core
 {
@@ -46,7 +49,7 @@ namespace Ched.Core
         [Newtonsoft.Json.JsonProperty]
         private Dictionary<int, string> channelNames = new Dictionary<int, string>();
         [Newtonsoft.Json.JsonProperty]
-        private Dictionary<int, string> exportSettings = new Dictionary<int, string>();
+        private Dictionary<int, IExportSetting> exportSettings = new Dictionary<int, IExportSetting>();
 
         public string Path { get; set; }
 
@@ -135,7 +138,7 @@ namespace Ched.Core
         /// <summary>
         /// エクスポート設定を格納します。
         /// </summary>
-        public Dictionary<int, string> ExportSettings
+        public Dictionary<int, IExportSetting> ExportSettings
         {
             get { return exportSettings; }
             set { exportSettings = value; }
@@ -210,6 +213,12 @@ namespace Ched.Core
                 doc.Remove("exporterArgs");
                 doc.Add("exportArgs", exportArgs);
             }
+            if(!(fileVersion.Major > 2 && fileVersion.Minor > 1 && fileVersion.Build > 3))
+            {
+                Console.WriteLine(fileVersion.Major + " " + fileVersion.Minor + " " + fileVersion.Build + " " + fileVersion.Revision);
+                doc["exportSettings"] = new JObject();
+            }
+            //Console.WriteLine(fileVersion.Major + " " + fileVersion.Minor + " " + fileVersion.Build + " " + fileVersion.Revision);
 
             doc["version"] = JObject.FromObject(CurrentVersion);
 
@@ -219,6 +228,7 @@ namespace Ched.Core
             {
                 res.Score.Events.TimeSignatureChangeEvents.Add(new Events.TimeSignatureChangeEvent() { Tick = 0, Numerator = 4, DenominatorExponent = 2 });
             }
+
 
 
 

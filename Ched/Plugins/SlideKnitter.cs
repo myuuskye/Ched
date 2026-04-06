@@ -12,13 +12,16 @@ namespace Ched.Plugins
     {
         public string DisplayName => PluginStrings.SlideKnitter;
 
-        public void Run(IScorePluginArgs args)
+        public void Run(IScorePluginArgs args, bool bych, int cch)
         {
             var score = args.GetCurrentScore();
             var range = args.GetSelectedRange();
             var slides = score.Notes.Slides
                 .Where(p => p.StartTick <= range.StartTick && p.StepNotes.OrderByDescending(q => q.Tick).First().Tick >= range.StartTick);
-            
+            if (bych) slides = score.Notes.Slides
+                .Where(p => p.Channel == cch)
+                .Where(p => p.StartTick <= range.StartTick && p.StepNotes.OrderByDescending(q => q.Tick).First().Tick >= range.StartTick);
+
 
             foreach (var slide in slides.Where(p => p.StepNotes.Count == 3))
             {
@@ -42,10 +45,11 @@ namespace Ched.Plugins
                     var step = new Core.Notes.Slide.StepTap(slide)
                     {
                         TickOffset = pos,
-                        IsVisible = stepVisible
+                        IsVisible = stepVisible,
                     };
                     step.SetPosition(steps[i % 2].LaneIndexOffset, steps[i % 2].WidthChange);
                     step.IsVisible = steps[i % 2].IsVisible;
+                    step.Channel = steps[i % 2].Channel;
                     if(i % 2 == 0)
                     {
                         if (air1 != null)

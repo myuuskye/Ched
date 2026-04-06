@@ -14,7 +14,7 @@ namespace Ched.Plugins
     /// </summary>
     public interface IScorePlugin : IPlugin
     {
-        void Run(IScorePluginArgs args);
+        void Run(IScorePluginArgs args, bool bych, int cch);
     }
 
     /// <summary>

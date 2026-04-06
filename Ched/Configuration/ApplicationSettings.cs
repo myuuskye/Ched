@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Configuration;
+using Ched.Core;
 
 namespace Ched.Configuration
 {
@@ -119,9 +120,9 @@ namespace Ched.Configuration
         }
 
         [UserScopedSetting]
-        public Dictionary<int,string> DefaultExportSettings
+        public Dictionary<int,IExportSetting> DefaultExportSettings
         {
-            get => (Dictionary<int,string>)this["DefaultExportSettings"];
+            get => (Dictionary<int, IExportSetting>)this["DefaultExportSettings"];
             set => this["DefaultExportSettings"] = value;
         }
 

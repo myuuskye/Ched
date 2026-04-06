@@ -13,6 +13,7 @@ using Ched.Core;
 using Ched.Localization;
 using System.Windows.Controls;
 using Ched.Configuration;
+using Newtonsoft.Json.Linq;
 
 namespace Ched.UI
 {
@@ -21,14 +22,16 @@ namespace Ched.UI
 
         public Dictionary<int, bool> BoolResult = new Dictionary<int, bool>();
         public Dictionary<int, int> IntResult = new Dictionary<int, int>();
-        public Dictionary<int, string> Result = new Dictionary<int, string>();
+        public Dictionary<int, IExportSetting> Result = new Dictionary<int, IExportSetting>();
+        public Dictionary<int, string> Values = new Dictionary<int, string>();
+
+        
 
 
-        public ScoreBook ScoreBook { get; } = new ScoreBook();
-
-
-        public ExportSettingsForm(ScoreBook scoreBook)
+        public ExportSettingsForm( Dictionary<int,IExportSetting> settings)
         {
+
+            //はじめに ScoreBook.ExportSettings にデフォルトと違う部分だけを入れる、uscExporterでデフォルトのものと照らし合わせ、変えた部分だけデフォルトに上書きする感じで
             InitializeComponent();
             AcceptButton = buttonOK;
             CancelButton = buttonClose;
@@ -37,122 +40,301 @@ namespace Ched.UI
             buttonOK.DialogResult = DialogResult.OK;
             buttonClose.DialogResult = DialogResult.Cancel;
 
-            ScoreBook = scoreBook;
 
             tabPage11.Text = MainFormStrings.All;
-            tabPage12.Text = MainFormStrings.Other;
 
 
-            var defaultset = new ExportSetting();
+            var defaultset = ApplicationSettings.Default.DefaultExportSettings;
 
-            GridViewAll.ColumnCount = 6;
+            GridViewAll.ColumnCount = 7;
 
             GridViewAll.Columns[0].HeaderText = MainFormStrings.EP_name;
-            GridViewAll.Columns[0].Width = 400;
+            GridViewAll.Columns[0].Width = 290;
             GridViewAll.Columns[0].ReadOnly = true;
+            GridViewAll.Columns[0].Resizable = DataGridViewTriState.True;
             GridViewAll.Columns[1].HeaderText = MainFormStrings.EP_value;
-            GridViewAll.Columns[1].Width = 40;
+            GridViewAll.Columns[1].Width = 35;
+            GridViewAll.Columns[1].Resizable = DataGridViewTriState.False;
             GridViewAll.Columns[2].HeaderText = MainFormStrings.EP_value;
-            GridViewAll.Columns[2].Width = 80;
+            GridViewAll.Columns[2].Width = 60;
             GridViewAll.Columns[2].ReadOnly = true;
+            GridViewAll.Columns[2].SortMode = DataGridViewColumnSortMode.NotSortable;
+            GridViewAll.Columns[2].Resizable = DataGridViewTriState.True;
             GridViewAll.Columns[3].HeaderText = MainFormStrings.EP_desc;
             GridViewAll.Columns[3].Width = 400;
             GridViewAll.Columns[3].ReadOnly = true;
+            GridViewAll.Columns[3].Resizable = DataGridViewTriState.True;
             GridViewAll.Columns[4].HeaderText = MainFormStrings.Default;
             GridViewAll.Columns[4].Width = 60;
             GridViewAll.Columns[4].ReadOnly = true;
+            GridViewAll.Columns[4].Resizable = DataGridViewTriState.True;
             GridViewAll.Columns[5].HeaderText = MainFormStrings.EP_id;
             GridViewAll.Columns[5].Width = 40;
             GridViewAll.Columns[5].ReadOnly = true;
-            
+            GridViewAll.Columns[5].Resizable = DataGridViewTriState.True;
+            GridViewAll.Columns[6].HeaderText = MainFormStrings.EP_Category;
+            GridViewAll.Columns[6].Width = 60;
+            GridViewAll.Columns[6].ReadOnly = true;
+            GridViewAll.Columns[6].Resizable = DataGridViewTriState.True;
 
-            foreach (var s in defaultset.SettingColumns.OrderBy(p => p.Key))
+
+            foreach (KeyValuePair<int, IExportSetting> s in defaultset.OrderBy(p => p.Key))
             {
-                ScoreBook.ExportSettings.TryGetValue(s.Key, out var value);
                 switch (s.Value.Type)
                 {
-                    case "bool":
-                        GridViewAll.Rows.Add(s.Value.Title, bool.Parse(value), value, s.Value.Description, ApplicationSettings.Default.DefaultExportSettings[s.Key], s.Value.ID);
+                    case SettingTypes.b:
+                        if (settings.TryGetValue(s.Key, out var value))
+                        {
+                            DataGridViewRow row = new DataGridViewRow();
+                            row.CreateCells(GridViewAll, new object[] { s.Value.Title, bool.Parse(value.Value[0]), value.Value[0], s.Value.Description, defaultset[s.Key].Value[0], s.Value.ID, s.Value.Category });
+                            row.Tag = s.Value.ID;
+                            GridViewAll.Rows.Add(row);
+                            if (Values.ContainsKey(s.Key))
+                            {
+                                Values[s.Key] = value.Value[0];
+                            }
+                            else
+                            {
+                                Values.Add(s.Key, value.Value[0]);
+                            }
+                        }
+                        else
+                        {
+                            DataGridViewRow row = new DataGridViewRow();
+                            row.CreateCells(GridViewAll, new object[] { s.Value.Title, bool.Parse(s.Value.Value[0]), s.Value.Value[0], s.Value.Description, defaultset[s.Key].Value[0], s.Value.ID, s.Value.Category });
+                            row.Tag = s.Value.ID;
+                            GridViewAll.Rows.Add(row);
+                        }
+                        
                         break;
-                    case "int":
-                        GridViewAll.Rows.Add(s.Value.Title, true, value, s.Value.Description, ApplicationSettings.Default.DefaultExportSettings[s.Key], s.Value.ID);
-                        GridViewAll.Rows[GridViewAll.Rows.Count - 1].Cells[1].ReadOnly = true;
+                    case SettingTypes.i:
+                        if (settings.TryGetValue(s.Key, out var value2))
+                        {
+                            DataGridViewRow row = new DataGridViewRow();
+                            row.CreateCells(GridViewAll, new object[] { s.Value.Title, true, value2.Value[0], s.Value.Description, defaultset[s.Key].Value[0], s.Value.ID, s.Value.Category });
+                            row.Tag = s.Value.ID;
+                            GridViewAll.Rows.Add(row);
+                            GridViewAll.Rows[GridViewAll.Rows.Count - 1].Cells[1].ReadOnly = true;
+                            if (Values.ContainsKey(s.Key))
+                            {
+                                Values[s.Key] = value2.Value[0];
+                            }
+                            else
+                            {
+                                Values.Add(s.Key, value2.Value[0]);
+                            }
+                        }
+                        else
+                        {
+                            DataGridViewRow row = new DataGridViewRow();
+                            row.CreateCells(GridViewAll, new object[] { s.Value.Title, true, s.Value.Value[0], s.Value.Description, defaultset[s.Key].Value[0], s.Value.ID, s.Value.Category });
+                            row.Tag = s.Value.ID;
+                            GridViewAll.Rows.Add(row);
+                            GridViewAll.Rows[GridViewAll.Rows.Count - 1].Cells[1].ReadOnly = true;
+                        }
+                        
                         break;
                     default:
                         break;
                 }
+                var category = s.Value.Category;
+                if (!tabControl1.TabPages.ContainsKey(category))
+                {
+                    tabControl1.TabPages.Add(category, category);
+                }
             }
-
-            if (defaultset.SettingColumns.TryGetValue((int)GridViewAll.CurrentRow.Cells[5].Value, out var colv))
+            
+            
+            
+            if (defaultset.TryGetValue((int)GridViewAll.CurrentRow.Tag, out var colv))
             {
                 listBox1.Items.Add("default");
                 switch (colv.Type)
                 {
-                    case "bool":
+                    case SettingTypes.b:
                         listBox1.Items.Add(true);
                         listBox1.Items.Add(false);
                         break;
-                    case "int":
+                    case SettingTypes.i:
                         var intsetting = (ExportIntSetting)colv;
                         foreach (var choice in intsetting.Choices)
                         {
                             listBox1.Items.Add(choice);
                         }
-                        listBox1.SelectedIndex = int.Parse(intsetting.Value);
+                        listBox1.SelectedIndex = 0;
                         break;
                     default:
                         break;
                 }
             }
 
+            buttonReset.Click += (s, e) =>
+            {
+                //if(Values.Count  > 0)
+                
+                    Values.Clear();
+                    GridViewAll.Rows.Clear();
+                    defaultset = ApplicationSettings.Default.DefaultExportSettings;
+                    foreach (KeyValuePair<int, IExportSetting> se in defaultset.OrderBy(p => p.Key))
+                    {
+                        switch (se.Value.Type)
+                        {
+                            case SettingTypes.b:
+
+                            DataGridViewRow row = new DataGridViewRow();
+                            row.CreateCells(GridViewAll, new object[] { se.Value.Title, bool.Parse(se.Value.Value[0]), se.Value.Value[0], se.Value.Description, defaultset[se.Key].Value[0], se.Value.ID, se.Value.Category });
+                            row.Tag = se.Value.ID;
+                            GridViewAll.Rows.Add(row);
+
+                                
+                                if (Values.ContainsKey(se.Key))
+                                {
+                                    
+                                    Values[se.Key] = se.Value.Value[0];
+                                }
+                                else
+                                {
+                                    Values.Add(se.Key, se.Value.Value[0]);
+                                }
+                                break;
+                            case SettingTypes.i:
+                            DataGridViewRow rowi = new DataGridViewRow();
+                            rowi.CreateCells(GridViewAll, new object[] { se.Value.Title, true, se.Value.Value[0], se.Value.Description, defaultset[se.Key].Value[0], se.Value.ID, se.Value.Category });
+                            rowi.Tag = se.Value.ID;
+                            GridViewAll.Rows.Add(rowi);
+                                GridViewAll.Rows[GridViewAll.Rows.Count - 1].Cells[1].ReadOnly = true;
+
+                                if (Values.ContainsKey(se.Key))
+                                {
+                                    Values[se.Key] = se.Value.Value[0];
+                                }
+                                else
+                                {
+                                    Values.Add(se.Key, se.Value.Value[0]);
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                
+                
+            };
+
 
             buttonOK.Click += (s, e) =>
             {
-                for (int i = 0; i < GridViewAll.Rows.Count; i++)
+                foreach(var value in Values)
                 {
-                    if(GridViewAll.Rows[i].Cells[2].Value != GridViewAll.Rows[i].Cells[4].Value)
+                    switch (defaultset[value.Key].Type)
                     {
-                        Result.Add((int)GridViewAll.Rows[i].Cells[5].Value, GridViewAll.Rows[i].Cells[2].Value.ToString());
-                        //Console.WriteLine(GridViewAll.Rows[i].Cells[2].Value + " : " + GridViewAll.Rows[i].Cells[4].Value + " count: " + Result.Count);
-                        
+                        case SettingTypes.b:
+                            if (value.Value != defaultset[value.Key].Value[0])
+                            {
+                                var newsetting = new ExportBoolSetting((ExportBoolSetting)defaultset[value.Key]);
+                                newsetting.Value[0] = value.Value;
+
+                                Result.Add(value.Key, newsetting);
+
+                            }
+                            break;
+                        case SettingTypes.i:
+                            if (value.Value != defaultset[value.Key].Value[0])
+                            {
+                                var newsetting = new ExportIntSetting((ExportIntSetting)defaultset[value.Key]);
+                                newsetting.Value[0] = value.Value;
+                                Result.Add(value.Key, newsetting);
+                            }
+                            break;
+                        case SettingTypes.list:
+                            break;
                     }
+                    
+                }
+                foreach(var setting in Result)
+                {
+                    Console.WriteLine(setting.Value.Category + " " + setting.Value.Title + " " + setting.Value.Value[0]);
                 }
 
-                ScoreBook.ExportSettings = Result;
-
-                Close();
             };
+            
 
             buttonConfirm.Click += (s, e) =>
             {
-                if(listBox1.SelectedIndex == 0)
+                if (GridViewAll.CurrentRow == null || listBox1.SelectedItem == null) return;
+                if (listBox1.SelectedIndex == 0)
                 {
-                    switch (defaultset.SettingColumns[(int)GridViewAll.CurrentRow.Cells[5].Value].Type)
+                    switch (defaultset[(int)GridViewAll.CurrentRow.Tag].Type)
                     {
-                        case "bool":
-                            GridViewAll.CurrentRow.Cells[1].Value = defaultset.SettingColumns[(int)GridViewAll.CurrentRow.Cells[5].Value].Default;
-                            GridViewAll.CurrentRow.Cells[2].Value = defaultset.SettingColumns[(int)GridViewAll.CurrentRow.Cells[5].Value].Default;
+                        case SettingTypes.b:
+                            Values.Remove(defaultset[(int)GridViewAll.CurrentRow.Tag].ID);
+                            GridViewAll.CurrentRow.Cells[1].Value = defaultset[(int)GridViewAll.CurrentRow.Tag].Value[0];
+                            GridViewAll.CurrentRow.Cells[2].Value = defaultset[(int)GridViewAll.CurrentRow.Tag].Value[0];
+                            Console.WriteLine(defaultset[(int)GridViewAll.CurrentRow.Tag].Value[0]);
                             break;
-                        case "int":
-                            GridViewAll.CurrentRow.Cells[2].Value = defaultset.SettingColumns[(int)GridViewAll.CurrentRow.Cells[5].Value].Default;
+                        case SettingTypes.i:
+                            Values.Remove(defaultset[(int)GridViewAll.CurrentRow.Tag].ID);
+                            GridViewAll.CurrentRow.Cells[2].Value = defaultset[(int)GridViewAll.CurrentRow.Tag].Value[0];
                             break;
                         default:
-                            GridViewAll.CurrentRow.Cells[2].Value = defaultset.SettingColumns[(int)GridViewAll.CurrentRow.Cells[5].Value].Default;
+                            GridViewAll.CurrentRow.Cells[2].Value = defaultset[(int)GridViewAll.CurrentRow.Tag].Value[0];
                             break;
                     }
                     
                 }
                 else
                 {
-                    Console.WriteLine(listBox1.SelectedItem);
-                    switch (defaultset.SettingColumns[(int)GridViewAll.CurrentRow.Cells[5].Value].Type)
+                    //Console.WriteLine(listBox1.SelectedItem);
+                    
+                    switch (defaultset[(int)GridViewAll.CurrentRow.Tag].Type)
                     {
-                        case "bool":
-                            GridViewAll.CurrentRow.Cells[1].Value = listBox1.SelectedItem;
-                            GridViewAll.CurrentRow.Cells[2].Value = listBox1.SelectedItem;
+                        case SettingTypes.b:
+                            if(defaultset[(int)GridViewAll.CurrentRow.Tag].Value[0] != listBox1.SelectedItem.ToString())
+                            {
+                                var setting = listBox1.SelectedItem.ToString();
+                                if (Values.ContainsKey(defaultset[(int)GridViewAll.CurrentRow.Tag].ID))
+                                {
+                                    Values[defaultset[(int)GridViewAll.CurrentRow.Tag].ID] = setting;
+                                }
+                                else
+                                {
+                                    Values.Add(defaultset[(int)GridViewAll.CurrentRow.Tag].ID, setting);
+                                }
+                                
+                            }
+                            
+                            GridViewAll.CurrentRow.Cells[1].Value = (bool)listBox1.SelectedItem;
+                            GridViewAll.CurrentRow.Cells[2].Value = (bool)listBox1.SelectedItem;
                             break;
-                        case "int":
-                            GridViewAll.CurrentRow.Cells[2].Value = listBox1.SelectedIndex - 1;
+                        case SettingTypes.i:
+                            if (defaultset[(int)GridViewAll.CurrentRow.Tag].Value[0] != listBox1.SelectedItem.ToString())
+                            {
+                                /*
+                                var setting = defaultset[(int)GridViewAll.CurrentRow.Cells[5].Value];
+                                setting.Value[0] = (listBox1.SelectedIndex - 1).ToString();
+                                setting.Default[0] = defaultset[(int)GridViewAll.CurrentRow.Cells[5].Value].Default[0];
+                                
+                                if (Result.ContainsKey(defaultset[(int)GridViewAll.CurrentRow.Cells[5].Value].ID))
+                                {
+                                    Result[defaultset[(int)GridViewAll.CurrentRow.Cells[5].Value].ID] = setting;
+                                }
+                                else
+                                {
+                                    Result.Add(defaultset[(int)GridViewAll.CurrentRow.Cells[5].Value].ID, setting);
+                                }
+                                */
+                                var setting = (listBox1.SelectedIndex - 1).ToString();
+                                if (Values.ContainsKey(defaultset[(int)GridViewAll.CurrentRow.Tag].ID))
+                                {
+                                    Values[defaultset[(int)GridViewAll.CurrentRow.Tag].ID] = setting;
+                                }
+                                else
+                                {
+                                    Values.Add(defaultset[(int)GridViewAll.CurrentRow.Tag].ID, setting);
+                                }
+
+                            }
+                            GridViewAll.CurrentRow.Cells[2].Value = (int)listBox1.SelectedIndex - 1;
                             break;
                         default:
                             break;
@@ -160,11 +342,15 @@ namespace Ched.UI
                     
                 }
             };
+            
             GridViewAll.CurrentCellDirtyStateChanged += (s, e) =>
             {
-                switch (defaultset.SettingColumns[(int)GridViewAll.CurrentRow.Cells[5].Value].Type)
+                switch (defaultset[(int)GridViewAll.CurrentRow.Tag].Type)
                 {
-                    case "bool":
+                    case SettingTypes.b:
+                        GridViewAll.CommitEdit(DataGridViewDataErrorContexts.Commit);
+                        break;
+                    case SettingTypes.i:
                         GridViewAll.CommitEdit(DataGridViewDataErrorContexts.Commit);
                         break;
                     default:
@@ -173,42 +359,87 @@ namespace Ched.UI
             };
 
 
-            GridViewAll.CellValueChanged += (s, e) =>
+            GridViewAll.CellContentClick += (s, e) =>
             {
-                switch (defaultset.SettingColumns[(int)GridViewAll.Rows[e.RowIndex].Cells[5].Value].Type)
+                if (e.ColumnIndex != 1) return;
+                Console.WriteLine("content click");
+                switch (defaultset[(int)GridViewAll.Rows[e.RowIndex].Tag].Type)
                 {
-                    case "bool":
+                    case SettingTypes.b:
                         GridViewAll.Rows[e.RowIndex].Cells[2].Value = GridViewAll.Rows[e.RowIndex].Cells[1].Value;
+                        if (Values.ContainsKey(defaultset[(int)GridViewAll.Rows[e.RowIndex].Tag].ID))
+                        {
+                            Values[defaultset[(int)GridViewAll.Rows[e.RowIndex].Tag].ID] = GridViewAll.Rows[e.RowIndex].Cells[1].Value.ToString();
+                        }
+                        else
+                        {
+                            Values.Add(defaultset[(int)GridViewAll.CurrentRow.Tag].ID, GridViewAll.Rows[e.RowIndex].Cells[1].Value.ToString());
+                        }
+                        break;
+                    case SettingTypes.i:
+
+                        if (int.Parse(GridViewAll.Rows[e.RowIndex].Cells[2].Value.ToString()) >= ((ExportIntSetting)defaultset[(int)GridViewAll.Rows[e.RowIndex].Cells[5].Value]).Max)
+                        {
+                            GridViewAll.Rows[e.RowIndex].Cells[2].Value = ((ExportIntSetting)defaultset[(int)GridViewAll.Rows[e.RowIndex].Tag]).Min;
+                        }
+                        else
+                        {
+                            GridViewAll.Rows[e.RowIndex].Cells[2].Value = int.Parse(GridViewAll.Rows[e.RowIndex].Cells[2].Value.ToString()) + 1;
+                        }
+                        listBox1.SelectedIndex = int.Parse(GridViewAll.Rows[e.RowIndex].Cells[2].Value.ToString()) + 1;
+                        if (Values.ContainsKey(defaultset[(int)GridViewAll.Rows[e.RowIndex].Tag].ID))
+                        {
+                            Values[defaultset[(int)GridViewAll.Rows[e.RowIndex].Tag].ID] = (listBox1.SelectedIndex - 1).ToString();
+                        }
+                        else
+                        {
+                            Values.Add(defaultset[(int)GridViewAll.CurrentRow.Tag].ID, (listBox1.SelectedIndex - 1).ToString());
+                        }
                         break;
                     default:
+                        listBox1.SelectedIndex = 0;
                         break;
                 }
             };
+            
+
+
 
             GridViewAll.CellClick += (s, e) =>
             {
 
                 if (e.RowIndex < 0) return;
-
                 listBox1.Items.Clear();
+                
 
-
-                if (defaultset.SettingColumns.TryGetValue((int)GridViewAll.Rows[e.RowIndex].Cells[5].Value, out var value))
+                if (defaultset.TryGetValue((int)GridViewAll.Rows[e.RowIndex].Tag, out var value))
                 {
                     listBox1.Items.Add("default");
+                    listBox1.SelectedIndex = 0;
                     switch (value.Type)
                     {
-                        case "bool":
+                        case SettingTypes.b:
                             listBox1.Items.Add(true);
                             listBox1.Items.Add(false);
                             break;
-                        case "int":
+                        case SettingTypes.i:
                             var intsetting = (ExportIntSetting)value;
                             foreach (var choice in intsetting.Choices)
                             {
                                 listBox1.Items.Add(choice);
                             }
-                            listBox1.SelectedIndex = int.Parse(intsetting.Value);
+                            listBox1.SelectedIndex = int.Parse(GridViewAll.Rows[e.RowIndex].Cells[2].Value.ToString()) + 1;
+                            /*
+                            if (Result.TryGetValue((int)GridViewAll.Rows[e.RowIndex].Cells[5].Value, out var value2))
+                            {
+                                listBox1.SelectedIndex = int.Parse(value2.Value[0]) + 1;
+                            }
+                            else
+                            {
+                                listBox1.SelectedIndex = int.Parse(value.Value[0]) + 1;
+                            }
+                            */
+
                             break;
                         default:
                             break;
@@ -216,6 +447,8 @@ namespace Ched.UI
                 }
 
             };
+            
+
 
 
         }
@@ -230,176 +463,21 @@ namespace Ched.UI
         private void tabControl_Selected(object sender, TabControlEventArgs e)
         {
             var defaultset = new ExportSetting();
-            switch (e.TabPageIndex)
+
+            foreach(DataGridViewRow row in GridViewAll.Rows)
             {
-                case 0: //ALL
-                    for (int i = 0; i < GridViewAll.Rows.Count; i++)
-                    {
-                        GridViewAll.Rows[i].Visible = true;
-                    }
-                    break;
-                case 1: //TAP
-                    for (int i = 0; i < GridViewAll.Rows.Count; i++)
-                    {
-                        if (0 <= (int)GridViewAll.Rows[i].Cells[5].Value && (int)GridViewAll.Rows[i].Cells[5].Value < 500)
-                        {
-                            GridViewAll.Rows[i].Visible = true;
-                        }
-                        else
-                        {
-                            GridViewAll.Rows[i].Visible = false;
-                        }
-                        
-                    }
-                    break;
-                case 2: //TAP2
-                    for (int i = 0; i < GridViewAll.Rows.Count; i++)
-                    {
-                        if (500 <= (int)GridViewAll.Rows[i].Cells[5].Value && (int)GridViewAll.Rows[i].Cells[5].Value < 1000)
-                        {
-                            GridViewAll.Rows[i].Visible = true;
-                        }
-                        else
-                        {
-                            GridViewAll.Rows[i].Visible = false;
-                        }
-
-                    }
-                    break;
-                case 3: //ExTAP
-                    for (int i = 0; i < GridViewAll.Rows.Count; i++)
-                    {
-                        if (1000 <= (int)GridViewAll.Rows[i].Cells[5].Value && (int)GridViewAll.Rows[i].Cells[5].Value < 1500)
-                        {
-                            GridViewAll.Rows[i].Visible = true;
-                        }
-                        else
-                        {
-                            GridViewAll.Rows[i].Visible = false;
-                        }
-
-                    }
-                    break;
-                case 4: //ExTAP2
-                    for (int i = 0; i < GridViewAll.Rows.Count; i++)
-                    {
-                        if (1500 <= (int)GridViewAll.Rows[i].Cells[5].Value && (int)GridViewAll.Rows[i].Cells[5].Value < 2000)
-                        {
-                            GridViewAll.Rows[i].Visible = true;
-                        }
-                        else
-                        {
-                            GridViewAll.Rows[i].Visible = false;
-                        }
-
-                    }
-                    break;
-                case 5: //FLICK
-                    for (int i = 0; i < GridViewAll.Rows.Count; i++)
-                    {
-                        if (2000 <= (int)GridViewAll.Rows[i].Cells[5].Value && (int)GridViewAll.Rows[i].Cells[5].Value < 2500)
-                        {
-                            GridViewAll.Rows[i].Visible = true;
-                        }
-                        else
-                        {
-                            GridViewAll.Rows[i].Visible = false;
-                        }
-
-                    }
-                    break;
-                case 6: //FLICK2
-                    for (int i = 0; i < GridViewAll.Rows.Count; i++)
-                    {
-                        if (2500 <= (int)GridViewAll.Rows[i].Cells[5].Value && (int)GridViewAll.Rows[i].Cells[5].Value < 3000)
-                        {
-                            GridViewAll.Rows[i].Visible = true;
-                        }
-                        else
-                        {
-                            GridViewAll.Rows[i].Visible = false;
-                        }
-
-                    }
-                    break;
-                case 7: //DAMAGE
-                    for (int i = 0; i < GridViewAll.Rows.Count; i++)
-                    {
-                        if (3000 <= (int)GridViewAll.Rows[i].Cells[5].Value && (int)GridViewAll.Rows[i].Cells[5].Value < 3500)
-                        {
-                            GridViewAll.Rows[i].Visible = true;
-                        }
-                        else
-                        {
-                            GridViewAll.Rows[i].Visible = false;
-                        }
-
-                    }
-                    break;
-                case 8: //DAMAGE2
-                    for (int i = 0; i < GridViewAll.Rows.Count; i++)
-                    {
-                        if (3500 <= (int)GridViewAll.Rows[i].Cells[5].Value && (int)GridViewAll.Rows[i].Cells[5].Value < 4000)
-                        {
-                            GridViewAll.Rows[i].Visible = true;
-                        }
-                        else
-                        {
-                            GridViewAll.Rows[i].Visible = false;
-                        }
-
-                    }
-                    break;
-                case 9: //SLIDE
-                    for (int i = 0; i < GridViewAll.Rows.Count; i++)
-                    {
-                        if (4000 <= (int)GridViewAll.Rows[i].Cells[5].Value && (int)GridViewAll.Rows[i].Cells[5].Value < 4500)
-                        {
-                            GridViewAll.Rows[i].Visible = true;
-                        }
-                        else
-                        {
-                            GridViewAll.Rows[i].Visible = false;
-                        }
-
-                    }
-                    break;
-                case 10: //GUIDE
-                    for (int i = 0; i < GridViewAll.Rows.Count; i++)
-                    {
-                        if (4500 <= (int)GridViewAll.Rows[i].Cells[5].Value && (int)GridViewAll.Rows[i].Cells[5].Value < 5000)
-                        {
-                            GridViewAll.Rows[i].Visible = true;
-                        }
-                        else
-                        {
-                            GridViewAll.Rows[i].Visible = false;
-                        }
-
-                    }
-                    break;
-                case 11: //OTHER
-                    for (int i = 0; i < GridViewAll.Rows.Count; i++)
-                    {
-                        if (5000 <= (int)GridViewAll.Rows[i].Cells[5].Value && (int)GridViewAll.Rows[i].Cells[5].Value < 5500)
-                        {
-                            GridViewAll.Rows[i].Visible = true;
-                        }
-                        else
-                        {
-                            GridViewAll.Rows[i].Visible = false;
-                        }
-
-                    }
-                    break;
-                default:
-                    for (int i = 0; i < GridViewAll.Rows.Count; i++)
-                    {
-                        GridViewAll.Rows[i].Visible = true;
-                    }
-                    break;
+                var category = defaultset.SettingColumns[(int)row.Tag].Category;
+                if (e.TabPageIndex == 0 || e.TabPage.Text == category)
+                {
+                    row.Visible = true;
+                }
+                else
+                {
+                    row.Visible = false;
+                }
             }
-            
+            if(GridViewAll.Rows.GetFirstRow(DataGridViewElementStates.Visible) != -1)
+                GridViewAll.Rows[GridViewAll.Rows.GetFirstRow(DataGridViewElementStates.Visible)].Selected = true;
         }
 
 

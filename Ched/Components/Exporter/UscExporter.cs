@@ -58,7 +58,7 @@ namespace Ched.Components.Exporter
             var notes = book.Score.Notes;
             var objects = new List<USCObject>();
             usc = new USC(offset);
-            var es = new Dictionary<int, string>();
+            var es = new Dictionary<int, IExportSetting>();
 
             usc.offset = book.Offset;
 
@@ -72,6 +72,7 @@ namespace Ched.Components.Exporter
             {
                 es[s.Key] = s.Value;
             }
+            
 
 
 
@@ -107,6 +108,19 @@ namespace Ched.Components.Exporter
 
                     usc.objects.Add(timeScaleChange);
                 }
+            }
+
+            foreach (var skillevent in book.Score.Events.SkillEvents)
+            {
+                var change = new USCSkill((double)skillevent.Tick / 480, skillevent.Skill, skillevent.Level);
+
+                usc.objects.Add(change);
+            }
+            foreach (var feverevent in book.Score.Events.FeverEvents)
+            {
+                var change = new USCFever((double)feverevent.Tick / 480, feverevent.Start, feverevent.Force);
+
+                usc.objects.Add(change);
             }
 
             foreach (var note in notes.Taps) //TAP

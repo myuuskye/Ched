@@ -15,10 +15,10 @@ namespace Ched.UI.Windows.Behaviors
     public class OpenSettingBehavior : Behavior<System.Windows.Controls.Button>
     {
 
-        public static readonly DependencyProperty CallbackActionProperty = DependencyProperty.RegisterAttached("CallbackAction", typeof(Action<Dictionary<int, bool>>), typeof(OpenSettingBehavior), new FrameworkPropertyMetadata(null));
-        public Action<ScoreBook> CallbackAction
+        public static readonly DependencyProperty CallbackActionProperty = DependencyProperty.RegisterAttached("CallbackAction", typeof(Action<Dictionary<int, IExportSetting>>), typeof(OpenSettingBehavior), new FrameworkPropertyMetadata(null));
+        public Action<Dictionary<int, IExportSetting>> CallbackAction
         {
-            get => (Action<ScoreBook>)GetValue(CallbackActionProperty);
+            get => (Action<Dictionary<int, IExportSetting>>)GetValue(CallbackActionProperty);
             set => SetValue(CallbackActionProperty, value);
         }
         public static readonly DependencyProperty ScoreBookProperty = DependencyProperty.RegisterAttached("scoreBook", typeof(ScoreBook), typeof(OpenSettingBehavior), new FrameworkPropertyMetadata(null));
@@ -26,6 +26,12 @@ namespace Ched.UI.Windows.Behaviors
         {
             get => (ScoreBook)GetValue(ScoreBookProperty);
             set => SetValue(ScoreBookProperty, value);
+        }
+        public static readonly DependencyProperty ExportSettingsProperty = DependencyProperty.RegisterAttached("Settings", typeof(Dictionary<int, IExportSetting>), typeof(OpenSettingBehavior), new FrameworkPropertyMetadata(null));
+        public Dictionary<int, IExportSetting> Settings
+        {
+            get => (Dictionary<int, IExportSetting>)GetValue(ExportSettingsProperty);
+            set => SetValue(ExportSettingsProperty, value);
         }
 
 
@@ -42,15 +48,16 @@ namespace Ched.UI.Windows.Behaviors
         }
         private void OnClick(object sender, RoutedEventArgs e)
         {
-            var dialog = new ExportSettingsForm(scoreBook)
+            var dialog = new ExportSettingsForm(Settings)
             {
                 
             };
             var result = dialog.ShowDialog();
             if(result == DialogResult.OK)
             {
-                Console.WriteLine("result");
-                CallbackAction?.Invoke(dialog.ScoreBook);
+                Console.WriteLine("result " + dialog.Result.Count);
+                
+                CallbackAction?.Invoke(dialog.Result);
             }
             
         }

@@ -160,7 +160,7 @@
                     <Label Content="{x:Static localization:MainFormStrings.LaneOffsetdis}" FontFamily="Yu Gothic UI Semibold" />
                     <Button Grid.Column="1" Content="{x:Static localization:MainFormStrings.ExportSettings}">
                         <i:Interaction.Behaviors>
-                            <b:OpenSettingBehavior CallbackAction="{Binding SetExportSettingsAction}" scoreBook="{Binding ScoreBook}" />
+                            <b:OpenSettingBehavior CallbackAction="{Binding SetExportSettingsAction}" Settings="{Binding ExportSettings}" />
                         </i:Interaction.Behaviors>
                     </Button>
                 </StackPanel>

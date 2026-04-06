@@ -13,7 +13,7 @@ namespace Ched.Plugins
     {
         public string DisplayName => PluginStrings.GuideSplitter;
 
-        public void Run(IScorePluginArgs args)
+        public void Run(IScorePluginArgs args, bool bych, int cch)
         {
             var score = args.GetCurrentScore();
             var range = args.GetSelectedRange();
@@ -32,16 +32,19 @@ namespace Ched.Plugins
             {
                 // カーソル位置に中継点が存在しなければ処理しない
                 int offset = range.StartTick - slide.StartTick;
-                if (slide.StepNotes.All(p => p.TickOffset != offset)) continue;
+                if (bych)
+                    if (slide.StepNotes.All(p => p.TickOffset != offset || p.Channel != cch)) continue;
+                    else
+                    if (slide.StepNotes.All(p => p.TickOffset != offset)) continue;
 
                 var airedStepDic = score.Notes.Airs
                 .Where(p => slide.StepNotes.Contains(p.ParentNote))
                 .ToDictionary(p => p.ParentNote as Guide.StepTap, p => p);
-                var first = new Guide() { StartTick = slide.StartTick };
+                var first = new Guide() { StartTick = slide.StartTick, Channel = slide.Channel };
                 first.SetPosition(slide.StartLaneIndex, slide.StartWidth);
                 first.StepNotes.AddRange(slide.StepNotes.OrderBy(p => p.TickOffset).TakeWhile(p => p.TickOffset <= offset).Select(p =>
                 {
-                    var step = new Guide.StepTap(first) { TickOffset = p.TickOffset, IsVisible = p.IsVisible };
+                    var step = new Guide.StepTap(first) { TickOffset = p.TickOffset, IsVisible = p.IsVisible, Channel = p.Channel };
                     step.SetPosition(p.LaneIndexOffset, p.WidthChange);
                     if (airedStepDic.ContainsKey(p))
                     {
@@ -54,12 +57,12 @@ namespace Ched.Plugins
                 
 
 
-                var second = new Guide() { StartTick = range.StartTick };
+                var second = new Guide() { StartTick = range.StartTick, Channel = slide.Channel };
                 var trailing = slide.StepNotes.OrderBy(p => p.TickOffset).SkipWhile(p => p.TickOffset < offset).ToList();
                 second.SetPosition(trailing[0].LaneIndex, trailing[0].Width);
                 second.StepNotes.AddRange(trailing.Skip(1).Select(p =>
                 {
-                    var step = new Guide.StepTap(second) { TickOffset = p.TickOffset - offset, IsVisible = p.IsVisible };
+                    var step = new Guide.StepTap(second) { TickOffset = p.TickOffset - offset, IsVisible = p.IsVisible, Channel = p.Channel };
                     step.SetPosition(p.LaneIndex - second.StartLaneIndex, p.Width - second.StartWidth);
                     if (airedStepDic.ContainsKey(p))
                     {
