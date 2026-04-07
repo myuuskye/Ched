@@ -54,6 +54,7 @@ namespace Ched.UI
             GridViewAll.Columns[0].Resizable = DataGridViewTriState.True;
             GridViewAll.Columns[1].HeaderText = MainFormStrings.EP_value;
             GridViewAll.Columns[1].Width = 35;
+            GridViewAll.Columns[1].SortMode = DataGridViewColumnSortMode.NotSortable;
             GridViewAll.Columns[1].Resizable = DataGridViewTriState.False;
             GridViewAll.Columns[2].HeaderText = MainFormStrings.EP_value;
             GridViewAll.Columns[2].Width = 60;
@@ -361,7 +362,8 @@ namespace Ched.UI
 
             GridViewAll.CellContentClick += (s, e) =>
             {
-                if (e.ColumnIndex != 1) return;
+
+                if (e.ColumnIndex != 1 || e.RowIndex < 0) return;
                 Console.WriteLine("content click");
                 switch (defaultset[(int)GridViewAll.Rows[e.RowIndex].Tag].Type)
                 {
