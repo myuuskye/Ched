@@ -97,6 +97,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   簡単AIR に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string AirHandy {
+            get {
+                return ResourceManager.GetString("AirHandy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   振り下げ左AIR に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string AirLeftDown {
@@ -574,11 +583,29 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   編集 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Edit {
+            get {
+                return ResourceManager.GetString("Edit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   編集(&amp;E) に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string EditMenu {
             get {
                 return ResourceManager.GetString("EditMenu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   レーン外の編集 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string EditOutLane {
+            get {
+                return ResourceManager.GetString("EditOutLane", resourceCulture);
             }
         }
         
@@ -664,6 +691,24 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   イベント編集 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string EventEditor {
+            get {
+                return ResourceManager.GetString("EventEditor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   イベントのティックに線を表示 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string EventLineVisual {
+            get {
+                return ResourceManager.GetString("EventLineVisual", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   終了 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Exit {
@@ -732,6 +777,15 @@ namespace Ched.Localization {
         public static string FadeO {
             get {
                 return ResourceManager.GetString("FadeO", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   フィーバー に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Fever {
+            get {
+                return ResourceManager.GetString("Fever", resourceCulture);
             }
         }
         
@@ -1555,6 +1609,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   スキル に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Skill {
+            get {
+                return ResourceManager.GetString("Skill", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   スライド終点 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string SlideEnd {
@@ -1650,6 +1713,15 @@ namespace Ched.Localization {
         public static string SpeedRatio {
             get {
                 return ResourceManager.GetString("SpeedRatio", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ステージ編集 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string StageEditor {
+            get {
+                return ResourceManager.GetString("StageEditor", resourceCulture);
             }
         }
         

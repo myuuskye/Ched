@@ -1747,8 +1747,8 @@ namespace Ched.Drawing
     {
         public PointF Point { get; set; }
         public int Tick { get; set; }
-        public float LaneIndex { get; set; }
-        public float LaneWidth { get; set; }
+        public double LaneIndex { get; set; }
+        public double LaneWidth { get; set; }
         public float Width { get; set; }
         public int CurveType {  get; set; }
         public bool Skippable { get; set; } = false;
@@ -1758,8 +1758,8 @@ namespace Ched.Drawing
     {
         public PointF Point { get; set; }
         public int Tick { get; set; }
-        public float LaneIndex { get; set; }
-        public float LaneWidth { get; set; }
+        public double LaneIndex { get; set; }
+        public double LaneWidth { get; set; }
         public float Width { get; set; }
         public int CurveType { get; set; }
         public int Channel { get; set; }

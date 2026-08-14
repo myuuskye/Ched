@@ -20,6 +20,14 @@ namespace Ched.Core.Events
         private int speedCh;
         [Newtonsoft.Json.JsonProperty]
         private string customArgs;
+        [Newtonsoft.Json.JsonProperty]
+        private float skip;
+        [Newtonsoft.Json.JsonProperty]
+        private int ease;
+        [Newtonsoft.Json.JsonProperty]
+        private int hideNotes;
+        [Newtonsoft.Json.JsonProperty]
+        private float editLaneIndex = 8;
 
 
 
@@ -45,5 +53,27 @@ namespace Ched.Core.Events
             get { return customArgs; }
             set { customArgs = value; }
         }
+
+        public float Skip
+        {
+            get { return skip; }
+            set { skip = value; }
+        }
+        public int Ease
+        {
+            get { return ease; }
+            set { ease = value; }
+        }
+        public int HideNotes
+        {
+            get { return hideNotes; }
+            set { hideNotes = value; }
+        }
+        public float EditLaneIndex
+        {
+            get { return editLaneIndex; }
+            set { editLaneIndex = value; }
+        }
+
     }
 }

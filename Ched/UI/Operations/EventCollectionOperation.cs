@@ -132,6 +132,11 @@ namespace Ched.UI.Operations
             Event.Tick = AfterEvent.Tick;
             Event.SpeedRatio = AfterEvent.SpeedRatio;
             Event.SpeedCh = AfterEvent.SpeedCh;
+            Event.CustomArgs = AfterEvent.CustomArgs;
+            Event.Skip = AfterEvent.SkipBeats;
+            Event.Ease = AfterEvent.Ease;
+            Event.HideNotes = AfterEvent.HideNotes;
+            Event.EditLaneIndex = AfterEvent.EditLaneIndex;
         }
 
         public void Undo()
@@ -139,6 +144,11 @@ namespace Ched.UI.Operations
             Event.Tick = BeforeEvent.Tick;
             Event.SpeedRatio = BeforeEvent.SpeedRatio;
             Event.SpeedCh = BeforeEvent.SpeedCh;
+            Event.CustomArgs = BeforeEvent.CustomArgs;
+            Event.Skip = BeforeEvent.SkipBeats;
+            Event.Ease = BeforeEvent.Ease;
+            Event.HideNotes = BeforeEvent.HideNotes;
+            Event.EditLaneIndex = BeforeEvent.EditLaneIndex;
         }
 
         public struct EventDetail
@@ -146,19 +156,31 @@ namespace Ched.UI.Operations
             public int Tick { get; }
             public decimal SpeedRatio { get; }
             public int SpeedCh { get; }
+            public string CustomArgs { get; }
+            public float SkipBeats { get; }
+            public int Ease { get; }
+            public int HideNotes { get; }
+            public float EditLaneIndex { get; }
 
-            public EventDetail(int tick, decimal ratio, int ch)
+            public EventDetail(int tick, decimal ratio, int ch, string customargs, float skip, int ease, int hide, float laneindex )
             {
                 Tick = tick;
                 SpeedRatio = ratio;
                 SpeedCh = ch;
+                CustomArgs = customargs;
+                SkipBeats = skip;
+                Ease = ease;
+                HideNotes = hide;
+                EditLaneIndex = laneindex;
             }
 
             public override bool Equals(object obj)
             {
                 if (obj == null || !(obj is EventDetail)) return false;
                 EventDetail other = (EventDetail)obj;
-                return Tick == other.Tick && SpeedRatio == other.SpeedRatio && SpeedCh == other.SpeedCh;
+                return Tick == other.Tick && SpeedRatio == other.SpeedRatio && SpeedCh == other.SpeedCh 
+                    && CustomArgs == other.CustomArgs && SkipBeats == other.SkipBeats && Ease == other.Ease
+                    && HideNotes == other.HideNotes && EditLaneIndex == other.EditLaneIndex;
             }
 
             public override int GetHashCode()
@@ -234,6 +256,84 @@ namespace Ched.UI.Operations
             public override int GetHashCode()
             {
                 return Tick ^ (int)Numrator ^ DenominatorExponent;
+            }
+
+            public static bool operator ==(EventDetail a, EventDetail b)
+            {
+                return a.Equals(b);
+            }
+
+            public static bool operator !=(EventDetail a, EventDetail b)
+            {
+                return !a.Equals(b);
+            }
+        }
+    }
+
+    public class ChangeCommentEventOperation : EventBase, IOperation
+    {
+        public string Description { get { return "Commentイベントの変更"; } }
+
+        protected CommentEvent Event { get; }
+        protected List<CommentEvent> Collection { get; }
+
+        protected EventDetail BeforeEvent { get; }
+        protected EventDetail AfterEvent { get; }
+
+        public ChangeCommentEventOperation(List<CommentEvent> collection, CommentEvent item, EventDetail before, EventDetail after)
+        {
+            Collection = collection;
+            Event = item;
+            BeforeEvent = before;
+            AfterEvent = after;
+        }
+
+        public void Redo()
+        {
+            Event.Tick = AfterEvent.Tick;
+            Event.Comment = AfterEvent.Comment;
+            Event.Color = AfterEvent.Color;
+            Event.Size = AfterEvent.Size;
+            Event.LaneIndex = AfterEvent.LaneIndex;
+
+        }
+
+        public void Undo()
+        {
+            Event.Tick = BeforeEvent.Tick;
+            Event.Comment = BeforeEvent.Comment;
+            Event.Color = BeforeEvent.Color;
+            Event.Size = BeforeEvent.Size;
+            Event.LaneIndex = BeforeEvent.LaneIndex;
+        }
+
+        public struct EventDetail
+        {
+            public int Tick { get; }
+            public string Comment { get; }
+            public int Color { get; }
+            public float Size { get; }
+            public float LaneIndex { get; }
+
+            public EventDetail(int tick, string comment, int color, float size, float laneIndex)
+            {
+                Tick = tick;
+                Comment = comment;
+                Color = color;
+                Size = size;
+                LaneIndex = laneIndex;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (obj == null || !(obj is EventDetail)) return false;
+                EventDetail other = (EventDetail)obj;
+                return Tick == other.Tick && Comment == other.Comment && Color == other.Color && Size == other.Size && LaneIndex == other.LaneIndex;
+            }
+
+            public override int GetHashCode()
+            {
+                return Tick ^ (int)Color;
             }
 
             public static bool operator ==(EventDetail a, EventDetail b)

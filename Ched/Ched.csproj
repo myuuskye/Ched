@@ -438,6 +438,7 @@
     <EmbeddedResource Include="Localization\MainFormStrings.en.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>MainFormStrings.en.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Localization\MainFormStrings.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
@@ -820,6 +821,21 @@
     <None Include="Resources\damage1.png" />
     <None Include="Resources\pencil1.png" />
     <None Include="Resources\pencil2.png" />
+    <None Include="Resources\stageeditor.png" />
+    <None Include="Resources\StageMaskIcon.bmp" />
+    <None Include="Resources\stage_mask.png" />
+    <None Include="Resources\stage_pivot.png" />
+    <None Include="Resources\stage_style.png" />
+    <None Include="Resources\stage_transform.png" />
+    <None Include="Resources\highspeed.png" />
+    <None Include="Resources\bpm.png" />
+    <None Include="Resources\camera.png" />
+    <None Include="Resources\comment.png" />
+    <None Include="Resources\fever.png" />
+    <None Include="Resources\skill.png" />
+    <None Include="Resources\arrow.png" />
+    <None Include="Resources\arrow-right.png" />
+    <None Include="Resources\EventEditor.png" />
     <Content Include="Sounds\exflick.mp3">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

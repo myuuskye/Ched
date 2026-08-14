@@ -49,11 +49,11 @@ namespace Ched.Core
     }
     public class LevelDataRef : LevelDataData
     {
-        public string value { get; set; } = "";
-        public LevelDataRef(string name, string value)
+        public string @ref { get; set; } = "";
+        public LevelDataRef(string name, string @ref)
         {
             this.name = name;
-            this.value = value;
+            this.@ref = @ref;
         }
     }
 

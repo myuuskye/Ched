@@ -161,6 +161,16 @@ namespace Ched.UI.Windows
                 NotifyPropertyChanged();
             }
         }
+        private int hp;
+        public int HP
+        {
+            get => hp;
+            set
+            {
+                hp = value;
+                NotifyPropertyChanged();
+            }
+        }
 
         private Dictionary<int, IExportSetting> exportSettings;
         public Dictionary<int, IExportSetting> ExportSettings
@@ -193,6 +203,7 @@ namespace Ched.UI.Windows
             NotesDesigner = ScoreBook.NotesDesignerName;
             LaneOffset = ScoreBook.LaneOffset;
             DefaultLaneOffset = ApplicationSettings.Default.LaneOffset;
+            HP = ScoreBook.HP;
 
             MusicSourcePath = MusicSource.FilePath;
             MusicSourceLatency = ScoreBook.Offset;
@@ -210,6 +221,7 @@ namespace Ched.UI.Windows
             ScoreBook.NotesDesignerName = NotesDesigner;
             ScoreBook.LaneOffset = LaneOffset;
             ScoreBook.Offset = MusicSourceLatency;
+            ScoreBook.HP = HP;
             NoteView.laneOffset = LaneOffset;
             ApplicationSettings.Default.LaneOffset = DefaultLaneOffset;
 

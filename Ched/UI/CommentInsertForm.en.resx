@@ -132,4 +132,28 @@
   <data name="label3.Text" xml:space="preserve">
     <value>Size</value>
   </data>
+  <data name="label4.Text" xml:space="preserve">
+    <value>Lane</value>
+  </data>
+  <data name="colorBox.Items" xml:space="preserve">
+    <value>Blue</value>
+  </data>
+  <data name="colorBox.Items1" xml:space="preserve">
+    <value>Red</value>
+  </data>
+  <data name="colorBox.Items2" xml:space="preserve">
+    <value>Yellow</value>
+  </data>
+  <data name="colorBox.Items3" xml:space="preserve">
+    <value>Purple</value>
+  </data>
+  <data name="colorBox.Items4" xml:space="preserve">
+    <value>Green</value>
+  </data>
+  <data name="colorBox.Items5" xml:space="preserve">
+    <value>Cyan</value>
+  </data>
+  <data name="colorBox.Items6" xml:space="preserve">
+    <value>Pink</value>
+  </data>
 </root>

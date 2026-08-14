@@ -37,6 +37,14 @@ namespace Ched.UI
                 sizeBox.Value = (decimal)value;
             }
         }
+        public float LaneIndex
+        {
+            get => (float)laneBox.Value;
+            set
+            {
+                laneBox.Value = (decimal)value;
+            }
+        }
 
         public CommentInsertForm()
         {
@@ -55,6 +63,12 @@ namespace Ched.UI
             sizeBox.Maximum = 10000;
             sizeBox.Minimum = 1;
             sizeBox.Value = 9;
+
+            laneBox.DecimalPlaces = 1;
+            laneBox.Increment = 1;
+            laneBox.Maximum = 100000000;
+            laneBox.Minimum = -100000000;
+            laneBox.Value = 12;
 
         }
     }

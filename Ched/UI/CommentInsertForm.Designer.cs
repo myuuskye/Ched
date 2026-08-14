@@ -37,7 +37,10 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.sizeBox = new System.Windows.Forms.NumericUpDown();
+            this.label4 = new System.Windows.Forms.Label();
+            this.laneBox = new System.Windows.Forms.NumericUpDown();
             ((System.ComponentModel.ISupportInitialize)(this.sizeBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.laneBox)).BeginInit();
             this.SuspendLayout();
             // 
             // buttonOK
@@ -90,10 +93,22 @@
             resources.ApplyResources(this.sizeBox, "sizeBox");
             this.sizeBox.Name = "sizeBox";
             // 
+            // label4
+            // 
+            resources.ApplyResources(this.label4, "label4");
+            this.label4.Name = "label4";
+            // 
+            // laneBox
+            // 
+            resources.ApplyResources(this.laneBox, "laneBox");
+            this.laneBox.Name = "laneBox";
+            // 
             // CommentInsertForm
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.laneBox);
+            this.Controls.Add(this.label4);
             this.Controls.Add(this.sizeBox);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
@@ -107,6 +122,7 @@
             this.MinimizeBox = false;
             this.Name = "CommentInsertForm";
             ((System.ComponentModel.ISupportInitialize)(this.sizeBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.laneBox)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -122,5 +138,7 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.NumericUpDown sizeBox;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.NumericUpDown laneBox;
     }
 }

@@ -72,7 +72,7 @@ namespace Ched.UI
             get { return selectedLanesCount; }
             set
             {
-                if (StartLaneIndex + value < -32) throw new ArgumentOutOfRangeException();
+                //if (StartLaneIndex + value < -32) throw new ArgumentOutOfRangeException();
                 selectedLanesCount = value;
             }
         }

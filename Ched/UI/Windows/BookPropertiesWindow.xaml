@@ -15,7 +15,7 @@
         Title="{x:Static localization:MainFormStrings.BookProperty}"
         Style="{DynamicResource DialogWindowStyle}"
         mc:Ignorable="d"
-        d:DataContext="{d:DesignInstance Type={x:Type local:BookPropertiesWindowViewModel}}">
+        d:DataContext="{d:DesignInstance Type={x:Type local:BookPropertiesWindowViewModel}}" d:DesignHeight="692.037">
 
     <Window.Resources>
         <ResourceDictionary>
@@ -46,7 +46,15 @@
     </i:Interaction.Triggers>
 
     <Grid Margin="{StaticResource WindowContainerMargin}">
-        <StackPanel Orientation="Vertical">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="215*"/>
+            <ColumnDefinition Width="357*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="262*"/>
+            <RowDefinition Height="7*"/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Vertical" Grid.RowSpan="2" Grid.ColumnSpan="2">
             <GroupBox Header="{x:Static localization:MainFormStrings.BasicInformation}" Margin="{StaticResource ContainerMargin}">
                 <StackPanel Orientation="Vertical" Grid.IsSharedSizeScope="True">
                     <Grid Style="{StaticResource ResourceKey=InputFieldRow}">
@@ -141,10 +149,10 @@
                     </Grid>
                 </StackPanel>
             </GroupBox>
-            <GroupBox Header="{x:Static localization:MainFormStrings.Other}" Width="576" RenderTransformOrigin="0.506,0.449">
+            <GroupBox Header="{x:Static localization:MainFormStrings.Other}" Width="576" RenderTransformOrigin="0.506,0.449" Height="189">
 
                 <StackPanel Margin="0,0,2,0" RenderTransformOrigin="0.498,0.68">
-                    <Grid Style="{StaticResource ResourceKey=InputFieldRow}" Width="550" Margin="0,0,300,5">
+                    <Grid Style="{StaticResource ResourceKey=InputFieldRow}" Width="550" Margin="0,0,300,5" Height="42">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
                             <ColumnDefinition Width="Auto" />
@@ -157,7 +165,17 @@
                         <local:BindableNumericUpDown Grid.Column="2" Value="{Binding DefaultLaneOffset}" DecimalPlaces="1" Minimum="-1000" Maximum="1000" Increment="1" Margin="66,0,-67,0" />
 
                     </Grid>
-                    <Label Content="{x:Static localization:MainFormStrings.LaneOffsetdis}" FontFamily="Yu Gothic UI Semibold" />
+                    <Grid Style="{StaticResource ResourceKey=InputFieldRow}" Width="550" Margin="0,0,300,5" Height="42">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <Label Grid.Column="0" Content="HP" />
+                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding HP}" DecimalPlaces="0" Minimum="0" Maximum="100000000000000" Increment="1" />
+
+                    </Grid>
                     <Button Grid.Column="1" Content="{x:Static localization:MainFormStrings.ExportSettings}">
                         <i:Interaction.Behaviors>
                             <b:OpenSettingBehavior CallbackAction="{Binding SetExportSettingsAction}" Settings="{Binding ExportSettings}" />

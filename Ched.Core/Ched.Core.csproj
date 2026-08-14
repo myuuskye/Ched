@@ -70,6 +70,8 @@
     <Compile Include="Constants.cs" />
     <Compile Include="EventCollection.cs" />
     <Compile Include="Events\FeverEvent.cs" />
+    <Compile Include="Events\CameraChangeEvent.cs" />
+    <Compile Include="Events\StageMaskChangeEvent.cs" />
     <Compile Include="Events\SkillEvent.cs" />
     <Compile Include="Events\CommentEvent.cs" />
     <Compile Include="Events\BpmChangeEvent.cs" />

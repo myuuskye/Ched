@@ -139,4 +139,22 @@
   <data name="label3.Text" xml:space="preserve">
     <value>Custom</value>
   </data>
+  <data name="easeSelectBox.Items" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="easeSelectBox.Items1" xml:space="preserve">
+    <value>Linear</value>
+  </data>
+  <data name="label4.Text" xml:space="preserve">
+    <value>Skip (beats)</value>
+  </data>
+  <data name="label5.Text" xml:space="preserve">
+    <value>Time Scale Ease</value>
+  </data>
+  <data name="label6.Text" xml:space="preserve">
+    <value>Hide Notes</value>
+  </data>
+  <data name="label7.Text" xml:space="preserve">
+    <value>Editor Lane</value>
+  </data>
 </root>

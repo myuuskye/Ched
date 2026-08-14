@@ -1798,6 +1798,20 @@ namespace Ched.Configuration
             get => (bool)this["SelectMethod"];
             set => this["SelectMethod"] = value;
         }
+        [UserScopedSetting]
+        [DefaultSettingValue("true")]
+        public bool EditableOutLane
+        {
+            get => (bool)this["EditableOutLane"];
+            set => this["EditableOutLane"] = value;
+        }
+        [UserScopedSetting]
+        [DefaultSettingValue("False")]
+        public bool IsEventHasLine
+        {
+            get => (bool)this["IsEventHasLine"];
+            set => this["IsEventHasLine"] = value;
+        }
 
     }
 }

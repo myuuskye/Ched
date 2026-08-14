@@ -723,4 +723,28 @@
   <data name="isOnNotes" xml:space="preserve">
     <value>他のノーツと重なった時</value>
   </data>
+  <data name="AirHandy" xml:space="preserve">
+    <value>簡単AIR</value>
+  </data>
+  <data name="StageEditor" xml:space="preserve">
+    <value>ステージ編集</value>
+  </data>
+  <data name="EventEditor" xml:space="preserve">
+    <value>イベント編集</value>
+  </data>
+  <data name="EditOutLane" xml:space="preserve">
+    <value>レーン外の編集</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>編集</value>
+  </data>
+  <data name="EventLineVisual" xml:space="preserve">
+    <value>イベントのティックに線を表示</value>
+  </data>
+  <data name="Fever" xml:space="preserve">
+    <value>フィーバー</value>
+  </data>
+  <data name="Skill" xml:space="preserve">
+    <value>スキル</value>
+  </data>
 </root>

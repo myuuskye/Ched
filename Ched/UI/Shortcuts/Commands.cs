@@ -71,6 +71,8 @@ namespace Ched.UI.Shortcuts
         public static string SelectProperty => "editor.selectProperty";
         public static string SelectMarker => "editor.selectMarker";
         public static string SelectStepEditor => "editor.selectStepEditor";
+        public static string SelectEventEditor => "editor.selectEventEditor";
+        public static string SelectStageEditor => "editor.selectStageEditor";
 
         public static string ZoomIn => "editor.view.zoomIn";
         public static string ZoomOut => "editor.view.zoomOut";
@@ -83,6 +85,7 @@ namespace Ched.UI.Shortcuts
         public static string SelectAir => "editor.selectAir";
         public static string SelectAirUp => "editor.selectAirUp";
         public static string SelectAirDown => "editor.selectAirDown";
+        public static string SelectAirOther => "editor.selectAirOther";
         public static string SelectAirAction => "editor.selectAirAction";
         public static string SelectFlick => "editor.selectFlick";
         public static string SelectDamage => "editor.selectDamage";
@@ -93,5 +96,22 @@ namespace Ched.UI.Shortcuts
         public static string SelectExTap2 => "editor.selectExTap2";
         public static string SelectFlick2 => "editor.selectFlick2";
         public static string SelectDamage2 => "editor.selectDamage2";
+
+        public static string SelectEvent => "editor.selectEvent";
+        public static string SelectStageEvent => "editor.selectStageEvent";
+        public static string SelectEventSelection => "editor.selectEventSelection";
+        public static string SelectEventEdit => "editor.selectEventEdit";
+        public static string SelectEventEracer => "editor.selectEventEracer";
+        public static string SelectHighspeed => "editor.selectHighspeed";
+        public static string SelectBpm => "editor.selectBpm";
+        public static string SelectComment => "editor.selectComment";
+        public static string SelectSkill => "editor.selectSkill";
+        public static string SelectFever => "editor.selectFever";
+
+        public static string SelectStageMask => "editor.selectStageMask";
+        public static string SelectStagePivot => "editor.selectStagePivot";
+        public static string SelectStageStyle => "editor.selectStageStyle";
+        public static string SelectStageTransform => "editor.selectStageTransform";
+        public static string SelectCamera => "editor.selectCamera";
     }
 }

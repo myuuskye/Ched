@@ -19,7 +19,9 @@ namespace Ched.Core.Events
         [Newtonsoft.Json.JsonProperty]
         private int color;
         [Newtonsoft.Json.JsonProperty]
-        private float size;
+        private float size = 9;
+        [Newtonsoft.Json.JsonProperty]
+        private float laneIndex = 8;
 
         public string Comment
         {
@@ -37,6 +39,11 @@ namespace Ched.Core.Events
         {
             get { return size; }
             set { size = value; }
+        }
+        public float LaneIndex
+        {
+            get { return laneIndex; }
+            set { laneIndex = value; }
         }
         public int Type = -3;
     }

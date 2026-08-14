@@ -14,9 +14,11 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 using System.Windows.Markup;
 using System.Windows.Media.Effects;
 using System.Windows.Shapes;
+using System.Xml.Linq;
 
 namespace Ched.Components.Exporter
 {
@@ -76,8 +78,11 @@ namespace Ched.Components.Exporter
                 es[s.Key] = s.Value;
             }
 
-            entities.Add(new LevelDataEntity("Initialization", new List<LevelDataData>()));
 
+            entities.Add(new LevelDataEntity("Initialization", new List<LevelDataData>() { new LevelDataValue("initialLife", ScoreBook.HP) }));
+        
+
+            //bpm
             foreach (var bpmevent in book.Score.Events.BpmChangeEvents)
             {
 
@@ -88,10 +93,59 @@ namespace Ched.Components.Exporter
             }
 
 
+            //timeScale 
+            var timeScaleGroups = new List<LevelDataEntity>();
 
+            int maxChannel = 0;
+            if(book.Score.Events.HighSpeedChangeEvents.Count > 0)
+            {
+                maxChannel = book.Score.Events.HighSpeedChangeEvents.OrderBy(p => p.SpeedCh).Last().SpeedCh;
+            }
 
+            for (int i = 0; i <= maxChannel; i++)
+            {
+                var editorName = new LevelDataRef("editorName", "#" + i);
+                var eventList = book.Score.Events.HighSpeedChangeEvents;
+                var sortedeventList = eventList.Where(p => p.SpeedCh == i);
 
+                Console.WriteLine(eventList.OrderBy(p => p.SpeedCh).ToList().Where(q => q.SpeedCh < i).Count());
+                Console.WriteLine(i + " : " + eventList.OrderBy(p => p.SpeedCh).ToList().FindIndex(q => q.SpeedCh == i) + " : " + (i + eventList.OrderBy(p => p.SpeedCh).ToList().FindIndex(q => q.SpeedCh == i)));
+                var gname = i + eventList.OrderBy(p => p.SpeedCh).ToList().Where(q => q.SpeedCh < i).Count();
 
+                if (sortedeventList.Count() > 0) //Changeイベントを持ってるか
+                {
+                    var first = new LevelDataRef("first", (i + eventList.OrderBy(p => p.SpeedCh).ToList().Where(q => q.SpeedCh < i).Count() + 1).ToString());
+                    entities.Add(new NamedLevelDataEntity("#TIMESCALE_GROUP", new List<LevelDataData>() { editorName, first }, gname.ToString()));
+
+                    foreach (var timescaleevent in sortedeventList.OrderBy(q => q.Tick))
+                    {
+                        var timeScaleGroup = new LevelDataRef("#TIMESCALE_GROUP", (i + eventList.OrderBy(p => p.SpeedCh).ToList().Where(q => q.SpeedCh < i).Count()).ToString());
+                        var beat = new LevelDataValue("#BEAT", (double)timescaleevent.Tick / 480);
+                        var editorLane = new LevelDataValue("editorLane", -12);
+                        var timeScale = new LevelDataValue("#TIMESCALE", (double)timescaleevent.SpeedRatio);
+                        var timeScaleSkip = new LevelDataValue("#TIMESCALE_SKIP", timescaleevent.Skip);
+                        var timeScaleEase = new LevelDataValue("#TIMESCALE_EASE", timescaleevent.Ease);
+                        var hidenotes = new LevelDataValue("hideNotes", timescaleevent.HideNotes);
+                        var next = new LevelDataRef("next", "");
+                        var thisIndex = eventList.OrderBy(q => q.Tick).ToList().IndexOf(timescaleevent); //全体のリストでこの要素は何番目か
+                        var name = i + thisIndex + 1;
+                        if (sortedeventList.OrderBy(q => q.Tick).Last() != timescaleevent) //この要素が最後ではない
+                        {
+                            next = new LevelDataRef("next", (i + thisIndex + 2).ToString());
+                            entities.Add(new NamedLevelDataEntity("#TIMESCALE_CHANGE", new List<LevelDataData>() { timeScaleGroup, beat, editorLane, timeScale, timeScaleSkip, timeScaleEase, hidenotes, next }, name.ToString()));
+                        }
+                        else
+                        {
+                            entities.Add(new NamedLevelDataEntity("#TIMESCALE_CHANGE", new List<LevelDataData>() { timeScaleGroup, beat, editorLane, timeScale, timeScaleSkip, timeScaleEase, hidenotes}, name.ToString()));
+                        }
+                        
+                    }
+                }
+                else
+                {
+                    entities.Add(new NamedLevelDataEntity("#TIMESCALE_GROUP", new List<LevelDataData>() { editorName }, gname.ToString()));
+                }
+            }
 
 
 

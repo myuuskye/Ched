@@ -41,6 +41,8 @@ namespace Ched.Core
         [Newtonsoft.Json.JsonProperty]
         private decimal laneoffset = 0;
         [Newtonsoft.Json.JsonProperty]
+        private int hp = 1000;
+        [Newtonsoft.Json.JsonProperty]
         private Score score = new Score();
         [Newtonsoft.Json.JsonProperty]
         private Dictionary<string, string> exportArgs = new Dictionary<string, string>();
@@ -105,7 +107,14 @@ namespace Ched.Core
             get { return offset; }
             set { offset = value; }
         }
-
+        /// <summary>
+        /// HPを設定します。
+        /// </summary>
+        public int HP
+        {
+            get { return hp; }
+            set { hp = value; }
+        }
 
 
         /// <summary>

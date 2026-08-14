@@ -63,7 +63,7 @@ namespace Ched.UI
 
         private bool LaneVisual { get; set; } = false;
 
-        public bool FormSpeedbyCh { get; set; } = ApplicationSettings.Default.IsAnotherChannelSounds;
+        public bool FormSpeedbyCh { get; set; } = ApplicationSettings.Default.IsAnotherChannelFormSpeeds;
 
         private int defaultCh = 1;
 
@@ -190,6 +190,7 @@ namespace Ched.UI
             };
 
             NoteView.NewNoteTypeChanged += (s, e) => NoteView.EditMode = EditMode.Edit;
+            NoteView.ScoreChanged += (s, e) => NoteView.UpdateScore(ScoreBook.Score);
 
             AllowDrop = true;
             DragEnter += (s, e) =>
@@ -389,6 +390,7 @@ namespace Ched.UI
             events.BpmChangeEvents.Add(new BpmChangeEvent() { Tick = 0, Bpm = 120 });
             events.TimeSignatureChangeEvents.Add(new TimeSignatureChangeEvent() { Tick = 0, Numerator = 4, DenominatorExponent = 2, Type = -2 });
             book.LaneOffset = ApplicationSettings.Default.LaneOffset;
+            book.HP = 1000;
 
             book.ChannelNames = new Dictionary<int, string>()
             {
@@ -758,18 +760,30 @@ namespace Ched.UI
             {
                 var spratio = NoteView.ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == NoteView.Channel).OrderBy(p => p.Tick).LastOrDefault(p => p.Tick <= NoteView.CurrentTick)?.SpeedRatio ?? 1.0m;
                 var spcustom = NoteView.ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == NoteView.Channel).OrderBy(p => p.Tick).LastOrDefault(p => p.Tick <= NoteView.CurrentTick)?.CustomArgs ?? "";
+                var spskip = NoteView.ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == NoteView.Channel).OrderBy(p => p.Tick).LastOrDefault(p => p.Tick == NoteView.CurrentTick)?.Skip ?? 0;
+                var spease = NoteView.ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == NoteView.Channel).OrderBy(p => p.Tick).LastOrDefault(p => p.Tick == NoteView.CurrentTick)?.Ease ?? 0;
+                var sphide = NoteView.ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == NoteView.Channel).OrderBy(p => p.Tick).LastOrDefault(p => p.Tick <= NoteView.CurrentTick)?.HideNotes ?? 0;
+                var splane = NoteView.ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == NoteView.Channel).OrderBy(p => p.Tick).LastOrDefault(p => p.Tick <= NoteView.CurrentTick)?.EditLaneIndex ?? 8;
 
                 if (!FormSpeedbyCh)
                 {
                     spratio = NoteView.ScoreEvents.HighSpeedChangeEvents.OrderBy(p => p.Tick).LastOrDefault(p => p.Tick <= NoteView.CurrentTick)?.SpeedRatio ?? 1.0m;
                     spcustom = NoteView.ScoreEvents.HighSpeedChangeEvents.OrderBy(p => p.Tick).LastOrDefault(p => p.Tick <= NoteView.CurrentTick)?.CustomArgs ?? "";
+                    spskip = NoteView.ScoreEvents.HighSpeedChangeEvents.OrderBy(p => p.Tick).LastOrDefault(p => p.Tick == NoteView.CurrentTick)?.Skip ?? 0;
+                    spease = NoteView.ScoreEvents.HighSpeedChangeEvents.OrderBy(p => p.Tick).LastOrDefault(p => p.Tick == NoteView.CurrentTick)?.Ease ?? 0;
+                    sphide = NoteView.ScoreEvents.HighSpeedChangeEvents.OrderBy(p => p.Tick).LastOrDefault(p => p.Tick <= NoteView.CurrentTick)?.HideNotes ?? 0;
+                    splane = NoteView.ScoreEvents.HighSpeedChangeEvents.OrderBy(p => p.Tick).LastOrDefault(p => p.Tick <= NoteView.CurrentTick)?.EditLaneIndex ?? 8;
                 }
 
                 var form = new HighSpeedSelectionForm()
                 {
                     SpeedRatio = spratio,
                     SpeedCh = Channel,
-                    CustomArgs = spcustom
+                    CustomArgs = spcustom,
+                    SkipBeats = spskip,
+                    Ease = spease,
+                    HideNotes = sphide == 1 ? true : false,
+                    EditorLane = splane
                 };
                 if (form.ShowDialog(this) != DialogResult.OK) return;
                 var speedratio = form.SpeedRatio;
@@ -795,9 +809,13 @@ namespace Ched.UI
                     SpeedRatio = speedratio,
                     SpeedCh = form.SpeedCh,
                     Type = form.SpeedCh,
-                    CustomArgs = form.CustomArgs
+                    CustomArgs = form.CustomArgs,
+                    Skip = form.SkipBeats,
+                    Ease = form.Ease,
+                    HideNotes = form.HideNotes ? 1 : 0,
+                    EditLaneIndex = form.EditorLane
                 };
-                UpdateEvent(NoteView.ScoreEvents.HighSpeedChangeEvents, item);
+                UpdateHighSpeed(NoteView.ScoreEvents.HighSpeedChangeEvents, item);
             });
             commandSource.RegisterCommand(Commands.InsertTimeSignatureChange, MainFormStrings.TimeSignature, () =>
             {
@@ -821,6 +839,7 @@ namespace Ched.UI
                     Comment = NoteView.ScoreEvents.CommentEvents.OrderBy(p => p.Tick).LastOrDefault(p => p.Tick == NoteView.CurrentTick)?.Comment ?? "コメント",
                     TextSize = (decimal)(NoteView.ScoreEvents.CommentEvents.OrderBy(p => p.Tick).LastOrDefault(p => p.Tick == NoteView.CurrentTick)?.Size ?? 9),
                     Color = (NoteView.ScoreEvents.CommentEvents.OrderBy(p => p.Tick).LastOrDefault(p => p.Tick == NoteView.CurrentTick)?.Color ?? 0),
+                    LaneIndex = 12
                 };
                 if (form.ShowDialog(this) != DialogResult.OK) return;
 
@@ -830,6 +849,7 @@ namespace Ched.UI
                     Comment = form.Comment,
                     Size = (float)form.TextSize,
                     Color = form.Color,
+                    LaneIndex = form.LaneIndex,
                     Type = -3
 
                 };
@@ -888,6 +908,30 @@ namespace Ched.UI
                 else
                 {
                     var removeOp = new RemoveEventOperation<T>(list, prev);
+                    OperationManager.InvokeAndPush(new CompositeOperation(insertOp.Description, new IOperation[] { removeOp, insertOp }));
+                }
+                NoteView.Invalidate();
+            }
+            void UpdateHighSpeed(List<HighSpeedChangeEvent> list, HighSpeedChangeEvent item)
+            {
+
+                HighSpeedChangeEvent prev = null;
+
+                if(list.FindAll(p => p.Tick == item.Tick && p.SpeedCh == item.SpeedCh).Count > 1)
+                {
+                    prev = list.FindLast(p => p.Tick == item.Tick && p.SpeedCh == item.SpeedCh);
+                    list.RemoveAll(p => p.Tick == item.Tick && p.SpeedCh == item.SpeedCh && !p.Equals(item));
+                }
+                
+
+                var insertOp = new InsertEventOperation<HighSpeedChangeEvent>(list, item);
+                if (prev == null)
+                {
+                    OperationManager.InvokeAndPush(insertOp);
+                }
+                else
+                {
+                    var removeOp = new RemoveEventOperation<HighSpeedChangeEvent>(list, prev);
                     OperationManager.InvokeAndPush(new CompositeOperation(insertOp.Description, new IOperation[] { removeOp, insertOp }));
                 }
                 NoteView.Invalidate();
@@ -1015,6 +1059,7 @@ namespace Ched.UI
             commandSource.RegisterCommand(Commands.SelectProperty, MainFormStrings.Property, () => NoteView.EditMode = EditMode.Property);
             commandSource.RegisterCommand(Commands.SelectMarker, MainFormStrings.Marker, () => NoteView.EditMode = EditMode.Marker);
             commandSource.RegisterCommand(Commands.SelectStepEditor, MainFormStrings.StepEditor, () => NoteView.EditMode = EditMode.StepEdit);
+            commandSource.RegisterCommand(Commands.SelectEventEditor, MainFormStrings.EventEditor, () => NoteView.EditMode = EditMode.EventEdit);
 
             commandSource.RegisterCommand(Commands.ZoomIn, MainFormStrings.ZoomIn, () =>
             {
@@ -1070,7 +1115,8 @@ namespace Ched.UI
                 HandleHorizontalAirDirection(NoteView.AirDirection.VerticalDirection);
             });
             commandSource.RegisterCommand(Commands.SelectAirUp, MainFormStrings.AirUp, () => HandleHorizontalAirDirection(VerticalAirDirection.Up));
-            commandSource.RegisterCommand(Commands.SelectAirDown, MainFormStrings.AirDown, () => HandleHorizontalAirDirection(VerticalAirDirection.Down));
+            commandSource.RegisterCommand(Commands.SelectAirDown, MainFormStrings.AirDown, () => HandleHorizontalAirDirection(VerticalAirDirection.Down)); 
+            commandSource.RegisterCommand(Commands.SelectAirOther, MainFormStrings.AirHandy, () => HandleHorizontalAirDirection(VerticalAirDirection.Other));
             commandSource.RegisterCommand(Commands.SelectAirAction, "AIR-ACTION", () => NoteView.NewNoteType = NoteType.AirAction);
             commandSource.RegisterCommand(Commands.SelectFlick, "FLICK", () => { NoteView.NewNoteType = NoteType.Flick; NoteView.IsNewNoteStart = false; });
             commandSource.RegisterCommand(Commands.SelectDamage, "DAMAGE", () => { NoteView.NewNoteType = NoteType.Damage; NoteView.IsNewNoteStart = false; });
@@ -1107,6 +1153,59 @@ namespace Ched.UI
                 NoteView.NewNoteType = NoteType.Damage;
                 NoteView.IsNewNoteStart = true;
             });
+            commandSource.RegisterCommand(Commands.SelectEventSelection, "Event Select", () =>
+            {
+                NoteView.EventMode = EventEditMode.Select;
+            });
+            commandSource.RegisterCommand(Commands.SelectEventEdit, "Event Edit", () =>
+            {
+                NoteView.EventMode = EventEditMode.Select;
+            });
+            commandSource.RegisterCommand(Commands.SelectEventEracer, "Event Erace", () =>
+            {
+                NoteView.EventMode = EventEditMode.Erase;
+            });
+            commandSource.RegisterCommand(Commands.SelectHighspeed, "Highspeed Event", () =>
+            {
+                NoteView.EventMode = EventEditMode.Highspeed;
+            });
+            commandSource.RegisterCommand(Commands.SelectBpm, "Bpm Event", () =>
+            {
+                NoteView.EventMode = EventEditMode.Bpm;
+            });
+            commandSource.RegisterCommand(Commands.SelectComment, "Comment Event", () =>
+            {
+                NoteView.EventMode = EventEditMode.Comment;
+            });
+            commandSource.RegisterCommand(Commands.SelectSkill, "Skill Event", () =>
+            {
+                NoteView.EventMode = EventEditMode.Skill;
+            });
+            commandSource.RegisterCommand(Commands.SelectFever, "Fever Event", () =>
+            {
+                NoteView.EventMode = EventEditMode.Fever;
+            });
+            commandSource.RegisterCommand(Commands.SelectCamera, "Camera Event", () =>
+            {
+                NoteView.EventMode = EventEditMode.Camera;
+            });
+            commandSource.RegisterCommand(Commands.SelectStageMask, "Stage Mask Event", () =>
+            {
+                NoteView.EventMode = EventEditMode.StageMask;
+            });
+            commandSource.RegisterCommand(Commands.SelectStagePivot, "Stage Pivot Event", () =>
+            {
+                NoteView.EventMode = EventEditMode.StagePivot;
+            });
+            commandSource.RegisterCommand(Commands.SelectStageStyle, "Stage Style Event", () =>
+            {
+                NoteView.EventMode = EventEditMode.StageStyle;
+            });
+            commandSource.RegisterCommand(Commands.SelectStageTransform, "Stage Transform Event", () =>
+            {
+                NoteView.EventMode = EventEditMode.StageTransform;
+            });
+
 
 
             void HandleHorizontalAirDirection(VerticalAirDirection verticalDirection)
@@ -1247,6 +1346,16 @@ namespace Ched.UI
             {
                 Checked = ApplicationSettings.Default.SelectMethod
             };
+            var editOutLaneItem = new ToolStripMenuItem(MainFormStrings.EditOutLane, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                NoteView.EditableOutLane = item.Checked;
+                ApplicationSettings.Default.EditableOutLane = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.EditableOutLane
+            };
 
             var pluginItems = PluginManager.ScorePlugins.Select(p => new ToolStripMenuItem(p.DisplayName, null, (s, e) =>
             {
@@ -1279,9 +1388,9 @@ namespace Ched.UI
                 undoItem, redoItem, new ToolStripSeparator(),
                 cutItem, copyItem, pasteItem, pasteFlippedItem, pasteChannelItem, pasteFlippedChannelItem, new ToolStripSeparator(),
                 selectAllItem, selectToEndItem, selectoToBeginningItem, new ToolStripSeparator(),
-                flipSelectedNotesItem, removeSelectedNotesItem,  new ToolStripSeparator(),
+                flipSelectedNotesItem, removeSelectedNotesItem,   new ToolStripSeparator(),
                 copyEventsItem, cutEventsItem, pasteEventsItem, pasteChEventsItem,removeEventsItem, new ToolStripSeparator(),
-                insertAirWithAirActionItem, allowStepChItem, anotherSelectMethodItem, new ToolStripSeparator(),
+                insertAirWithAirActionItem, allowStepChItem, anotherSelectMethodItem, editOutLaneItem, new ToolStripSeparator(),
                 pluginItem
             };
 
@@ -1326,6 +1435,15 @@ namespace Ched.UI
             {
                 Checked = ApplicationSettings.Default.InvisibleSteps
             };
+            var isEventLine = new ToolStripMenuItem(MainFormStrings.EventLineVisual, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                item.Checked = !item.Checked;
+                ApplicationSettings.Default.IsEventHasLine = item.Checked;
+            })
+            {
+                Checked = ApplicationSettings.Default.IsEventHasLine
+            };
 
             NoteView.UnitLaneWidthChanged += (s, e) =>
             {
@@ -1338,8 +1456,9 @@ namespace Ched.UI
                 viewModeItem,
                 new ToolStripSeparator(),
                 widenLaneWidthMenuItem, narrowLaneWidthMenuItem,
-                visibleOverlapItem, isUsingBezierCurves, isCustomizedSlide, isInvisibleSteps
+                visibleOverlapItem, isUsingBezierCurves, isCustomizedSlide, isInvisibleSteps, isEventLine
             };
+
 
 
             var insertBpmItem = shortcutItemBuilder.BuildItem(Commands.InsertBpmChange, "BPM");
@@ -2059,12 +2178,67 @@ namespace Ched.UI
             var propertyButton = shortcutItemBuilder.BuildItem(Commands.SelectProperty, MainFormStrings.Property, Resources.PropertyIcon);
             var markerButton = shortcutItemBuilder.BuildItem(Commands.SelectMarker, MainFormStrings.Marker, Resources.MarkerIcon);
             var stepeditorButton = shortcutItemBuilder.BuildItem(Commands.SelectStepEditor, MainFormStrings.StepEditor, Resources.StepEditorIcon);
+            var eventeditorButton = shortcutItemBuilder.BuildItem(Commands.SelectEventEditor, MainFormStrings.EventEditor, Resources.EventEditor);
 
             var zoomInButton = shortcutItemBuilder.BuildItem(Commands.ZoomIn, MainFormStrings.ZoomIn, Resources.ZoomInIcon);
             zoomInButton.Enabled = CanZoomIn;
 
             var zoomOutButton = shortcutItemBuilder.BuildItem(Commands.ZoomOut, MainFormStrings.ZoomOut, Resources.ZoomOutIcon);
             zoomOutButton.Enabled = CanZoomOut;
+
+            var eventKind = new CheckableToolStripSplitButton()
+            {
+                DisplayStyle = ToolStripItemDisplayStyle.Image
+            };
+            eventKind.Text = MainFormStrings.Event;
+            eventKind.Click += (s, e) => noteView.EditMode = EditMode.EventEdit;
+            eventKind.DropDown.Items.AddRange(new ToolStripItem[]
+            {
+                new ToolStripMenuItem(MainFormStrings.Edit, Resources.EditIcon, (s, e) => noteView.EventMode = EventEditMode.Edit),
+                new ToolStripMenuItem(MainFormStrings.Selection, Resources.SelectionIcon, (s, e) => noteView.EventMode = EventEditMode.Select),
+                new ToolStripMenuItem(MainFormStrings.Eraser, Resources.EraserIcon, (s, e) => noteView.EventMode = EventEditMode.Erase),
+                new ToolStripMenuItem(MainFormStrings.HighSpeed, Resources.Highspeed, (s, e) => noteView.EventMode = EventEditMode.Highspeed),
+                new ToolStripMenuItem("BPM", Resources.Bpm, (s, e) => noteView.EventMode = EventEditMode.Bpm),
+                new ToolStripMenuItem(MainFormStrings.Comment, Resources.Comment, (s, e) => noteView.EventMode = EventEditMode.Comment),
+                new ToolStripMenuItem(MainFormStrings.Skill, Resources.Skill, (s, e) => noteView.EventMode = EventEditMode.Skill),
+                new ToolStripMenuItem(MainFormStrings.Fever, Resources.Fever, (s, e) => noteView.EventMode = EventEditMode.Fever),
+            });
+            eventKind.Image = Resources.EditIcon;
+            ShortcutManager.ShortcutUpdated += (s, e) =>
+            {
+                if (ShortcutManager.ResolveShortcutKey(Commands.SelectEvent, out Keys key))
+                {
+                    eventKind.Text = $"Event ({key.ToShortcutChar()})";
+                    return;
+                }
+                eventKind.Text = "Event";
+            };
+
+            var eventKind2 = new CheckableToolStripSplitButton()
+            {
+                DisplayStyle = ToolStripItemDisplayStyle.Image
+            };
+            eventKind2.Text = MainFormStrings.Event;
+            eventKind2.Click += (s, e) => noteView.EditMode = EditMode.EventEdit;
+            eventKind2.DropDown.Items.AddRange(new ToolStripItem[]
+            {
+                new ToolStripMenuItem("Camera Event", Resources.Camera, (s, e) => noteView.EventMode = EventEditMode.Camera),
+                new ToolStripMenuItem("Stage Mask Event", Resources.Stage_mask, (s, e) => noteView.EventMode = EventEditMode.StageMask),
+                new ToolStripMenuItem("Stage Pivot Event", Resources.Stage_pivot, (s, e) => noteView.EventMode = EventEditMode.StagePivot),
+                new ToolStripMenuItem("Stage Style Event", Resources.Stage_style, (s, e) => noteView.EventMode = EventEditMode.StageStyle),
+                new ToolStripMenuItem("Stage Transform Event", Resources.Stage_transform, (s, e) => noteView.EventMode = EventEditMode.StageTransform),
+            });
+            eventKind2.Image = Resources.StageEditorIcon;
+            ShortcutManager.ShortcutUpdated += (s, e) =>
+            {
+                if (ShortcutManager.ResolveShortcutKey(Commands.SelectStageEvent, out Keys key))
+                {
+                    eventKind2.Text = $"StageEvent ({key.ToShortcutChar()})";
+                    return;
+                }
+                eventKind2.Text = "StageEvent";
+            };
+
 
             NoteView.UnitBeatHeightChanged += (s, e) =>
             {
@@ -2100,8 +2274,99 @@ namespace Ched.UI
                 propertyButton.Checked = noteView.EditMode == EditMode.Property;
                 markerButton.Checked = noteView.EditMode == EditMode.Marker;
                 stepeditorButton.Checked = noteView.EditMode == EditMode.StepEdit;
+                eventeditorButton.Checked = noteView.EditMode == EditMode.EventEdit;
+                if(noteView.EditMode == EditMode.EventEdit)
+                {
+                    eventKind.Checked = true;
+                }
             };
-            
+            noteView.EventEditModeChanged += (s, e) =>
+            {
+                switch (noteView.EventMode)
+                {
+                    case EventEditMode.Select:
+                        eventKind.Image = Resources.SelectionIcon;
+                        eventKind2.Image = Resources.StageEditorIcon;
+                        eventKind.Checked = true;
+                        eventKind2.Checked = false;
+                        break;
+                    case EventEditMode.Edit:
+                        eventKind.Image = Resources.EditIcon;
+                        eventKind2.Image = Resources.StageEditorIcon;
+                        eventKind.Checked = true;
+                        eventKind2.Checked = false;
+                        break;
+                    case EventEditMode.Erase:
+                        eventKind.Image = Resources.EraserIcon;
+                        eventKind2.Image = Resources.StageEditorIcon;
+                        eventKind.Checked = true;
+                        eventKind2.Checked = false;
+                        break;
+                    case EventEditMode.Highspeed:
+                        eventKind.Image = Resources.Highspeed;
+                        eventKind2.Image = Resources.StageEditorIcon;
+                        eventKind.Checked = true;
+                        eventKind2.Checked = false;
+                        break;
+                    case EventEditMode.Bpm:
+                        eventKind.Image = Resources.Bpm;
+                        eventKind2.Image = Resources.StageEditorIcon;
+                        eventKind.Checked = true;
+                        eventKind2.Checked = false;
+                        break;
+                    case EventEditMode.Comment:
+                        eventKind.Image = Resources.Comment;
+                        eventKind2.Image = Resources.StageEditorIcon;
+                        eventKind.Checked = true;
+                        eventKind2.Checked = false;
+                        break;
+                    case EventEditMode.Skill:
+                        eventKind.Image = Resources.Skill;
+                        eventKind2.Image = Resources.StageEditorIcon;
+                        eventKind.Checked = true;
+                        eventKind2.Checked = false;
+                        break;
+                    case EventEditMode.Fever:
+                        eventKind.Image = Resources.Fever;
+                        eventKind2.Image = Resources.StageEditorIcon;
+                        eventKind.Checked = true;
+                        eventKind2.Checked = false;
+                        break;
+                    case EventEditMode.Camera:
+                        eventKind.Image = Resources.EditIcon;
+                        eventKind2.Image = Resources.Camera;
+                        eventKind.Checked = false;
+                        eventKind2.Checked = true;
+                        break;
+                    case EventEditMode.StageMask:
+                        eventKind.Image = Resources.EditIcon;
+                        eventKind2.Image = Resources.Stage_mask;
+                        eventKind.Checked = false;
+                        eventKind2.Checked = true;
+                        break;
+                    case EventEditMode.StagePivot:
+                        eventKind.Image = Resources.EditIcon;
+                        eventKind2.Image = Resources.Stage_pivot;
+                        eventKind.Checked = false;
+                        eventKind2.Checked = true;
+                        break;
+                    case EventEditMode.StageStyle:
+                        eventKind.Image = Resources.EditIcon;
+                        eventKind2.Image = Resources.Stage_style;
+                        eventKind.Checked = false;
+                        eventKind2.Checked = true;
+                        break;
+                    case EventEditMode.StageTransform:
+                        eventKind.Image = Resources.EditIcon;
+                        eventKind2.Image = Resources.Stage_transform;
+                        eventKind.Checked = false;
+                        eventKind2.Checked = true;
+
+                        break;
+                }
+
+            };
+
 
 
             var scrollAmountCounts = new float[]
@@ -2137,7 +2402,8 @@ namespace Ched.UI
                 newFileButton, openFileButton, saveFileButton, exportButton, new ToolStripSeparator(),
                 cutButton, copyButton, pasteButton, new ToolStripSeparator(),
                 undoButton, redoButton, new ToolStripSeparator(),
-                penButton, selectionButton, eraserButton, paintButton, propertyButton, markerButton, stepeditorButton, new ToolStripSeparator(),
+                penButton, selectionButton, eraserButton, paintButton, propertyButton, markerButton, stepeditorButton, eventeditorButton, new ToolStripSeparator(),
+                eventKind,eventKind2, new ToolStripSeparator(),
                 zoomInButton, zoomOutButton, new ToolStripSeparator(),
                 scrollAmountBox
                 
@@ -2165,6 +2431,24 @@ namespace Ched.UI
             var flick2Button = shortcutItemBuilder.BuildItem(Commands.SelectFlick2, "FLICK2", Resources.FlickIcon2);
             var damage2Button = shortcutItemBuilder.BuildItem(Commands.SelectDamage2, "DAMAGE2", Resources.DamgeIcon2);
 
+            var eventSelectionButton = shortcutItemBuilder.BuildItem(Commands.SelectEventSelection, "Event Select Tool", Resources.SelectionIcon);
+            var eventeditButton = shortcutItemBuilder.BuildItem(Commands.SelectEventEdit, "Event Edit Tool", Resources.EditIcon);
+            var eventEraceButton = shortcutItemBuilder.BuildItem(Commands.SelectEventEracer, "Event Erace Tool", Resources.EraserIcon);
+            var eventHighspeedButton = shortcutItemBuilder.BuildItem(Commands.SelectHighspeed, "Highspeed Tool", Resources.Highspeed);
+            var eventBpmButton = shortcutItemBuilder.BuildItem(Commands.SelectBpm, "Bpm Tool", Resources.Bpm);
+            var eventCommentButton = shortcutItemBuilder.BuildItem(Commands.SelectComment, "Comment Tool", Resources.Comment);
+            var eventSkillButton = shortcutItemBuilder.BuildItem(Commands.SelectSkill, "Skill Tool", Resources.Skill);
+            var eventFeverButton = shortcutItemBuilder.BuildItem(Commands.SelectFever, "Fever Tool", Resources.Fever);
+            var eventCameraButton = shortcutItemBuilder.BuildItem(Commands.SelectCamera, "Camera Event Tool", Resources.Camera);
+            var eventStageMaskButton = shortcutItemBuilder.BuildItem(Commands.SelectStageMask, "Camera Mask Event Tool", Resources.Stage_mask);
+            var eventStagePivotButton = shortcutItemBuilder.BuildItem(Commands.SelectStagePivot, "Camera Pivot Event Tool", Resources.Stage_pivot);
+            var eventStageStyleButton = shortcutItemBuilder.BuildItem(Commands.SelectStageStyle, "Camera Style Event Tool", Resources.Stage_style);
+            var eventStageTransformButton = shortcutItemBuilder.BuildItem(Commands.SelectStageTransform, "Camera Transform Event Tool", Resources.Stage_transform);
+            eventSelectionButton.Width = 10;
+
+
+
+
             var airKind = new CheckableToolStripSplitButton()
             {
                 DisplayStyle = ToolStripItemDisplayStyle.Image
@@ -2179,7 +2463,7 @@ namespace Ched.UI
                 new ToolStripMenuItem(MainFormStrings.AirDown, Resources.AirDownIcon, (s, e) => noteView.AirDirection = new AirDirection(VerticalAirDirection.Down, HorizontalAirDirection.Center)),
                 new ToolStripMenuItem(MainFormStrings.AirLeftDown, Resources.AirLeftDownIcon, (s, e) => noteView.AirDirection = new AirDirection(VerticalAirDirection.Down, HorizontalAirDirection.Left)),
                 new ToolStripMenuItem(MainFormStrings.AirRightDown, Resources.AirRightDownIcon, (s, e) => noteView.AirDirection = new AirDirection(VerticalAirDirection.Down, HorizontalAirDirection.Right)),
-                new ToolStripMenuItem("AIR", Resources.AirOtherIcon, (s, e) => noteView.AirDirection = new AirDirection(VerticalAirDirection.Other, HorizontalAirDirection.Center))
+                new ToolStripMenuItem(MainFormStrings.AirHandy, Resources.AirOtherIcon, (s, e) => noteView.AirDirection = new AirDirection(VerticalAirDirection.Other, HorizontalAirDirection.Center))
             });
             airKind.Image = Resources.AirUpIcon;
             ShortcutManager.ShortcutUpdated += (s, e) =>
@@ -2228,6 +2512,7 @@ namespace Ched.UI
                 guideKind.Text = "GUIDE";
             };
 
+            
 
 
 
@@ -2332,7 +2617,9 @@ namespace Ched.UI
                         break;
                 }
             };
+
             
+
 
 
 
