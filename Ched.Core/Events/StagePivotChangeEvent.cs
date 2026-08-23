@@ -8,18 +8,24 @@ using System.Threading.Tasks;
 namespace Ched.Core.Events
 {
     /// <summary>
-    /// StageMaskの変更を表すクラスです。
+    /// ハイスピードの変更を表すクラスです。
     /// </summary>
     [Newtonsoft.Json.JsonObject(Newtonsoft.Json.MemberSerialization.OptIn)]
     [DebuggerDisplay("Tick = {Tick}")]
-    public class StageMaskChangeEvent : EventBase
+    public class StagePivotChangeEvent : EventBase
     {
         [Newtonsoft.Json.JsonProperty]
         private int stage;
         [Newtonsoft.Json.JsonProperty]
         private float laneIndex;
         [Newtonsoft.Json.JsonProperty]
-        private float width;
+        private int divisionSize;
+        [Newtonsoft.Json.JsonProperty]
+        private int divisionParity;
+        [Newtonsoft.Json.JsonProperty]
+        private float yOffset;
+        [Newtonsoft.Json.JsonProperty]
+        private float yBeatOffset;
         [Newtonsoft.Json.JsonProperty]
         private int ease;
 
@@ -39,16 +45,32 @@ namespace Ched.Core.Events
             get { return laneIndex; }
             set { laneIndex = value; }
         }
-        public float Width
+        public int DivisionSize
         {
-            get { return width; }
-            set { width = value; }
+            get { return divisionSize; }
+            set { divisionSize = value; }
+        }
+        public int DivisionParity
+        {
+            get { return divisionParity; }
+            set { divisionParity = value; }
+        }
+        public float YOffset
+        {
+            get { return yOffset; }
+            set { yOffset = value; }
+        }
+        public float YBeatOffset
+        {
+            get { return yBeatOffset; }
+            set { yBeatOffset = value; }
         }
         public int Ease
         {
             get { return ease; }
             set { ease = value; }
         }
+
 
     }
 }

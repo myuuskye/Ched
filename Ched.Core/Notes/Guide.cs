@@ -19,6 +19,12 @@ namespace Ched.Core.Notes
         private USCGuideColor color;
         [Newtonsoft.Json.JsonProperty]
         private List<StepTap> stepNotes = new List<StepTap>();
+        [Newtonsoft.Json.JsonProperty]
+        private int stage;
+        [Newtonsoft.Json.JsonProperty]
+        private Channel noteChannel;
+        [Newtonsoft.Json.JsonProperty]
+        private float startAlpha;
 
         private Constants constants = new Constants();
 
@@ -49,7 +55,7 @@ namespace Ched.Core.Notes
         }
 
         /// <summary>
-        /// チャンネルを設定します。
+        /// チャンネル数値を設定します。
         /// </summary>
         public int Channel
         {
@@ -57,6 +63,39 @@ namespace Ched.Core.Notes
             set
             {
                 channel = value;
+            }
+        }
+        /// <summary>
+        /// ステージを設定します。
+        /// </summary>
+        public int Stage
+        {
+            get { return stage; }
+            set
+            {
+                stage = value;
+            }
+        }
+        /// <summary>
+        /// チャンネルを設定します。
+        /// </summary>
+        public Channel NoteChannel
+        {
+            get { return noteChannel; }
+            set
+            {
+                noteChannel = value;
+            }
+        }
+        /// <summary>
+        /// 開始ノートの透明度を設定します。
+        /// </summary>
+        public float StartAlpha
+        {
+            get { return startAlpha; }
+            set
+            {
+                startAlpha = value;
             }
         }
 
@@ -112,7 +151,11 @@ namespace Ched.Core.Notes
         {
             this.channel = Channel;
         }
-
+        public void SetChannel(Channel Channel)
+        {
+            this.channel = Channel.SpeedCh;
+            this.noteChannel = Channel;
+        }
         /// <summary>
         /// このガイドを反転します。
         /// </summary>
@@ -158,7 +201,8 @@ namespace Ched.Core.Notes
             public override float Width { get { return ParentNote.StartWidth;  } }
 
             public override int Channel { get { return ParentNote.Channel; } set { ParentNote.Channel = value; } }
-
+            public override int Stage { get { return ParentNote.Stage; } set { ParentNote.Stage = value; } }
+            public override Channel NoteChannel { get { return ParentNote.NoteChannel; } set { ParentNote.NoteChannel = value; } }
             public StartTap(Guide parent) : base(parent)
             {
             }
@@ -177,6 +221,12 @@ namespace Ched.Core.Notes
             private int channel;
             [Newtonsoft.Json.JsonProperty]
             private bool isVisible = true;
+            [Newtonsoft.Json.JsonProperty]
+            private int stage;
+            [Newtonsoft.Json.JsonProperty]
+            private Channel noteChannel;
+            [Newtonsoft.Json.JsonProperty]
+            private float alpha;
 
             private Constants constants = new Constants();
 
@@ -208,7 +258,16 @@ namespace Ched.Core.Notes
                 get { return channel; }
                 set { channel = value; }
             }
-
+            public override int Stage
+            {
+                get { return stage; }
+                set { stage = value; }
+            }
+            public override Channel NoteChannel
+            {
+                get { return noteChannel; }
+                set { noteChannel = value; }
+            }
             public float LaneIndexOffset
             {
                 get { return laneIndexOffset; }
@@ -226,6 +285,14 @@ namespace Ched.Core.Notes
                 {
                     CheckPosition(laneIndexOffset, value);
                     widthChange = value;
+                }
+            }
+            public float Alpha
+            {
+                get { return alpha; }
+                set
+                {
+                    alpha = value;
                 }
             }
 

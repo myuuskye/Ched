@@ -1,4 +1,4 @@
-﻿<Window x:Class="Ched.UI.Windows.GuideStepNotePropertiesWindow"
+﻿<Window x:Class="Ched.UI.Windows.StageStyleEventPropertiesWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -14,8 +14,7 @@
         Title="{x:Static localization:MainFormStrings.Property}"
         Style="{DynamicResource DialogWindowStyle}"
         mc:Ignorable="d"
-        d:DataContext="{d:DesignInstance Type=local:GuideStepNotePropertiesWindowViewModel}"
-        Loaded="Window_Loaded">
+        d:DataContext="{d:DesignInstance Type=local:StageStyleEventPropertiesWindowViewModel}">
 
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="ContentRendered">
@@ -56,7 +55,7 @@
                         </Grid.ColumnDefinitions>
 
                         <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.Tick}" />
-                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding NoteTick}" DecimalPlaces="0" Increment="1" Minimum="-3686400" Maximum="10000000000000000000" />
+                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding EventTick}" DecimalPlaces="0" Increment="1" Maximum="1000000000000000" Minimum="-3686400" />
                     </Grid>
                     <Grid Style="{StaticResource ResourceKey=InputFieldRow}">
                         <Grid.ColumnDefinitions>
@@ -64,10 +63,9 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.Channel}" />
-                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding NoteChannel}" DecimalPlaces="0" Increment="1" Minimum="0"  Maximum="100000" />
+                        <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.Stage}" />
+                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding Stage}" DecimalPlaces="0" Increment="1" Minimum="0"  Maximum="10000000000" />
                     </Grid>
-
                     <Grid Style="{StaticResource ResourceKey=InputFieldRow}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
@@ -75,53 +73,77 @@
                         </Grid.ColumnDefinitions>
 
                         <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.LaneIndex}" />
-                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding NoteLaneIndex}" DecimalPlaces="{Binding LaneIndexDecimalPlaces}" Increment="1" Minimum="-1000000" Maximum="1000000" />
+                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding LaneIndex}" DecimalPlaces="3" Increment="1" Minimum="-10000000000"  Maximum="10000000000" />
                     </Grid>
-
                     <Grid Style="{StaticResource ResourceKey=InputFieldRow}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.Width}" />
-                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding NoteWidth}" DecimalPlaces="{Binding WidthDecimalPlaces}" Increment="1" Minimum="-1000000"  Maximum="1000000"/>
+                        <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.JudgeLineColor}" />
+                        <local:BindableNumericUpDown Value="{Binding JudgeLineColor}" DecimalPlaces="0" Increment="1" Minimum="0"  Maximum="7" Margin="96,0,282,0" Width="170" Grid.ColumnSpan="2" />
+                        <Label Grid.Column="1" Content="{x:Static localization:MainFormStrings.JudgeLineStyle}" RenderTransformOrigin="1.839,0.469" HorizontalAlignment="Center" />
+                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding JudgeLineStyle}" DecimalPlaces="0" Increment="1" Minimum="0"  Maximum="1" Margin="282,0,0,0" Width="170" />
                     </Grid>
+                    <Grid Style="{StaticResource ResourceKey=InputFieldRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
 
-                    <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.Stage}" />
-                    <ComboBox x:Name="StageComboBox" 
-Width="195" 
-DisplayMemberPath="Name" 
-SelectedValuePath="ID"
-SelectionChanged="CategoryComboBox_SelectionChanged" Margin="0,0,220,0"
-                ItemsSource="{Binding Stages}"/>
+                        <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.LeftBorderStyle}" />
+                        <local:BindableNumericUpDown Value="{Binding LeftBorderStyle}" DecimalPlaces="0" Increment="0" Minimum="0"  Maximum="3" Margin="96,0,282,0" Width="170" Grid.ColumnSpan="2" />
+                        <Label Grid.Column="1" Content="{x:Static localization:MainFormStrings.RightBorderStyle}" RenderTransformOrigin="1.839,0.469" HorizontalAlignment="Center" />
+                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding RightBorderStyle}" DecimalPlaces="0" Increment="1" Minimum="0"  Maximum="3" Margin="282,0,0,0" Width="170" />
+                    </Grid>
+                    <Grid Style="{StaticResource ResourceKey=InputFieldRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <CheckBox Content="{x:Static localization:MainFormStrings.FullWidth}" IsChecked="{Binding FullWidth}" Margin="0,-4,426,4" Grid.ColumnSpan="2" />
+                    </Grid>
+                    <Grid Style="{StaticResource ResourceKey=InputFieldRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.NoteAlpha}" />
+                        <local:BindableNumericUpDown Value="{Binding NoteAlpha}" DecimalPlaces="4" Increment="1" Minimum="0"  Maximum="1" Margin="96,0,282,0" Width="170" Grid.ColumnSpan="2" />
+                        <Label Grid.Column="1" Content="{x:Static localization:MainFormStrings.LaneAlpha}" RenderTransformOrigin="1.839,0.469" HorizontalAlignment="Center" />
+                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding LaneAlpha}" DecimalPlaces="4" Increment="1" Minimum="0"  Maximum="1" Margin="282,0,0,0" Width="170" />
+                    </Grid>
+                    <Grid Style="{StaticResource ResourceKey=InputFieldRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.JudgeLineAlpha}" />
+                        <local:BindableNumericUpDown Value="{Binding NoteAlpha}" DecimalPlaces="4" Increment="1" Minimum="0"  Maximum="1" Margin="96,0,282,0" Width="170" Grid.ColumnSpan="2" />
+                        <Label Grid.Column="1" Content="{x:Static localization:MainFormStrings.DivisionLineAlpha}" RenderTransformOrigin="1.839,0.469" HorizontalAlignment="Center" />
+                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding LaneAlpha}" DecimalPlaces="4" Increment="1" Minimum="0"  Maximum="1" Margin="282,0,0,0" Width="170" />
+                    </Grid>
                 </StackPanel>
             </GroupBox>
 
             <GroupBox Header="{x:Static localization:MainFormStrings.Other}" Margin="{StaticResource ContainerMargin}">
 
-        <StackPanel>
-        <Grid Style="{StaticResource ResourceKey=InputFieldRow}">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
-                        <ColumnDefinition Width="*" />
-                    </Grid.ColumnDefinitions>
-
-                    <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.isVisible}" />
-                    <local:BindableCheckBox Grid.Column="0" Value="{Binding NoteVisible}" Width="10" Height="10" Margin="32,10,0,10" />
-                </Grid>
                 <Grid Style="{StaticResource ResourceKey=InputFieldRow}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.NoteAlpha}" />
-                    <local:BindableNumericUpDown Grid.Column="1" Value="{Binding NoteWidth}" DecimalPlaces="1" Increment="0.1" Minimum="0"  Maximum="5"/>
+                    <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.Ease}" />
+                    <local:BindableNumericUpDown Grid.Column="1" Value="{Binding Ease}" DecimalPlaces="0" Increment="1" Minimum="0"  Maximum="5" />
                 </Grid>
-        </StackPanel>
 
-        </GroupBox>
+
+            </GroupBox>
 
             <StackPanel Orientation="Horizontal" Margin="{StaticResource ContainerMargin}" HorizontalAlignment="Right">
                 <Button Content="OK" IsDefault="True">

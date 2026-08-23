@@ -71,6 +71,9 @@
     <Compile Include="EventCollection.cs" />
     <Compile Include="Events\FeverEvent.cs" />
     <Compile Include="Events\CameraChangeEvent.cs" />
+    <Compile Include="Events\StageTransformChangeEvent.cs" />
+    <Compile Include="Events\StageStyleChangeEvent.cs" />
+    <Compile Include="Events\StagePivotChangeEvent.cs" />
     <Compile Include="Events\StageMaskChangeEvent.cs" />
     <Compile Include="Events\SkillEvent.cs" />
     <Compile Include="Events\CommentEvent.cs" />
@@ -80,11 +83,12 @@
     <Compile Include="Events\InvalidTimeSignatureException.cs" />
     <Compile Include="Events\TimeSignatureChangeEvent.cs" />
     <Compile Include="IExportSetting.cs" />
+    <Compile Include="Channel.cs" />
+    <Compile Include="Stage.cs" />
     <Compile Include="NoteCollection.cs" />
     <Compile Include="Notes\Air.cs" />
     <Compile Include="Notes\AirAction.cs" />
     <Compile Include="Notes\Damage.cs" />
-    <Compile Include="Notes\Marker.cs" />
     <Compile Include="Notes\StepNoteTap.cs" />
     <Compile Include="Notes\ExTap.cs" />
     <Compile Include="Notes\Flick.cs" />

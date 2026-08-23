@@ -15,6 +15,8 @@ namespace Ched.Core.Notes
         private int channel;
         [Newtonsoft.Json.JsonProperty]
         private List<ActionNote> actionNotes = new List<ActionNote>();
+        [Newtonsoft.Json.JsonProperty]
+        private int stage;
 
         public List<ActionNote> ActionNotes { get { return actionNotes; } }
         public IAirable ParentNote { get { return parentNote; } }
@@ -28,6 +30,17 @@ namespace Ched.Core.Notes
             set
             {
                 channel = value;
+            }
+        }
+        /// <summary>
+        /// ステージを設定します。
+        /// </summary>
+        public int Stage
+        {
+            get { return stage; }
+            set
+            {
+                stage = value;
             }
         }
         public int StartTick => ParentNote.Tick;
@@ -64,7 +77,9 @@ namespace Ched.Core.Notes
             private int channel;
             [Newtonsoft.Json.JsonProperty]
             private AirAction parentNote;
- 
+            [Newtonsoft.Json.JsonProperty]
+            private int stage;
+
 
             public AirAction ParentNote { get { return parentNote; } }
 
@@ -84,6 +99,14 @@ namespace Ched.Core.Notes
                 set
                 {
                     channel = value;
+                }
+            }
+            public int Stage
+            {
+                get { return stage; }
+                set
+                {
+                    stage = value;
                 }
             }
 

@@ -36,6 +36,8 @@ namespace Ched.Core.Notes
 
         public float Width { get { return ParentNote.Width; } }
         public int Channel { get { return ParentNote.Channel; } }
+        public int Stage { get { return ParentNote.Stage; } }
+        public Channel NoteChannel { get { return ParentNote.NoteChannel; } }
         //public float Opacity { get { return ParentNote.Opacity; } }
 
         public Air(IAirable parent)
@@ -72,6 +74,8 @@ namespace Ched.Core.Notes
         /// ノートのチャンネルを取得します。
         /// </summary>
         int Channel { get; }
+        int Stage { get; }
+        Channel NoteChannel { get; }
         /*
         /// <summary>
         /// ノートのレーン幅を取得します。

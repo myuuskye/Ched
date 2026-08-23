@@ -26,6 +26,16 @@ namespace Ched.Core
         private List<SkillEvent> skillEvents = new List<SkillEvent>();
         [Newtonsoft.Json.JsonProperty]
         private List<FeverEvent> feverEvents = new List<FeverEvent>();
+        [Newtonsoft.Json.JsonProperty]
+        private List<CameraChangeEvent> cameraChangeEvents = new List<CameraChangeEvent>();
+        [Newtonsoft.Json.JsonProperty]
+        private List<StageMaskChangeEvent> stageMaskChangeEvents = new List<StageMaskChangeEvent>();
+        [Newtonsoft.Json.JsonProperty]
+        private List<StagePivotChangeEvent> stagePivotChangeEvents = new List<StagePivotChangeEvent>();
+        [Newtonsoft.Json.JsonProperty]
+        private List<StageStyleChangeEvent> stageStyleChangeEvents = new List<StageStyleChangeEvent>();
+        [Newtonsoft.Json.JsonProperty]
+        private List<StageTransformChangeEvent> stageTransformChangeEvents = new List<StageTransformChangeEvent>();
 
         public List<BpmChangeEvent> BpmChangeEvents
         {
@@ -59,14 +69,45 @@ namespace Ched.Core
             get { return feverEvents; }
             set { feverEvents = value; }
         }
+        public List<CameraChangeEvent> CameraChangeEvents
+        {
+            get { return cameraChangeEvents; }
+            set { cameraChangeEvents = value; }
+        }
+        public List<StageMaskChangeEvent> StageMaskChangeEvents
+        {
+            get { return stageMaskChangeEvents; }
+            set { stageMaskChangeEvents = value; }
+        }
+        public List<StagePivotChangeEvent> StagePivotChangeEvents
+        {
+            get { return stagePivotChangeEvents; }
+            set { stagePivotChangeEvents = value; }
+        }
+        public List<StageStyleChangeEvent> StageStyleChangeEvents
+        {
+            get { return stageStyleChangeEvents; }
+            set { stageStyleChangeEvents = value; }
+        }
+        public List<StageTransformChangeEvent> StageTransformChangeEvents
+        {
+            get { return stageTransformChangeEvents; }
+            set { stageTransformChangeEvents = value; }
+        }
 
         public IEnumerable<EventBase> AllEvents =>
             BpmChangeEvents.Cast<EventBase>()
             .Concat(TimeSignatureChangeEvents)
             .Concat(HighSpeedChangeEvents)
             .Concat(CommentEvents)
-            .Concat(skillEvents)
-            .Concat(feverEvents);
+            .Concat(SkillEvents)
+            .Concat(FeverEvents)
+            .Concat(CameraChangeEvents)
+            .Concat(StageMaskChangeEvents)
+            .Concat(StagePivotChangeEvents)
+            .Concat(StageStyleChangeEvents)
+            .Concat(StageTransformChangeEvents)
+            ;
 
         public void UpdateTicksPerBeat(double factor)
         {
@@ -75,7 +116,12 @@ namespace Ched.Core
                  .Concat(HighSpeedChangeEvents)
                  .Concat(CommentEvents)
                  .Concat(skillEvents)
-                 .Concat(feverEvents);
+                 .Concat(feverEvents)
+                 .Concat(CameraChangeEvents)
+                 .Concat(StageMaskChangeEvents)
+                .Concat(StagePivotChangeEvents)
+                .Concat(StageStyleChangeEvents)
+                .Concat(StageTransformChangeEvents);
             foreach (var e in events)
                 e.Tick = (int)(e.Tick * factor);
         }

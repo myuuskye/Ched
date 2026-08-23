@@ -23,20 +23,32 @@ namespace Ched.UI.Windows
         {
             InitializeComponent();
         }
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+
+            var data = ((SlideStepNotePropertiesWindowViewModel)DataContext);
+            StageComboBox.ItemsSource = data.Stages;
+            StageComboBox.SelectedValue = data.Note.Stage;
+        }
+        private void StageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ((SlideStepNotePropertiesWindowViewModel)DataContext).NoteStage = (int)StageComboBox.SelectedValue;
+        }
 
     }
 
     public class SlideStepNotePropertiesWindowViewModel : ViewModel
     {
 
-        private Slide.StepTap Note { get; }
+        public Slide.StepTap Note { get; }
         private bool IsEnd { get; }
-        private NoteView noteView { get; }
+        public List<Stage> Stages { get; }
 
         private int noteTick;
         private float noteLaneIndex;
         private float noteWidth;
         private int noteChannel;
+        private int noteStage;
         private bool noteVisible;
         private int lanedecimalPlaces;
         private int widthdecimalPlaces;
@@ -59,6 +71,16 @@ namespace Ched.UI.Windows
             {
                 if (value == noteChannel) return;
                 noteChannel = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public int NoteStage
+        {
+            get => noteStage;
+            set
+            {
+                if (value == noteStage) return;
+                noteStage = value;
                 NotifyPropertyChanged();
             }
         }
@@ -118,16 +140,18 @@ namespace Ched.UI.Windows
         {
         }
 
-        public SlideStepNotePropertiesWindowViewModel(Slide.StepTap note, bool isend)
+        public SlideStepNotePropertiesWindowViewModel(Slide.StepTap note, bool isend, List<Stage> stages)
         {
             Note = note;
             IsEnd = isend;
+            Stages = stages;
         }
 
         public void BeginEdit()
         {
             NoteTick = Note.TickOffset;
             NoteChannel = Note.Channel;
+            NoteStage = Note.Stage;
             NoteLaneIndex = Note.LaneIndexOffset;
             NoteWidth = Note.WidthChange;
             LaneIndexDecimalPlaces = Note.LaneIndexOffset.ToString().Length;
@@ -144,6 +168,7 @@ namespace Ched.UI.Windows
 
             Note.TickOffset = NoteTick;
             Note.Channel = NoteChannel;
+            Note.Stage = NoteStage;
             Note.LaneIndexOffset = NoteLaneIndex;
             Note.WidthChange = NoteWidth;
             if (IsEnd)

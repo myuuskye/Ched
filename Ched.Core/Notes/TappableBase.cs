@@ -19,6 +19,10 @@ namespace Ched.Core.Notes
         private int channel;
         [Newtonsoft.Json.JsonProperty]
         private bool isStart = false;
+        [Newtonsoft.Json.JsonProperty]
+        private int stage;
+        [Newtonsoft.Json.JsonProperty]
+        private Channel noteChannel;
 
 
         /// <summary>
@@ -71,7 +75,7 @@ namespace Ched.Core.Notes
         }
 
         /// <summary>
-        /// ノートのハイスピードチャンネルを設定します。
+        /// ノートの種別を設定します。
         /// </summary>
         public bool IsStart
         {
@@ -79,6 +83,28 @@ namespace Ched.Core.Notes
             set
             {
                 isStart = value;
+            }
+        }
+        /// <summary>
+        /// ノートのステージを設定します。
+        /// </summary>
+        public int Stage
+        {
+            get { return stage; }
+            set
+            {
+                stage = value;
+            }
+        }
+        /// <summary>
+        /// ノートのステージを設定します。
+        /// </summary>
+        public Channel NoteChannel
+        {
+            get { return noteChannel; }
+            set
+            {
+                noteChannel = value;
             }
         }
 
@@ -108,5 +134,11 @@ namespace Ched.Core.Notes
             this.channel = channel;
 
         }
+        public void SetChannel(Channel channel)
+        {
+            this.channel = channel.SpeedCh;
+            this.noteChannel = channel;
+        }
+
     }
 }

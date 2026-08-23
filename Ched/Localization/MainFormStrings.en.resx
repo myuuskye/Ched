@@ -732,4 +732,100 @@
   <data name="Skill" xml:space="preserve">
     <value>Skill</value>
   </data>
+  <data name="Camera" xml:space="preserve">
+    <value>Camera</value>
+  </data>
+  <data name="Ease" xml:space="preserve">
+    <value>Ease</value>
+  </data>
+  <data name="Rotation" xml:space="preserve">
+    <value>Rotation</value>
+  </data>
+  <data name="Tilt" xml:space="preserve">
+    <value>Stage Tilt</value>
+  </data>
+  <data name="Zoom" xml:space="preserve">
+    <value>Zoom</value>
+  </data>
+  <data name="ZoomAlign" xml:space="preserve">
+    <value>Zoom Vertical Align</value>
+  </data>
+  <data name="ZoomLane" xml:space="preserve">
+    <value>Zoom Target Lane</value>
+  </data>
+  <data name="ZoomY" xml:space="preserve">
+    <value>Zoom Target Y</value>
+  </data>
+  <data name="Stage" xml:space="preserve">
+    <value>Stage</value>
+  </data>
+  <data name="Anchor" xml:space="preserve">
+    <value>Anchor</value>
+  </data>
+  <data name="DivisionLineAlpha" xml:space="preserve">
+    <value>Division Line Alpha</value>
+  </data>
+  <data name="DivisionParity" xml:space="preserve">
+    <value>Division Parity</value>
+  </data>
+  <data name="DivisionSize" xml:space="preserve">
+    <value>Division Size</value>
+  </data>
+  <data name="EditorLane" xml:space="preserve">
+    <value>Editor Lane</value>
+  </data>
+  <data name="FullWidth" xml:space="preserve">
+    <value>FullWidth</value>
+  </data>
+  <data name="JudgeLineAlpha" xml:space="preserve">
+    <value>Judge Line Alpha</value>
+  </data>
+  <data name="JudgeLineColor" xml:space="preserve">
+    <value>Judge Line Color</value>
+  </data>
+  <data name="JudgeLineStyle" xml:space="preserve">
+    <value>Judge Line Style</value>
+  </data>
+  <data name="LaneAlpha" xml:space="preserve">
+    <value>Lane Alpha</value>
+  </data>
+  <data name="LeftBorderStyle" xml:space="preserve">
+    <value>Border Style (Left)</value>
+  </data>
+  <data name="NoteAlpha" xml:space="preserve">
+    <value>Note Alpha</value>
+  </data>
+  <data name="RightBorderStyle" xml:space="preserve">
+    <value>Border Style (Right)</value>
+  </data>
+  <data name="XTranslate" xml:space="preserve">
+    <value>X Translation</value>
+  </data>
+  <data name="YBeatOffset" xml:space="preserve">
+    <value>Y Offset (Beat)</value>
+  </data>
+  <data name="YOffset" xml:space="preserve">
+    <value>Y Offset</value>
+  </data>
+  <data name="YTranslate" xml:space="preserve">
+    <value>Y Translation</value>
+  </data>
+  <data name="ZoomAlignCenter" xml:space="preserve">
+    <value>Center The Zoom</value>
+  </data>
+  <data name="HideNotes" xml:space="preserve">
+    <value>Hide Notes</value>
+  </data>
+  <data name="SkipBeats" xml:space="preserve">
+    <value>Skip Beats</value>
+  </data>
+  <data name="StageManager" xml:space="preserve">
+    <value>Stage Manage</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="Number" xml:space="preserve">
+    <value>Number</value>
+  </data>
 </root>

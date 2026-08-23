@@ -212,6 +212,12 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="RadixConvert.cs" />
+    <Compile Include="UI\CameraSelectionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\CameraSelectionForm.Designer.cs">
+      <DependentUpon>CameraSelectionForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="UI\FeverEventForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -307,6 +313,30 @@
     <Compile Include="UI\Windows\BindableNumericUpDown.xaml.cs">
       <DependentUpon>BindableNumericUpDown.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UI\Windows\GuideNotePropertyWindow.xaml.cs">
+      <DependentUpon>GuideNotePropertyWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Windows\GuideStepNotePropertyWindow.xaml.cs">
+      <DependentUpon>GuideStepNotePropertyWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Windows\StageStyleEventPropertyWindow.xaml.cs">
+      <DependentUpon>StageStyleEventPropertyWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Windows\StageTransEventPropertyWindow.xaml.cs">
+      <DependentUpon>StageTransEventPropertyWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Windows\StagePivotEventPropertyWindow.xaml.cs">
+      <DependentUpon>StagePivotEventPropertyWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Windows\StageMaskEventPropertyWindow.xaml.cs">
+      <DependentUpon>StageMaskEventPropertyWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Windows\CameraEventPropertyWindow.xaml.cs">
+      <DependentUpon>CameraEventPropertyWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="UI\Windows\StageManagerWindow.xaml.cs">
+      <DependentUpon>StageManagerWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="UI\Windows\UscImportWindow.xaml.cs">
       <DependentUpon>UscImportWindow.xaml</DependentUpon>
     </Compile>
@@ -315,12 +345,6 @@
     </Compile>
     <Compile Include="UI\Windows\HighSpeedEventPropertyWindow.xaml.cs">
       <DependentUpon>HighSpeedEventPropertyWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="UI\Windows\GuideNotePropertyWindow.xaml.cs">
-      <DependentUpon>GuideNotePropertyWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="UI\Windows\GuideStepNotePropertyWindow.xaml.cs">
-      <DependentUpon>GuideStepNotePropertyWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="UI\Windows\BpmEventPropertyWindow.xaml.cs">
       <DependentUpon>BpmEventPropertyWindow.xaml</DependentUpon>
@@ -456,6 +480,12 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\CameraSelectionForm.en.resx">
+      <DependentUpon>CameraSelectionForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UI\CameraSelectionForm.resx">
+      <DependentUpon>CameraSelectionForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UI\FeverEventForm.en.resx">
       <DependentUpon>FeverEventForm.cs</DependentUpon>
@@ -687,6 +717,38 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="UI\Windows\GuideNotePropertyWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Windows\GuideStepNotePropertyWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Windows\StageStyleEventPropertyWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Windows\StageTransEventPropertyWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Windows\StagePivotEventPropertyWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Windows\StageMaskEventPropertyWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Windows\CameraEventPropertyWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="UI\Windows\StageManagerWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="UI\Windows\UscImportWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -696,14 +758,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="UI\Windows\HighSpeedEventPropertyWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="UI\Windows\GuideNotePropertyWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="UI\Windows\GuideStepNotePropertyWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

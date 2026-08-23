@@ -57,6 +57,8 @@ namespace Ched.UI
 
         private int Channel { get; set; } = 1;
         private int ViewChannel { get; set; } = 0;
+        private int Stage { get; set; } = 0;
+        private int ViewStage { get; set; } = 0;
 
         private float WidthAmount { get; set; } = 1;
         private float ScrollAmount { get; set; } = ApplicationSettings.Default.ScrollAmount;
@@ -66,7 +68,6 @@ namespace Ched.UI
         public bool FormSpeedbyCh { get; set; } = ApplicationSettings.Default.IsAnotherChannelFormSpeeds;
 
         private int defaultCh = 1;
-
 
         private Plugins.PluginManager PluginManager { get; } = Plugins.PluginManager.GetInstance();
 
@@ -321,8 +322,17 @@ namespace Ched.UI
             { 9, "Ch9" },
             { 10, "Ch10" },
             };
-                
             }
+            if (ScoreBook.Stages.Count < 1)
+            {
+                ScoreBook.Stages = new List<Stage>() { new Stage() { ID = 0, Name = "#0", Number = 0, FromStart = true, UntilEnd = true } };
+                ScoreBook.StageCount++;
+            }
+
+            NoteView.Stages = ScoreBook.Stages;
+
+            NoteView.Stage = ScoreBook.Stages[0].ID;
+            NoteView.ViewStage = -1;
 
             var defset = new ExportSetting();
             if (ApplicationSettings.Default.DefaultExportSettings == null)
@@ -407,6 +417,8 @@ namespace Ched.UI
             { 10, "Ch10" },
             };
             
+            book.Stages = new List<Stage>() { new Stage() { ID = 0, Name = "#0", Number = 0, FromStart = true, UntilEnd = true } };
+            book.StageCount = 1;
 
             LoadBook(book);
         }
@@ -855,6 +867,7 @@ namespace Ched.UI
                 };
                 UpdateEvent(NoteView.ScoreEvents.CommentEvents, item);
             });
+            /*
             commandSource.RegisterCommand(Commands.InsertMarker, MainFormStrings.Marker, () =>
             {
                 var form = new MarkerInsertForm()
@@ -865,6 +878,7 @@ namespace Ched.UI
                 if (form.ShowDialog(this) != DialogResult.OK) return;
 
             });
+            */
             commandSource.RegisterCommand(Commands.InsertSkill, "Skill", () =>
             {
                 var form = new SkillEventForm();
@@ -1942,6 +1956,20 @@ namespace Ched.UI
 
             var ExportNotesItems = new ToolStripMenuItem(MainFormStrings.Notes, null, NoteItems);
 
+            var OpenStageManager = new ToolStripMenuItem(MainFormStrings.StageManager, null, (s, e) =>
+            {
+                var item = s as ToolStripMenuItem;
+                var vm = new StageManagerWindowViewModel(ScoreBook);
+                var window = new StageManagerWindow()
+                {
+                    DataContext = vm
+                };
+                if (window.ShowDialog(this) ?? false)
+                {
+                    ScoreBook = ((StageManagerWindowViewModel)window.DataContext).ScoreBook;
+                    NoteView.Stages = ScoreBook.Stages;
+                }
+            });
 
 
 
@@ -2148,7 +2176,7 @@ namespace Ched.UI
                 new ToolStripMenuItem(MainFormStrings.ThemeMenu, null, themeMenuItems),
                 new ToolStripMenuItem(MainFormStrings.ChannelMenu, null, channelMenuItems),
                 new ToolStripMenuItem("USC" +  MainFormStrings.Export, null, exportMenuItems),
-
+                new ToolStripMenuItem( MainFormStrings.Stage, null, OpenStageManager),
             });
             return menu;
         }
@@ -2191,7 +2219,11 @@ namespace Ched.UI
                 DisplayStyle = ToolStripItemDisplayStyle.Image
             };
             eventKind.Text = MainFormStrings.Event;
-            eventKind.Click += (s, e) => noteView.EditMode = EditMode.EventEdit;
+            eventKind.Click += (s, e) => { 
+                noteView.EditMode = EditMode.EventEdit;
+                if((int)noteView.EventMode > 7)
+                    noteView.EventMode = EventEditMode.Edit;
+            };
             eventKind.DropDown.Items.AddRange(new ToolStripItem[]
             {
                 new ToolStripMenuItem(MainFormStrings.Edit, Resources.EditIcon, (s, e) => noteView.EventMode = EventEditMode.Edit),
@@ -2219,7 +2251,11 @@ namespace Ched.UI
                 DisplayStyle = ToolStripItemDisplayStyle.Image
             };
             eventKind2.Text = MainFormStrings.Event;
-            eventKind2.Click += (s, e) => noteView.EditMode = EditMode.EventEdit;
+            eventKind2.Click += (s, e) => {
+                noteView.EditMode = EditMode.EventEdit;
+                if ((int)noteView.EventMode < 8)
+                    noteView.EventMode = EventEditMode.Camera;
+            };
             eventKind2.DropDown.Items.AddRange(new ToolStripItem[]
             {
                 new ToolStripMenuItem("Camera Event", Resources.Camera, (s, e) => noteView.EventMode = EventEditMode.Camera),
@@ -2277,7 +2313,10 @@ namespace Ched.UI
                 eventeditorButton.Checked = noteView.EditMode == EditMode.EventEdit;
                 if(noteView.EditMode == EditMode.EventEdit)
                 {
+                    NoteView.EventMode = NoteView.EventMode;
+                    if ((int)noteView.EventMode < 8 )
                     eventKind.Checked = true;
+                    else eventKind2.Checked = true;
                 }
             };
             noteView.EventEditModeChanged += (s, e) =>
@@ -2444,7 +2483,6 @@ namespace Ched.UI
             var eventStagePivotButton = shortcutItemBuilder.BuildItem(Commands.SelectStagePivot, "Camera Pivot Event Tool", Resources.Stage_pivot);
             var eventStageStyleButton = shortcutItemBuilder.BuildItem(Commands.SelectStageStyle, "Camera Style Event Tool", Resources.Stage_style);
             var eventStageTransformButton = shortcutItemBuilder.BuildItem(Commands.SelectStageTransform, "Camera Transform Event Tool", Resources.Stage_transform);
-            eventSelectionButton.Width = 10;
 
 
 
@@ -2769,6 +2807,7 @@ namespace Ched.UI
                 Checked = false
             };
 
+
             ToolStripMenuItem deleteChhistory = new ToolStripMenuItem(MainFormStrings.ChannelReload, null, (s, e) =>
             {
                 var item = s as ToolStripMenuItem;
@@ -2921,6 +2960,77 @@ namespace Ched.UI
                 widthSetBox.SelectedItem = noteView.LastWidth.ToString();
             };
 
+            
+            var stageBox = new ToolStripComboBox(MainFormStrings.Stage)
+            {
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                AutoSize = true,
+                Width = 60
+            };
+            stageBox.Items.Add(0);
+            stageBox.ComboBox.DisplayMember = "Name";
+            stageBox.ComboBox.ValueMember = "ID";
+            noteView.StageChanged += (s, e) =>
+            {
+                stageBox.ComboBox.DataSource = ScoreBook.Stages;
+            };
+
+            stageBox.SelectedIndexChanged += (s, e) =>
+            {
+
+                if (stageBox.SelectedItem is Stage selectedItem)
+                {
+
+                    noteView.Stage = selectedItem.ID;
+                    noteView.Update();
+                    noteView.Focus();
+                }
+            };
+
+            stageBox.SelectedIndex = 0;
+
+
+            var viewStageBox = new ToolStripComboBox("表示チャンネル")
+            {
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                AutoSize = true,
+                Width = 60
+            };
+            viewStageBox.Items.Add(MainFormStrings.All);
+            viewStageBox.ComboBox.DisplayMember = "Name";
+            viewStageBox.ComboBox.ValueMember = "ID";
+            noteView.StageChanged += (s, e) =>
+            {
+                List<Stage> stages = new List<Stage>() { new Stage() { ID = -1, Name = MainFormStrings.All } };
+                stages.AddRange(ScoreBook.Stages);
+                viewStageBox.ComboBox.DataSource = stages;
+            };
+
+            viewStageBox.SelectedIndexChanged += (s, e) =>
+            {
+                if (viewStageBox.SelectedIndex == 0)
+                {
+                    ViewStage = -1;
+                }
+                else
+                {
+                    if (viewStageBox.SelectedItem is Stage selectedItem)
+                    {
+
+                        noteView.Stage = selectedItem.ID;
+                        noteView.Update();
+                        noteView.Focus();
+                    }
+                }
+                noteView.ViewStage = ViewStage;
+                noteView.Update();
+                noteView.Focus();
+            };
+            viewStageBox.SelectedIndex = 0;
+
+
+
+
             var menu = new ToolStrip(new ToolStripItem[] {});
 
             if (bool.Parse(ConfigurationManager.AppSettings["ShortCutNoteExtend"]))
@@ -2939,7 +3049,7 @@ namespace Ched.UI
             {
                 tapButton, exTapButton, holdButton, slideButton, slideStepButton, airKind, airActionButton, flickButton, damageButton, guideKind,
                  guideStepButton, tap2Button, exTap2Button, flick2Button, damage2Button,
-                quantizeComboBox, widthSetBox, new ToolStripSeparator(), speedChBox, viewChBox,  laneVisible, widthAmountBox, deleteChhistory, nameChannel
+                quantizeComboBox, widthSetBox, new ToolStripSeparator(), speedChBox, viewChBox,  laneVisible, widthAmountBox, stageBox, viewStageBox
             });
             }
 

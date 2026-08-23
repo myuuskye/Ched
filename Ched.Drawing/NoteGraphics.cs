@@ -1467,6 +1467,90 @@ namespace Ched.Drawing
 
 
 
+        public static void DrawCamera(this DrawingContext dc, IEnumerable<CameraStepElement> steps, float noteHeight,  bool usingBezier)
+        {
+
+            var prevMode = dc.Graphics.SmoothingMode;
+            dc.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+
+
+            var orderedSteps = steps.OrderBy(p => p.Point.Y).ToList();
+
+            //スライドの線
+            using (var pen = new Pen(Color.FromArgb(255,100,0), noteHeight * 0.4f))
+            {
+                if (usingBezier)
+                {
+                    int i = 0;
+                    var lineSteps = orderedSteps.ToList();
+                    foreach (var p in orderedSteps)
+                    {
+
+
+                        if (i + 2 > orderedSteps.Count) //Countは2~ 
+                            continue;
+
+                        var nextstep = lineSteps.OrderBy(q => q.Tick).ToList()[lineSteps.IndexOf(p) + 1];
+
+
+                        var start = new PointF(p.Point.X + p.Width / 2, p.Point.Y);
+                        var end = new PointF(nextstep.Point.X + nextstep.Width / 2, nextstep.Point.Y);
+
+                        float un = nextstep.Point.Y - p.Point.Y;
+                        var step1 = new PointF(p.Point.X + p.Width / 2, p.Point.Y + un / 5 * 3);
+                        var step2 = new PointF(nextstep.Point.X + nextstep.Width / 2, p.Point.Y + un / 5 * 2);
+                        var step3 = new PointF(p.Point.X + p.Width / 2, p.Point.Y + un / 5 * 3);
+                        var step5 = new PointF(nextstep.Point.X + nextstep.Width / 2, p.Point.Y + un / 5 * 3);
+                        var step6 = new PointF(p.Point.X + p.Width / 2, nextstep.Point.Y - un / 5 * 3);
+
+
+                        var linepoints = new[] { start, end };
+
+                        switch (p.CurveType)
+                        {
+                            case 0:
+                                dc.Graphics.DrawLines(pen, linepoints);
+                                break;
+                            case 1:
+                                dc.Graphics.DrawBezier(pen, start, start, step1, end);
+                                break;
+                            case 2:
+                            case 3:
+                                dc.Graphics.DrawBezier(pen, start, start, step2, end);
+                                break;
+                            case 4:
+                                dc.Graphics.DrawBezier(pen, start, step1, step2, end);
+                                break;
+                            case 5:
+                            case 6:
+                                dc.Graphics.DrawBezier(pen, start, step5, step6, end);
+                                break;
+                        }
+
+                        i++;
+                    }
+                }
+                else
+                {
+                    dc.Graphics.DrawLines(pen, orderedSteps.Select(p => new PointF(p.Point.X + p.Width / 2, p.Point.Y)).ToArray());
+                }
+
+
+            }
+
+            dc.Graphics.SmoothingMode = prevMode;
+
+
+
+        }
+        public static void DrawCameraStep(this DrawingContext dc, RectangleF rect)
+        {
+            dc.Graphics.DrawSquarishNote(rect, new GradientColor(Color.FromArgb(255, 100, 0), Color.FromArgb(255, 100, 0)), dc.ColorProfile.BorderColor);
+        }
+
+
+
 
         public static void DrawAir(this DrawingContext dc, RectangleF targetNoteRect, VerticalAirDirection verticalDirection, HorizontalAirDirection horizontalDirection, bool isch, int mode)
         {
@@ -1747,8 +1831,8 @@ namespace Ched.Drawing
     {
         public PointF Point { get; set; }
         public int Tick { get; set; }
-        public double LaneIndex { get; set; }
-        public double LaneWidth { get; set; }
+        public float LaneIndex { get; set; }
+        public float LaneWidth { get; set; }
         public float Width { get; set; }
         public int CurveType {  get; set; }
         public bool Skippable { get; set; } = false;
@@ -1758,10 +1842,19 @@ namespace Ched.Drawing
     {
         public PointF Point { get; set; }
         public int Tick { get; set; }
+        public float LaneIndex { get; set; }
+        public float LaneWidth { get; set; }
+        public float Width { get; set; }
+        public int CurveType { get; set; }
+        public int Channel { get; set; }
+    }
+    public class CameraStepElement
+    {
+        public PointF Point { get; set; }
+        public int Tick { get; set; }
         public double LaneIndex { get; set; }
         public double LaneWidth { get; set; }
         public float Width { get; set; }
         public int CurveType { get; set; }
-        public int Channel { get; set; }
     }
 }

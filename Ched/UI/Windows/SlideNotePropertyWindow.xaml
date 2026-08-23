@@ -14,7 +14,8 @@
         Title="{x:Static localization:MainFormStrings.Property}"
         Style="{DynamicResource DialogWindowStyle}"
         mc:Ignorable="d"
-        d:DataContext="{d:DesignInstance Type=local:SlideNotePropertiesWindowViewModel}">
+        d:DataContext="{d:DesignInstance Type=local:SlideNotePropertiesWindowViewModel}"
+        Loaded="Window_Loaded">
 
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="ContentRendered">
@@ -94,6 +95,13 @@
                         <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.Channel}" />
                         <local:BindableNumericUpDown Grid.Column="1" Value="{Binding NoteChannel}" DecimalPlaces="0" Increment="1" Minimum="0"  Maximum="100000" />
                     </Grid>
+                    <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.Stage}" />
+                    <ComboBox x:Name="StageComboBox" 
+Width="195" 
+DisplayMemberPath="Name" 
+SelectedValuePath="ID"
+SelectionChanged="StageComboBox_SelectionChanged" Margin="0,0,220,0"
+                ItemsSource="{Binding Stages}"/>
 
 
                 </StackPanel>

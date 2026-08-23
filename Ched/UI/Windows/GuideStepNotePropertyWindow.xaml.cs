@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
@@ -20,11 +19,20 @@ namespace Ched.UI.Windows
     /// </summary>
     public partial class GuideStepNotePropertiesWindow : Window
     {
-
         public GuideStepNotePropertiesWindow()
         {
             InitializeComponent();
+        }
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
 
+            var data = ((GuideStepNotePropertiesWindowViewModel)DataContext);
+            StageComboBox.ItemsSource = data.Stages;
+            StageComboBox.SelectedValue = data.Note.Stage;
+        }
+        private void CategoryComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ((GuideStepNotePropertiesWindowViewModel)DataContext).NoteStage = (int)StageComboBox.SelectedValue;
         }
 
     }
@@ -32,18 +40,19 @@ namespace Ched.UI.Windows
     public class GuideStepNotePropertiesWindowViewModel : ViewModel
     {
 
-        
-        private Guide.StepTap Note { get; }
-        private NoteView noteView { get; }
-
+        public Guide.StepTap Note { get; }
+        private bool IsEnd { get; }
+        public List<Stage> Stages { get; }
 
         private int noteTick;
         private float noteLaneIndex;
         private float noteWidth;
         private int noteChannel;
+        private int noteStage;
         private bool noteVisible;
         private int lanedecimalPlaces;
         private int widthdecimalPlaces;
+        private float noteAlpha;
 
         public int NoteTick
         {
@@ -66,6 +75,16 @@ namespace Ched.UI.Windows
                 NotifyPropertyChanged();
             }
         }
+        public int NoteStage
+        {
+            get => noteStage;
+            set
+            {
+                if (value == noteStage) return;
+                noteStage = value;
+                NotifyPropertyChanged();
+            }
+        }
         public float NoteLaneIndex
         {
             get => noteLaneIndex;
@@ -82,7 +101,6 @@ namespace Ched.UI.Windows
             set
             {
                 if (value == noteWidth) return;
-                
                 noteWidth = Math.Max(-Note.ParentNote.StartWidth, value);
                 NotifyPropertyChanged();
             }
@@ -97,7 +115,6 @@ namespace Ched.UI.Windows
                 NotifyPropertyChanged();
             }
         }
-
         public int LaneIndexDecimalPlaces
         {
             get => lanedecimalPlaces;
@@ -118,26 +135,42 @@ namespace Ched.UI.Windows
                 NotifyPropertyChanged();
             }
         }
-
+        public float NoteAlpha
+        {
+            get => noteAlpha;
+            set
+            {
+                if (value == noteAlpha) return;
+                noteAlpha = value;
+                NotifyPropertyChanged();
+            }
+        }
 
 
         public GuideStepNotePropertiesWindowViewModel()
         {
         }
 
-        public GuideStepNotePropertiesWindowViewModel(Guide.StepTap note)
+        public GuideStepNotePropertiesWindowViewModel(Guide.StepTap note, bool isend, List<Stage> stages)
         {
             Note = note;
+            IsEnd = isend;
+            Stages = stages;
         }
 
         public void BeginEdit()
         {
             NoteTick = Note.TickOffset;
             NoteChannel = Note.Channel;
+            NoteStage = Note.Stage;
             NoteLaneIndex = Note.LaneIndexOffset;
             NoteWidth = Note.WidthChange;
             LaneIndexDecimalPlaces = Note.LaneIndexOffset.ToString().Length;
             WidthDecimalPlaces = Note.WidthChange.ToString().Length;
+            if (IsEnd)
+            NoteVisible = true;
+            else
+            NoteVisible = Note.IsVisible;
 
         }
 
@@ -146,9 +179,13 @@ namespace Ched.UI.Windows
 
             Note.TickOffset = NoteTick;
             Note.Channel = NoteChannel;
+            Note.Stage = NoteStage;
             Note.LaneIndexOffset = NoteLaneIndex;
             Note.WidthChange = NoteWidth;
-
+            if (IsEnd)
+                Note.IsVisible = true;
+            else
+                Note.IsVisible = NoteVisible;
         }
     }
 }

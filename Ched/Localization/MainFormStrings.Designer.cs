@@ -169,6 +169,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   レーンを中心にする に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Anchor {
+            get {
+                return ResourceManager.GetString("Anchor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   選択方法を変更 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string AnotherSelectMethod {
@@ -210,6 +219,15 @@ namespace Ched.Localization {
         public static string Browse {
             get {
                 return ResourceManager.GetString("Browse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   カメラ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Camera {
+            get {
+                return ResourceManager.GetString("Camera", resourceCulture);
             }
         }
         
@@ -583,6 +601,42 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   分割線透明度 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string DivisionLineAlpha {
+            get {
+                return ResourceManager.GetString("DivisionLineAlpha", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   分割パリティ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string DivisionParity {
+            get {
+                return ResourceManager.GetString("DivisionParity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   レーン分割大きさ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string DivisionSize {
+            get {
+                return ResourceManager.GetString("DivisionSize", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   加減速 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Ease {
+            get {
+                return ResourceManager.GetString("Ease", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   編集 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Edit {
@@ -597,6 +651,15 @@ namespace Ched.Localization {
         public static string EditMenu {
             get {
                 return ResourceManager.GetString("EditMenu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   編集レーン に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string EditorLane {
+            get {
+                return ResourceManager.GetString("EditorLane", resourceCulture);
             }
         }
         
@@ -808,6 +871,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   フルサイズ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string FullWidth {
+            get {
+                return ResourceManager.GetString("FullWidth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   このノーツで生成されるノーツ に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string GenerateByThisNote {
@@ -930,6 +1002,15 @@ namespace Ched.Localization {
         public static string Hide {
             get {
                 return ResourceManager.GetString("Hide", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ノーツを非表示 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string HideNotes {
+            get {
+                return ResourceManager.GetString("HideNotes", resourceCulture);
             }
         }
         
@@ -1123,6 +1204,33 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   判定線透明度 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string JudgeLineAlpha {
+            get {
+                return ResourceManager.GetString("JudgeLineAlpha", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   判定線色 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string JudgeLineColor {
+            get {
+                return ResourceManager.GetString("JudgeLineColor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   判定線スタイル に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string JudgeLineStyle {
+            get {
+                return ResourceManager.GetString("JudgeLineStyle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   ショートカット設定 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string KeyboardShortcuts {
@@ -1137,6 +1245,15 @@ namespace Ched.Localization {
         public static string KeyCombination {
             get {
                 return ResourceManager.GetString("KeyCombination", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   レーン透明度 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string LaneAlpha {
+            get {
+                return ResourceManager.GetString("LaneAlpha", resourceCulture);
             }
         }
         
@@ -1182,6 +1299,15 @@ namespace Ched.Localization {
         public static string LaneVisual {
             get {
                 return ResourceManager.GetString("LaneVisual", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   レーン左端スタイル に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string LeftBorderStyle {
+            get {
+                return ResourceManager.GetString("LeftBorderStyle", resourceCulture);
             }
         }
         
@@ -1258,6 +1384,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   名前 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Name {
+            get {
+                return ResourceManager.GetString("Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   レーン幅を狭める に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string NarrowLaneWidth {
@@ -1294,6 +1429,15 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   ノーツ透明度 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string NoteAlpha {
+            get {
+                return ResourceManager.GetString("NoteAlpha", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   ノーツ に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string Notes {
@@ -1317,6 +1461,15 @@ namespace Ched.Localization {
         public static string NotGenerate {
             get {
                 return ResourceManager.GetString("NotGenerate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   番号 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Number {
+            get {
+                return ResourceManager.GetString("Number", resourceCulture);
             }
         }
         
@@ -1528,6 +1681,24 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   レーン右端スタイル に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string RightBorderStyle {
+            get {
+                return ResourceManager.GetString("RightBorderStyle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   回転 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Rotation {
+            get {
+                return ResourceManager.GetString("Rotation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   名前を付けて保存 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string SaveAs {
@@ -1614,6 +1785,15 @@ namespace Ched.Localization {
         public static string Skill {
             get {
                 return ResourceManager.GetString("Skill", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   スキップ拍数 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string SkipBeats {
+            get {
+                return ResourceManager.GetString("SkipBeats", resourceCulture);
             }
         }
         
@@ -1717,11 +1897,29 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   ステージ に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Stage {
+            get {
+                return ResourceManager.GetString("Stage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   ステージ編集 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string StageEditor {
             get {
                 return ResourceManager.GetString("StageEditor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ステージ管理 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string StageManager {
+            get {
+                return ResourceManager.GetString("StageManager", resourceCulture);
             }
         }
         
@@ -1803,6 +2001,15 @@ namespace Ched.Localization {
         public static string Tick {
             get {
                 return ResourceManager.GetString("Tick", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   傾き に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Tilt {
+            get {
+                return ResourceManager.GetString("Tilt", resourceCulture);
             }
         }
         
@@ -1933,6 +2140,69 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   X座標 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string XTranslate {
+            get {
+                return ResourceManager.GetString("XTranslate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Yオフセット(拍) に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string YBeatOffset {
+            get {
+                return ResourceManager.GetString("YBeatOffset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Yオフセット に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string YOffset {
+            get {
+                return ResourceManager.GetString("YOffset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Y座標 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string YTranslate {
+            get {
+                return ResourceManager.GetString("YTranslate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ズーム に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string Zoom {
+            get {
+                return ResourceManager.GetString("Zoom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ズーム調整 に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ZoomAlign {
+            get {
+                return ResourceManager.GetString("ZoomAlign", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ズームを中央にする に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ZoomAlignCenter {
+            get {
+                return ResourceManager.GetString("ZoomAlignCenter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   拡大 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string ZoomIn {
@@ -1942,11 +2212,29 @@ namespace Ched.Localization {
         }
         
         /// <summary>
+        ///   ズーム対象レーン に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ZoomLane {
+            get {
+                return ResourceManager.GetString("ZoomLane", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   縮小 に類似しているローカライズされた文字列を検索します。
         /// </summary>
         public static string ZoomOut {
             get {
                 return ResourceManager.GetString("ZoomOut", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   ズーム対象Y に類似しているローカライズされた文字列を検索します。
+        /// </summary>
+        public static string ZoomY {
+            get {
+                return ResourceManager.GetString("ZoomY", resourceCulture);
             }
         }
     }

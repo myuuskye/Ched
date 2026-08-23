@@ -30,6 +30,11 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 using System.Runtime.InteropServices;
 using Ched.Localization;
 using System.Runtime.Remoting.Lifetime;
+using System.Windows;
+using Point = System.Drawing.Point;
+using Clipboard = System.Windows.Forms.Clipboard;
+using MessageBox = System.Windows.Forms.MessageBox;
+using System.Windows.Media.Media3D;
 
 namespace Ched.UI
 {
@@ -53,7 +58,7 @@ namespace Ched.UI
         public event EventHandler ChannelVisualChanged;
         public event EventHandler LastWidthChanged;
         public event EventHandler ScoreChanged;
-
+        public event EventHandler StageChanged;
 
 
         private Color barLineColor = Color.FromArgb(160, 160, 160);
@@ -76,6 +81,8 @@ namespace Ched.UI
         private int currentTick = 0;
         private int channel = 1;
         private int viewchannel = 0;
+        private int stage;
+        private int viewStage;
         private float widthamount = 1f;
         private float scrollamount = 1f;
         private bool stepctype = false;
@@ -100,6 +107,7 @@ namespace Ched.UI
         private bool isNewGuideStepVisible = true;
         private bool isNewNoteStart = false;
         private float lastWidth = 4;
+        private List<Stage> stages = new List<Stage>();
 
         static System.Data.DataTable _dt = new System.Data.DataTable();
 
@@ -465,9 +473,6 @@ namespace Ched.UI
                 channel = value;
             }
         }
-
-
-
         /// <summary>
         /// 表示チャンネルを設定します。
         /// </summary>
@@ -644,7 +649,28 @@ namespace Ched.UI
         }
 
 
-
+        /// <summary>
+        /// 編集ステージを設定します。
+        /// </summary>
+        public int Stage
+        {
+            get { return stage; }
+            set
+            {
+                stage = value;
+            }
+        }
+        /// <summary>
+        /// 表示ステージを設定します。
+        /// </summary>
+        public int ViewStage
+        {
+            get { return viewStage; }
+            set
+            {
+                viewStage = value;
+            }
+        }
 
 
 
@@ -674,6 +700,18 @@ namespace Ched.UI
                 LastWidthChanged?.Invoke(this, EventArgs.Empty);
             }
         }
+        /// <summary>
+        /// ステージ一覧を設定します。
+        /// </summary>
+        public List<Stage> Stages 
+        {
+            get { return stages; }
+            set
+            {
+                stages = value;
+                StageChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
 
         public NoteCollection Notes { get; private set; } = new NoteCollection(new Core.NoteCollection());
 
@@ -699,8 +737,6 @@ namespace Ched.UI
             OperationManager = manager;
 
             QuantizeTick = UnitBeatTick;
-
-            
 
 
             colorProfile = new ColorProfile()
@@ -927,6 +963,16 @@ namespace Ched.UI
                     .Where(q => visibleTick(q.Tick))
                     .Select(q => GetClickableRectFromEventPosition3(q.Tick));
 
+                    var cameraevents = ScoreEvents.CameraChangeEvents
+                    .Where(q => visibleTick(q.Tick))
+                    .Select(q => GetClickableRectFromCameraEventPosition(q.Tick,q.LaneIndex, q.Width));
+                    var maskevents = ScoreEvents.StageMaskChangeEvents
+                    .Where(q => visibleTick(q.Tick))
+                    .Select(q => GetClickableRectFromCameraEventPosition(q.Tick, q.LaneIndex, q.Width));
+                    var pivotevents = ScoreEvents.StagePivotChangeEvents
+                    .Where(q => visibleTick(q.Tick))
+                    .Select(q => GetClickableRectFromStageEventPosition(q.Tick, q.LaneIndex));
+
                     if (editablebyCh)
                     {
                         shortNotes = Enumerable.Empty<TappableBase>()
@@ -952,7 +998,8 @@ namespace Ched.UI
 
 
 
-                    foreach (RectangleF rect in shortNotes.Concat(slides).Concat(guides).Concat(bpmevents).Concat(highspeedevents))
+                    foreach (RectangleF rect in shortNotes.Concat(slides).Concat(guides).Concat(bpmevents).Concat(highspeedevents)
+                    .Concat(cameraevents).Concat(maskevents).Concat(pivotevents))
                     {
                         if (!rect.Contains(pos)) continue;
 
@@ -992,19 +1039,44 @@ namespace Ched.UI
                     var commentevents = ScoreEvents.CommentEvents
                     .Where(q => visibleTick(q.Tick))
                     .Select(q => GetClickableRectFromCommentEventPosition(q.Tick, q.LaneIndex, q.Size));
+                    var cameraevents = ScoreEvents.CameraChangeEvents
+                    .Where(q => visibleTick(q.Tick))
+                    .Select(q => GetClickableRectFromCameraEventPosition(q.Tick, q.LaneIndex, q.Width));
+                    var maskevents = ScoreEvents.StageMaskChangeEvents
+                    .Where(q => visibleTick(q.Tick))
+                    .Select(q => GetClickableRectFromCameraEventPosition(q.Tick, q.LaneIndex, q.Width));
+                    var pivotevents = ScoreEvents.StagePivotChangeEvents
+                    .Where(q => visibleTick(q.Tick))
+                    .Select(q => GetClickableRectFromStageEventPosition(q.Tick, q.LaneIndex));
+                    var styleevents = ScoreEvents.StageStyleChangeEvents
+                    .Where(q => visibleTick(q.Tick))
+                    .Select(q => GetClickableRectFromStageEventPosition(q.Tick, q.LaneIndex));
+                    var transformevents = ScoreEvents.StageTransformChangeEvents
+                    .Where(q => visibleTick(q.Tick))
+                    .Select(q => GetClickableRectFromStageEventPosition(q.Tick, q.XTranslation));
 
                     if (editablebyCh)
                     {
-
+                        highspeedevents = ScoreEvents.HighSpeedChangeEvents
+                    .Where(q => visibleTick(q.Tick) && (q.SpeedCh == channel))
+                    .Select(q => GetClickableRectFromHighSpeedPosition(q.Tick, q.EditLaneIndex, 3));
                     }
 
 
 
-                    foreach (RectangleF rect in bpmevents.Concat(highspeedevents).Concat(commentevents))
+                    foreach (RectangleF rect in bpmevents.Concat(highspeedevents).Concat(commentevents).Concat(pivotevents).Concat(styleevents).Concat(transformevents))
                     {
                         if (!rect.Contains(pos)) continue;
 
                         Cursor = Cursors.SizeAll;
+                        return;
+                    }
+                    foreach (RectangleF rect in cameraevents.Concat(maskevents))
+                    {
+                        if (!rect.Contains(pos)) continue;
+                        RectangleF left = rect.GetLeftThumb(EdgeHitWidthRate, MinimumEdgeHitWidth);
+                        RectangleF right = rect.GetRightThumb(EdgeHitWidthRate, MinimumEdgeHitWidth);
+                        Cursor = (left.Contains(pos) || right.Contains(pos)) ? Cursors.SizeWE : Cursors.SizeAll;
                         return;
                     }
 
@@ -1148,8 +1220,8 @@ namespace Ched.UI
                                 if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
                                 {
                                     xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                    if (EditableOutLane) Math.Min(beforePos.Width - widthamount, xdiff);
-                                    else xdiff = xdiff = Math.Min(beforePos.Width - widthamount, Math.Max(-beforePos.LaneIndex, xdiff)); 
+                                    if (EditableOutLane) xdiff = Math.Min(beforePos.Width - widthamount, xdiff);
+                                    else  xdiff = Math.Min(beforePos.Width - widthamount, Math.Max(-beforePos.LaneIndex, xdiff)); 
                                 }
                                 else
                                 {
@@ -2777,6 +2849,8 @@ namespace Ched.UI
                         newNote.LaneIndex = GetNewNoteLaneIndex(scorePos.X, newNote.Width);
                         newNote.Channel = channel;
                         newNote.IsStart = IsNewNoteStart;
+                        newNote.Stage = Stage;
+
                         Invalidate();
                         return moveTappableNoteHandler(newNote)
                             .Finally(() => OperationManager.Push(op));
@@ -3685,7 +3759,7 @@ namespace Ched.UI
                             .Do(q =>
                             {
                                 if (editablebyCh && (note.Channel != channel) ) return;
-                                var vm = new ShortNotePropertiesWindowViewModel(note);
+                                var vm = new ShortNotePropertiesWindowViewModel(note, Stages);
                                 var window = new ShortNotePropertiesWindow() { DataContext = vm};
                                 window.ShowDialog();
                             })
@@ -3725,7 +3799,7 @@ namespace Ched.UI
                                 if (editablebyCh && step.Channel != Channel) return;
                                 bool isend = (step == step.ParentNote.StepNotes.OrderBy(s => s.TickOffset).Last());
 
-                                var vm = new SlideStepNotePropertiesWindowViewModel(step, isend);
+                                var vm = new SlideStepNotePropertiesWindowViewModel(step, isend, Stages);
                                 var window = new SlideStepNotePropertiesWindow() { DataContext = vm };
                                 window.ShowDialog();
                             });
@@ -3763,7 +3837,7 @@ namespace Ched.UI
                                 .Do(q =>
                                 {
                                     if (editablebyCh && slide.Channel != Channel) return;
-                                    var vm = new SlideNotePropertiesWindowViewModel(slide);
+                                    var vm = new SlideNotePropertiesWindowViewModel(slide, Stages);
                                     var window = new SlideNotePropertiesWindow() { DataContext = vm };
                                     window.ShowDialog();
                                 });
@@ -3782,8 +3856,9 @@ namespace Ched.UI
                             .Do(q =>
                             {
                                 if (editablebyCh && step.Channel != Channel) return;
+                                bool isend = (step == step.ParentNote.StepNotes.OrderBy(s => s.TickOffset).Last());
 
-                                var vm = new GuideStepNotePropertiesWindowViewModel(step);
+                                var vm = new GuideStepNotePropertiesWindowViewModel(step, isend, Stages);
                                 var window = new GuideStepNotePropertiesWindow() { DataContext = vm };
                                 window.ShowDialog();
                             });
@@ -3821,7 +3896,7 @@ namespace Ched.UI
                                 .Do(q =>
                                 {
                                     if (editablebyCh && guide.Channel != Channel) return;
-                                    var vm = new GuideNotePropertiesWindowViewModel(guide);
+                                    var vm = new GuideNotePropertiesWindowViewModel(guide, Stages);
                                     var window = new GuideNotePropertiesWindow() { DataContext = vm };
                                     window.ShowDialog();
                                 });
@@ -3939,6 +4014,155 @@ namespace Ched.UI
                         return null;
                     }
 
+                    IObservable<MouseEventArgs> CameraEventHandler(CameraChangeEvent @event)
+                    {
+                        return mouseClick
+                            .TakeUntil(mouseUp)
+                            .Do(q =>
+                            {
+                                var vm = new CameraEventPropertiesWindowViewModel(@event);
+                                var window = new CameraEventPropertiesWindow() { DataContext = vm };
+                                window.ShowDialog();
+                            })
+                            .Finally(() => Cursor.Current = Cursors.Default);
+                    }
+
+
+                    IObservable<MouseEventArgs> cameraHandler(CameraChangeEvent @event)
+                    {
+                        RectangleF rect = GetClickableRectFromCameraEventPosition(@event.Tick, @event.LaneIndex, @event.Width);
+                        var beforeEvent = new ChangeCameraEventOperation.EventDetail(@event);
+
+                        if (rect.Contains(scorePos))
+                        {
+                            return CameraEventHandler(@event)
+                            .Finally(() => {
+                                var afterEvent = new ChangeCameraEventOperation.EventDetail(@event);
+                                if (beforeEvent == afterEvent) return;
+                                OperationManager.Push(new ChangeCameraEventOperation(ScoreEvents.CameraChangeEvents, @event, beforeEvent, afterEvent));
+                            });
+                        }
+
+                        return null;
+                    }
+                    IObservable<MouseEventArgs> MaskEventHandler(StageMaskChangeEvent @event)
+                    {
+                        return mouseClick
+                            .TakeUntil(mouseUp)
+                            .Do(q =>
+                            {
+                                var vm = new StageMaskEventPropertiesWindowViewModel(@event);
+                                var window = new StageMaskEventPropertiesWindow() { DataContext = vm };
+                                window.ShowDialog();
+                            })
+                            .Finally(() => Cursor.Current = Cursors.Default);
+                    }
+
+
+                    IObservable<MouseEventArgs> maskHandler(StageMaskChangeEvent @event)
+                    {
+                        RectangleF rect = GetClickableRectFromCameraEventPosition(@event.Tick, @event.LaneIndex, @event.Width);
+                        var beforeEvent = new ChangeStageMaskEventOperation.EventDetail(@event);
+
+                        if (rect.Contains(scorePos))
+                        {
+                            return MaskEventHandler(@event)
+                            .Finally(() => {
+                                var afterEvent = new ChangeStageMaskEventOperation.EventDetail(@event);
+                                if (beforeEvent == afterEvent) return;
+                                OperationManager.Push(new ChangeStageMaskEventOperation(ScoreEvents.StageMaskChangeEvents, @event, beforeEvent, afterEvent));
+                            });
+                        }
+
+                        return null;
+                    }
+                    IObservable<MouseEventArgs> PivotEventHandler(StagePivotChangeEvent @event)
+                    {
+                        return mouseClick
+                            .TakeUntil(mouseUp)
+                            .Do(q =>
+                            {
+                                var vm = new StagePivotEventPropertiesWindowViewModel(@event);
+                                var window = new StagePivotEventPropertiesWindow() { DataContext = vm };
+                                window.ShowDialog();
+                            })
+                            .Finally(() => Cursor.Current = Cursors.Default);
+                    }
+                    IObservable<MouseEventArgs> pivotHandler(StagePivotChangeEvent @event)
+                    {
+                        RectangleF rect = GetClickableRectFromStageEventPosition(@event.Tick, @event.LaneIndex);
+                        var beforeEvent = new ChangeStagePivotEventOperation.EventDetail(@event);
+
+                        if (rect.Contains(scorePos))
+                        {
+                            return PivotEventHandler(@event)
+                            .Finally(() => {
+                                var afterEvent = new ChangeStagePivotEventOperation.EventDetail(@event);
+                                if (beforeEvent == afterEvent) return;
+                                OperationManager.Push(new ChangeStagePivotEventOperation(ScoreEvents.StagePivotChangeEvents, @event, beforeEvent, afterEvent));
+                            });
+                        }
+
+                        return null;
+                    }
+                    IObservable<MouseEventArgs> StyleEventHandler(StageStyleChangeEvent @event)
+                    {
+                        return mouseClick
+                            .TakeUntil(mouseUp)
+                            .Do(q =>
+                            {
+                                var vm = new StageStyleEventPropertiesWindowViewModel(@event);
+                                var window = new StageStyleEventPropertiesWindow() { DataContext = vm };
+                                window.ShowDialog();
+                            })
+                            .Finally(() => Cursor.Current = Cursors.Default);
+                    }
+                    IObservable<MouseEventArgs> styleHandler(StageStyleChangeEvent @event)
+                    {
+                        RectangleF rect = GetClickableRectFromStageEventPosition(@event.Tick, @event.LaneIndex);
+                        var beforeEvent = new ChangeStageStyleEventOperation.EventDetail(@event);
+
+                        if (rect.Contains(scorePos))
+                        {
+                            return StyleEventHandler(@event)
+                            .Finally(() => {
+                                var afterEvent = new ChangeStageStyleEventOperation.EventDetail(@event);
+                                if (beforeEvent == afterEvent) return;
+                                OperationManager.Push(new ChangeStageStyleEventOperation(ScoreEvents.StageStyleChangeEvents, @event, beforeEvent, afterEvent));
+                            });
+                        }
+
+                        return null;
+                    }
+                    IObservable<MouseEventArgs> TransEventHandler(StageTransformChangeEvent @event)
+                    {
+                        return mouseClick
+                            .TakeUntil(mouseUp)
+                            .Do(q =>
+                            {
+                                var vm = new StageTransEventPropertiesWindowViewModel(@event);
+                                var window = new StageTransEventPropertiesWindow() { DataContext = vm };
+                                window.ShowDialog();
+                            })
+                            .Finally(() => Cursor.Current = Cursors.Default);
+                    }
+                    IObservable<MouseEventArgs> transHandler(StageTransformChangeEvent @event)
+                    {
+                        RectangleF rect = GetClickableRectFromStageEventPosition(@event.Tick, @event.XTranslation);
+                        var beforeEvent = new ChangeStageTransformEventOperation.EventDetail(@event);
+
+                        if (rect.Contains(scorePos))
+                        {
+                            return TransEventHandler(@event)
+                            .Finally(() => {
+                                var afterEvent = new ChangeStageTransformEventOperation.EventDetail(@event);
+                                if (beforeEvent == afterEvent) return;
+                                OperationManager.Push(new ChangeStageTransformEventOperation(ScoreEvents.StageTransformChangeEvents, @event, beforeEvent, afterEvent));
+                            });
+                        }
+
+                        return null;
+                    }
 
 
 
@@ -4000,6 +4224,31 @@ namespace Ched.UI
                             var subscription = highspeedHandler(@event);
                             if (subscription != null) return subscription;
                         }
+                        foreach (var @event in ScoreEvents.CameraChangeEvents.Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
+                        {
+                            var subscription = cameraHandler(@event);
+                            if (subscription != null) return subscription;
+                        }
+                        foreach (var @event in ScoreEvents.StageMaskChangeEvents.Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
+                        {
+                            var subscription = maskHandler(@event);
+                            if (subscription != null) return subscription;
+                        }
+                        foreach (var @event in ScoreEvents.StagePivotChangeEvents.Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
+                        {
+                            var subscription = pivotHandler(@event);
+                            if (subscription != null) return subscription;
+                        }
+                        foreach (var @event in ScoreEvents.StageStyleChangeEvents.Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
+                        {
+                            var subscription = styleHandler(@event);
+                            if (subscription != null) return subscription;
+                        }
+                        foreach (var @event in ScoreEvents.StageTransformChangeEvents.Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
+                        {
+                            var subscription = transHandler(@event);
+                            if (subscription != null) return subscription;
+                        }
 
 
                         return null;
@@ -4013,6 +4262,7 @@ namespace Ched.UI
                     return Observable.Empty<MouseEventArgs>();
                 }).Subscribe(p => Invalidate());
 
+            /*
             var markerSubscription = mouseDown
                 .Where(p => Editable)
                 .Where(p => p.Button == MouseButtons.Left && EditMode == EditMode.Marker)
@@ -4289,7 +4539,7 @@ namespace Ched.UI
 
                     return Observable.Empty<MouseEventArgs>();
                 }).Subscribe(p => Invalidate());
-
+            */
             var stepEditSubscription = mouseDown
                 .Where(p => Editable)
                 .Where(p => p.Button == MouseButtons.Left && EditMode == EditMode.StepEdit)
@@ -4499,7 +4749,7 @@ namespace Ched.UI
                             })
                             .Finally(() => Cursor.Current = Cursors.Default);
                     }
-                    IObservable<MouseEventArgs> HighSpeedEraseHandler(HighSpeedChangeEvent @event)
+                    IObservable<MouseEventArgs> EventEraseHandler(EventBase @event)
                     {
                         return mouseClick
                             .TakeUntil(mouseUp);
@@ -4514,7 +4764,7 @@ namespace Ched.UI
                         {
                             if(EventMode == EventEditMode.Erase)
                             {
-                                return HighSpeedEraseHandler(@event)
+                                return EventEraseHandler(@event)
                             .Finally(() => {
                                 ScoreEvents.HighSpeedChangeEvents.Remove(@event);
                                 OperationManager.Push(new RemoveEventOperation<HighSpeedChangeEvent>(ScoreEvents.HighSpeedChangeEvents, @event));
@@ -4563,11 +4813,6 @@ namespace Ched.UI
                             })
                             .Finally(() => Cursor.Current = Cursors.Default);
                     }
-                    IObservable<MouseEventArgs> BpmEraseHandler(BpmChangeEvent @event)
-                    {
-                        return mouseClick
-                            .TakeUntil(mouseUp);
-                    }
 
                     IObservable<MouseEventArgs> bpmHandler(BpmChangeEvent @event)
                     {
@@ -4578,7 +4823,7 @@ namespace Ched.UI
                         {
                             if (EventMode == EventEditMode.Erase)
                             {
-                                return BpmEraseHandler(@event)
+                                return EventEraseHandler(@event)
                             .Finally(() => {
                                 ScoreEvents.BpmChangeEvents.Remove(@event);
                                 OperationManager.Push(new RemoveEventOperation<BpmChangeEvent>(ScoreEvents.BpmChangeEvents, @event));
@@ -4631,11 +4876,6 @@ namespace Ched.UI
                             })
                             .Finally(() => Cursor.Current = Cursors.Default);
                     }
-                    IObservable<MouseEventArgs> CommentEraseHandler(CommentEvent @event)
-                    {
-                        return mouseClick
-                            .TakeUntil(mouseUp);
-                    }
 
                     IObservable<MouseEventArgs> commentHandler(CommentEvent @event)
                     {
@@ -4646,7 +4886,7 @@ namespace Ched.UI
                         {
                             if (EventMode == EventEditMode.Erase)
                             {
-                                return CommentEraseHandler(@event)
+                                return EventEraseHandler(@event)
                             .Finally(() => {
                                 ScoreEvents.CommentEvents.Remove(@event);
                                 OperationManager.Push(new RemoveEventOperation<CommentEvent>(ScoreEvents.CommentEvents, @event));
@@ -4670,157 +4910,15 @@ namespace Ched.UI
 
                         return null;
                     }
-
-
-                    IObservable<MouseEventArgs> leftSlideStepNoteHandler(Slide.StepTap step)
+                    IObservable<MouseEventArgs> CameraEventHandler(CameraChangeEvent @event)
                     {
-                        var beforeStepPos = new MoveSlideStepNoteOperation.NotePosition(step.TickOffset, step.LaneIndexOffset, step.WidthChange);
-
+                        float beforeLaneIndex = @event.LaneIndex;
                         return mouseMove
                             .TakeUntil(mouseUp)
                             .Do(q =>
                             {
-                                if ((step.Channel != channel) && (editablebyCh == true)) return;
                                 var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
-                                float xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-
-                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
-                                {
-                                    xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-
-                                }
-                                else
-                                {
-                                    xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-
-                                }
-                                float laneIndexOffset = beforeStepPos.LaneIndexOffset + xdiff;
-                                float widthChange = beforeStepPos.WidthChange - xdiff;
-                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
-                                {
-                                    if (EditableOutLane)
-                                    {
-                                        laneIndexOffset = Math.Min(beforeStepPos.LaneIndexOffset + step.ParentNote.StartWidth + beforeStepPos.WidthChange - widthamount, laneIndexOffset);
-                                        if ((step.ParentNote.StartLaneIndex + laneIndexOffset) < 0)
-                                        {
-                                            widthChange = Math.Max(step.ParentNote.StartLaneIndex + beforeStepPos.LaneIndexOffset + step.ParentNote.StartWidth + beforeStepPos.WidthChange - step.ParentNote.StartWidth, Math.Max(-step.ParentNote.StartWidth + widthamount, widthChange));
-                                        }
-                                        else
-                                        {
-                                            widthChange = Math.Min(step.ParentNote.StartLaneIndex + beforeStepPos.LaneIndexOffset + step.ParentNote.StartWidth + beforeStepPos.WidthChange - step.ParentNote.StartWidth, Math.Max(-step.ParentNote.StartWidth + widthamount, widthChange));
-                                        }
-
-                                    }
-                                    else
-                                    {
-                                        laneIndexOffset = Math.Min(beforeStepPos.LaneIndexOffset + step.ParentNote.StartWidth + beforeStepPos.WidthChange - widthamount, Math.Max(-step.ParentNote.StartLaneIndex, laneIndexOffset));
-                                        widthChange = Math.Min(step.ParentNote.StartLaneIndex + beforeStepPos.LaneIndexOffset + step.ParentNote.StartWidth + beforeStepPos.WidthChange - step.ParentNote.StartWidth, Math.Max(-step.ParentNote.StartWidth + widthamount, widthChange));
-                                    }
-                                }
-                                else
-                                {
-                                    if (EditableOutLane)
-                                    {
-                                        laneIndexOffset = Math.Min(beforeStepPos.LaneIndexOffset + step.ParentNote.StartWidth + beforeStepPos.WidthChange - 1, laneIndexOffset);
-                                        if ((step.ParentNote.StartLaneIndex + laneIndexOffset) < 0)
-                                        {
-                                            widthChange = Math.Max(step.ParentNote.StartLaneIndex + beforeStepPos.LaneIndexOffset + step.ParentNote.StartWidth + beforeStepPos.WidthChange - step.ParentNote.StartWidth, Math.Max(-step.ParentNote.StartWidth + 1, widthChange));
-                                        }
-                                        else
-                                        {
-                                            widthChange = Math.Min(step.ParentNote.StartLaneIndex + beforeStepPos.LaneIndexOffset + step.ParentNote.StartWidth + beforeStepPos.WidthChange - step.ParentNote.StartWidth, Math.Max(-step.ParentNote.StartWidth + 1, widthChange));
-                                        }
-
-                                    }
-                                    else
-                                    {
-                                        laneIndexOffset = Math.Min(beforeStepPos.LaneIndexOffset + step.ParentNote.StartWidth + beforeStepPos.WidthChange - 1, Math.Max(-step.ParentNote.StartLaneIndex, laneIndexOffset));
-                                        widthChange = Math.Min(step.ParentNote.StartLaneIndex + beforeStepPos.LaneIndexOffset + step.ParentNote.StartWidth + beforeStepPos.WidthChange - step.ParentNote.StartWidth, Math.Max(-step.ParentNote.StartWidth + 1, widthChange));
-                                    }
-
-                                }
-
-
-                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.Tab) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift))
-                                {
-                                    laneIndexOffset = 1;
-                                    widthChange = 3;
-                                }
-                                step.SetPosition(laneIndexOffset, widthChange);
-                                if (!allowstepCh) step.Channel = step.ParentNote.Channel;
-                                Cursor.Current = Cursors.SizeWE;
-                            })
-                            .Finally(() =>
-                            {
-                                Cursor.Current = Cursors.Default;
-                                var afterPos = new MoveSlideStepNoteOperation.NotePosition(step.TickOffset, step.LaneIndexOffset, step.WidthChange);
-                                if (beforeStepPos == afterPos) return;
-                                OperationManager.Push(new MoveSlideStepNoteOperation(step, beforeStepPos, afterPos));
-                            });
-                    }
-
-                    IObservable<MouseEventArgs> rightSlideStepNoteHandler(Slide.StepTap step)
-                    {
-                        var beforeStepPos = new MoveSlideStepNoteOperation.NotePosition(step.TickOffset, step.LaneIndexOffset, step.WidthChange);
-
-                        return mouseMove
-                            .TakeUntil(mouseUp)
-                            .Do(q =>
-                            {
-                                if ((step.Channel != channel) && (editablebyCh == true)) return;
-                                var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
-                                float xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-
-                                float widthChange = beforeStepPos.WidthChange + xdiff;
-
-                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
-                                {
-                                    xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                    widthChange = beforeStepPos.WidthChange + xdiff;
-                                    if (EditableOutLane) step.WidthChange = Math.Max(-step.ParentNote.StartWidth + widthamount, widthChange);
-                                    else step.WidthChange = Math.Min(Constants.LanesCount - step.LaneIndex - step.ParentNote.StartWidth, Math.Max(-step.ParentNote.StartWidth + widthamount, widthChange));
-                                }
-                                else
-                                {
-                                    xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                    widthChange = beforeStepPos.WidthChange + xdiff;
-                                    Console.WriteLine(step.LaneIndex + " " + step.ParentNote.StartWidth + " " + (16 - step.LaneIndex - step.ParentNote.StartWidth));
-                                    if (EditableOutLane) step.WidthChange = Math.Max(-step.ParentNote.StartWidth + 1, widthChange);
-                                    else step.WidthChange = Math.Min(Constants.LanesCount - step.LaneIndex - step.ParentNote.StartWidth, Math.Max(-step.ParentNote.StartWidth + 1, widthChange));
-                                }
-
-
-                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.Tab) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift))
-                                {
-                                    step.WidthChange = 0;
-                                }
-                                if (!allowstepCh) step.Channel = step.ParentNote.Channel;
-                                Cursor.Current = Cursors.SizeWE;
-                            })
-                            .Finally(() =>
-                            {
-                                Cursor.Current = Cursors.Default;
-                                var afterPos = new MoveSlideStepNoteOperation.NotePosition(step.TickOffset, step.LaneIndexOffset, step.WidthChange);
-                                if (beforeStepPos == afterPos) return;
-                                OperationManager.Push(new MoveSlideStepNoteOperation(step, beforeStepPos, afterPos));
-                            });
-                    }
-
-                    // 挿入時のハンドラにも流用するのでFinallyつけられない
-                    IObservable<MouseEventArgs> moveSlideStepNoteHandler(Slide.StepTap step)
-                    {
-                        var beforeStepPos = new MoveSlideStepNoteOperation.NotePosition(step.TickOffset, step.LaneIndexOffset, step.WidthChange);
-                        var offsets = new HashSet<int>(step.ParentNote.StepNotes.Select(q => q.TickOffset));
-                        bool isMaxOffsetStep = step.TickOffset == offsets.Max();
-                        offsets.Remove(step.TickOffset);
-                        int maxOffset = offsets.OrderByDescending(q => q).FirstOrDefault();
-                        return mouseMove
-                            .TakeUntil(mouseUp)
-                            .Do(q =>
-                            {
-                                if ((step.Channel != channel) && (editablebyCh == true)) return;
-                                var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
-                                int offset = GetQuantizedTick(GetTickFromYPosition(currentScorePos.Y)) - step.ParentNote.StartTick;
+                                @event.Tick = Math.Max(GetQuantizedTick(GetTickFromYPosition(currentScorePos.Y)), -11520);
                                 float xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
                                 if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
                                 {
@@ -4830,234 +4928,493 @@ namespace Ched.UI
                                 {
                                     xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
                                 }
-                                float laneIndexOffset = beforeStepPos.LaneIndexOffset + xdiff;
-                                if (EditableOutLane)
-                                    step.LaneIndexOffset = laneIndexOffset;
-                                else
-                                    step.LaneIndexOffset = Math.Min(Constants.LanesCount - step.Width - step.ParentNote.StartLaneIndex, Math.Max(-step.ParentNote.StartLaneIndex, laneIndexOffset));
-                                if (bool.Parse(ConfigurationManager.AppSettings["SlideExtend"]) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
-                                {
-                                    if (isMaxOffsetStep) step.IsVisible = true;
-                                    if ((!isMaxOffsetStep && offset > maxOffset)) return;
-                                    if (isMaxOffsetStep && offset + 1 <= maxOffset) return;
-                                }
-                                else
-                                {
-                                    if (isMaxOffsetStep) step.IsVisible = true;
-                                    // 最終Step以降に移動はさせないし同じTickに置かせもしない
-                                    if ((!isMaxOffsetStep && offset > maxOffset) || offsets.Contains(offset) || offset <= 0) return;
-                                    // 最終Stepは手前のStepより前に動かさない……
-                                    if (isMaxOffsetStep && offset <= maxOffset) return;
-                                }
 
-                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.Tab) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift))
-                                {
-                                    step.LaneIndexOffset = 0;
-                                }
-                                step.TickOffset = offset;
-                                if (!allowstepCh) step.Channel = step.ParentNote.Channel;
-                                //step.Channel = step.ParentNote.Channel;
+                                float laneIndex = beforeLaneIndex + xdiff;
+                                @event.LaneIndex = laneIndex;
+
+
                                 Cursor.Current = Cursors.SizeAll;
+                            })
+                            .Finally(() => Cursor.Current = Cursors.Default);
+                    }
+                    IObservable<MouseEventArgs> cameraEventLeftThumbHandler(CameraChangeEvent @event)
+                    {
+                        float beforeLaneIndex = @event.LaneIndex;
+                        float beforeWidth = @event.Width;
+                        return mouseMove
+                            .TakeUntil(mouseUp)
+                            .Do(q =>
+                            {
+                                var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
+                                float xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                //幅の変化量を変更
+                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
+                                {
+                                    xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                    xdiff = Math.Min(beforeWidth - widthamount, xdiff);
+                                }
+                                else
+                                {
+
+                                    xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                    xdiff = Math.Min(beforeWidth - 1, xdiff);
+
+                                }
+                                float width = beforeWidth - xdiff;
+                                float laneIndex = beforeLaneIndex + xdiff;
+                                width = Math.Max(0.1f, width);
+                                @event.Width = width;
+                                @event.LaneIndex = laneIndex;
+                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.Tab) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift))
+                                {
+                                    width = 12;
+                                    laneIndex = 0;
+                                }
+
+                                Cursor.Current = Cursors.SizeWE;
+                            })
+                            .Finally(() =>
+                            {
+                                Cursor.Current = Cursors.Default;
                             });
                     }
-
-                    IObservable<MouseEventArgs> slideHandler(Slide slide)
+                    IObservable<MouseEventArgs> cameraEventRightThumbHandler(CameraChangeEvent @event)
                     {
-                        foreach (var step in slide.StepNotes.OrderByDescending(q => q.TickOffset))
-                        {
-                            RectangleF stepRect = GetClickableRectFromNotePosition(step.Tick, step.LaneIndex, step.Width);
-                            var beforeStepPos = new MoveSlideStepNoteOperation.NotePosition(step.TickOffset, step.LaneIndexOffset, step.WidthChange);
-                            if (!allowstepCh) step.Channel = slide.Channel;
-
-                            if (stepRect.Contains(scorePos))
+                        float beforeWidth = @event.Width;
+                        return mouseMove
+                            .TakeUntil(mouseUp)
+                            .Do(q =>
                             {
-                                if (!(System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift)))
-                                {
-                                    if (stepRect.GetLeftThumb(EdgeHitWidthRate, MinimumEdgeHitWidth).Contains(scorePos))
-                                    {
-                                        return leftSlideStepNoteHandler(step);
-                                    }
+                                var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
+                                float xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
 
-                                    if (stepRect.GetRightThumb(EdgeHitWidthRate, MinimumEdgeHitWidth).Contains(scorePos))
-                                    {
-                                        return rightSlideStepNoteHandler(step);
-                                    }
+                                float width = beforeWidth + xdiff;
+                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
+                                {
+                                    xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                    width = beforeWidth + xdiff;
+                                    @event.Width = Math.Max(0.1f, width);
+                                }
+                                else
+                                {
+                                    xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                    width = beforeWidth + xdiff;
+                                    @event.Width = Math.Max(1, width);
+
                                 }
 
 
-                                if (stepRect.Contains(scorePos))
+
+
+                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.Tab) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift))
                                 {
-                                    return moveSlideStepNoteHandler(step)
-                                        .Finally(() =>
-                                        {
-                                            Cursor.Current = Cursors.Default;
-                                            var afterPos = new MoveSlideStepNoteOperation.NotePosition(step.TickOffset, step.LaneIndexOffset, step.WidthChange);
-                                            if (beforeStepPos == afterPos) return;
-                                            OperationManager.Push(new MoveSlideStepNoteOperation(step, beforeStepPos, afterPos));
-                                        });
+                                    @event.Width = 12;
                                 }
-                            }
-                        }
+                                Cursor.Current = Cursors.SizeWE;
+                            })
+                            .Finally(() =>
+                            {
+                                Cursor.Current = Cursors.Default;
+                            });
+                    }
+                    
 
-                        RectangleF startRect = GetClickableRectFromNotePosition(slide.StartNote.Tick, slide.StartNote.LaneIndex, slide.StartNote.Width);
-
-                        float leftStepLaneIndexOffset = Math.Min(0, slide.StepNotes.Min(q => q.LaneIndexOffset));
-                        float rightStepLaneIndexOffset = Math.Max(0, slide.StepNotes.Max(q => q.LaneIndexOffset + q.WidthChange)); // 最も右にあるStepNoteの右端に対するStartNoteの右端からのオフセット
-                        float minWidthChange = Math.Min(0, slide.StepNotes.Min(q => q.WidthChange));
-
-                        var beforePos = new MoveSlideOperation.NotePosition(slide.StartTick, slide.StartLaneIndex, slide.StartWidth);
-                        var beforeCh = new ChangeSlideChannelOperation.NoteChannel(slide.Channel);
+                    IObservable<MouseEventArgs> cameraHandler(CameraChangeEvent @event)
+                    {
+                        RectangleF rect = GetClickableRectFromCameraEventPosition(@event.Tick, @event.LaneIndex, @event.Width);
+                        var beforeEvent = new ChangeCameraEventOperation.EventDetail(@event);
                         if (!(System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift)))
                         {
-
-                            if (startRect.GetLeftThumb(EdgeHitWidthRate, MinimumEdgeHitWidth).Contains(scorePos))
+                            // 左側
+                            if (rect.GetLeftThumb(EdgeHitWidthRate, MinimumEdgeHitWidth).Contains(scorePos))
                             {
-                                return mouseMove
-                                    .TakeUntil(mouseUp)
-                                    .Do(q =>
-                                    {
-                                        if ((slide.Channel != channel) && (editablebyCh == true)) return;
-                                        var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
-                                        float xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                        xdiff = Math.Min(beforePos.StartWidth + minWidthChange - 1, Math.Max(-beforePos.StartLaneIndex - leftStepLaneIndexOffset, xdiff));
-                                        if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
-                                        {
-                                            xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                            if (EditableOutLane) xdiff = Math.Min(beforePos.StartWidth - widthamount, xdiff);
-                                            else xdiff = Math.Min(beforePos.StartWidth - widthamount, Math.Max(-beforePos.StartLaneIndex, xdiff));
-                                        }
-                                        else
-                                        {
-                                            xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                            if (EditableOutLane) xdiff = Math.Min(beforePos.StartWidth - 1, xdiff);
-                                            else xdiff = Math.Min(beforePos.StartWidth - 1, Math.Max(-beforePos.StartLaneIndex, xdiff));
-
-                                        }
-                                        float width = beforePos.StartWidth - xdiff;
-                                        float laneIndex = beforePos.StartLaneIndex + xdiff;
-                                        // clamp
-                                        if (EditableOutLane)
-                                        {
-                                            width = Math.Max(-minWidthChange + 0.1f, width);
-                                        }
-                                        else
-                                        {
-                                            width = Math.Min(Constants.LanesCount - slide.StartLaneIndex - leftStepLaneIndexOffset, Math.Max(-minWidthChange + 0.1f, width));
-                                            laneIndex = Math.Min(Constants.LanesCount - rightStepLaneIndexOffset, Math.Max(-leftStepLaneIndexOffset - beforePos.StartLaneIndex, laneIndex));
-                                        }
-
-                                        if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.Tab) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift))
-                                        {
-                                            width = 3;
-                                            laneIndex = (int)laneIndex;
-                                        }
-                                        slide.SetPosition(laneIndex, width);
-                                        Cursor.Current = Cursors.SizeWE;
-                                    })
+                                return cameraEventLeftThumbHandler(@event)
                                     .Finally(() =>
                                     {
-                                        Cursor.Current = Cursors.Default;
-                                        LastWidth = slide.StartWidth;
-                                        var afterPos = new MoveSlideOperation.NotePosition(slide.StartTick, slide.StartLaneIndex, slide.StartWidth);
-                                        if (beforePos == afterPos) return;
-                                        OperationManager.Push(new MoveSlideOperation(slide, beforePos, afterPos));
+                                        var afterEvent = new ChangeCameraEventOperation.EventDetail(@event);
+                                        if (beforeEvent == afterEvent) return;
+                                        OperationManager.Push(new ChangeCameraEventOperation(ScoreEvents.CameraChangeEvents, @event, beforeEvent, afterEvent));
                                     });
                             }
 
-                            if (startRect.GetRightThumb(EdgeHitWidthRate, MinimumEdgeHitWidth).Contains(scorePos))
+                            // 右側
+                            if (rect.GetRightThumb(EdgeHitWidthRate, MinimumEdgeHitWidth).Contains(scorePos))
                             {
-                                return mouseMove
-                                    .TakeUntil(mouseUp)
-                                    .Do(q =>
-                                    {
-                                        if ((slide.Channel != channel) && (editablebyCh == true)) return;
-                                        var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
-                                        float xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                        float width = beforePos.StartWidth + xdiff;
-                                        if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
-                                        {
-                                            xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                            width = beforePos.StartWidth + xdiff;
-                                            if (EditableOutLane)
-                                                slide.StartWidth = Math.Max(-minWidthChange + widthamount, width);
-                                            else
-                                                slide.StartWidth = Math.Min(Constants.LanesCount - slide.StartLaneIndex - rightStepLaneIndexOffset, Math.Max(-minWidthChange + 0.1f, width));
-                                        }
-                                        else
-                                        {
-                                            xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                            width = beforePos.StartWidth + xdiff;
-                                            if (EditableOutLane)
-                                                slide.StartWidth = Math.Max(-minWidthChange + 1, width);
-                                            else
-                                                slide.StartWidth = Math.Min(Constants.LanesCount - slide.StartLaneIndex - rightStepLaneIndexOffset, Math.Max(-minWidthChange + 1, width));
-                                        }
-
-
-                                        if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.Tab) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift))
-                                        {
-                                            slide.StartWidth = 3;
-                                        }
-                                        Cursor.Current = Cursors.SizeWE;
-                                    })
+                                return cameraEventRightThumbHandler(@event)
                                     .Finally(() =>
                                     {
-                                        Cursor.Current = Cursors.Default;
-                                        LastWidth = slide.StartWidth;
-                                        var afterPos = new MoveSlideOperation.NotePosition(slide.StartTick, slide.StartLaneIndex, slide.StartWidth);
-                                        if (beforePos == afterPos) return;
-                                        OperationManager.Push(new MoveSlideOperation(slide, beforePos, afterPos));
+                                        var afterEvent = new ChangeCameraEventOperation.EventDetail(@event);
+                                        if (beforeEvent == afterEvent) return;
+                                        OperationManager.Push(new ChangeCameraEventOperation(ScoreEvents.CameraChangeEvents, @event, beforeEvent, afterEvent));
                                     });
                             }
                         }
-
-                        if (startRect.Contains(scorePos))
+                        if (rect.Contains(scorePos))
                         {
+                            if (EventMode == EventEditMode.Erase)
+                            {
+                                return EventEraseHandler(@event)
+                            .Finally(() => {
+                                ScoreEvents.CameraChangeEvents.Remove(@event);
+                                OperationManager.Push(new RemoveEventOperation<CameraChangeEvent>(ScoreEvents.CameraChangeEvents, @event));
 
-                            float beforeLaneIndex = slide.StartNote.LaneIndex;
-                            return mouseMove
-                                .TakeUntil(mouseUp)
-                                .Do(q =>
-                                {
-                                    if ((slide.Channel != channel) && (editablebyCh == true)) return;
-                                    var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
-                                    slide.StartTick = Math.Max(GetQuantizedTick(GetTickFromYPosition(currentScorePos.Y)), -11520);
-                                    float xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                    if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
-                                    {
-                                        xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                    }
-                                    else
-                                    {
-                                        xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
-                                    }
-                                    float laneIndex = beforeLaneIndex + xdiff;
-                                    if (EditableOutLane)
-                                        slide.StartLaneIndex = laneIndex;
-                                    else
-                                        slide.StartLaneIndex = Math.Min(Constants.LanesCount - slide.StartWidth - rightStepLaneIndexOffset, Math.Max(-leftStepLaneIndexOffset, laneIndex));
-                                    if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.Tab) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift))
-                                    {
-                                        slide.StartLaneIndex = 3;
-                                    }
-                                    slide.SetChannel(channel);
-                                    Cursor.Current = Cursors.SizeAll;
-                                })
-                                .Finally(() =>
-                                {
-                                    Cursor.Current = Cursors.Default;
-                                    LastWidth = slide.StartWidth;
-                                    var afterPos = new MoveSlideOperation.NotePosition(slide.StartTick, slide.StartLaneIndex, slide.StartWidth);
-                                    var afterCh = new ChangeSlideChannelOperation.NoteChannel(slide.Channel);
-                                    OperationManager.Push(new ChangeSlideChannelOperation(slide, beforeCh, afterCh));
-                                    if (beforePos == afterPos) return;
-                                    OperationManager.Push(new MoveSlideOperation(slide, beforePos, afterPos));
+                            });
 
-                                });
+                            }
+                            else if (EventMode == EventEditMode.Camera || EventMode == EventEditMode.Edit)
+                            {
+                                return CameraEventHandler(@event)
+                               .Finally(() => {
+                                   var afterEvent = new ChangeCameraEventOperation.EventDetail(@event);
+                                   if (beforeEvent == afterEvent) return;
+
+                                   OperationManager.Push(new ChangeCameraEventOperation(ScoreEvents.CameraChangeEvents, @event, beforeEvent, afterEvent));
+
+                               });
+                            }
 
                         }
 
+                        return null;
+                    }
+                    IObservable<MouseEventArgs> MaskEventHandler(StageMaskChangeEvent @event)
+                    {
+                        float beforeLaneIndex = @event.LaneIndex;
+                        return mouseMove
+                            .TakeUntil(mouseUp)
+                            .Do(q =>
+                            {
+                                var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
+                                @event.Tick = Math.Max(GetQuantizedTick(GetTickFromYPosition(currentScorePos.Y)), -11520);
+                                float xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
+                                {
+                                    xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                }
+                                else
+                                {
+                                    xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                }
 
+                                float laneIndex = beforeLaneIndex + xdiff;
+                                @event.LaneIndex = laneIndex;
+
+
+                                Cursor.Current = Cursors.SizeAll;
+                            })
+                            .Finally(() => Cursor.Current = Cursors.Default);
+                    }
+                    IObservable<MouseEventArgs> maskEventLeftThumbHandler(StageMaskChangeEvent @event)
+                    {
+                        float beforeLaneIndex = @event.LaneIndex;
+                        float beforeWidth = @event.Width;
+                        return mouseMove
+                            .TakeUntil(mouseUp)
+                            .Do(q =>
+                            {
+                                var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
+                                float xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                //幅の変化量を変更
+                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
+                                {
+                                    xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                    xdiff = Math.Min(beforeWidth - widthamount, xdiff);
+                                }
+                                else
+                                {
+
+                                    xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                    xdiff = Math.Min(beforeWidth - 1, xdiff);
+
+                                }
+                                float width = beforeWidth - xdiff;
+                                float laneIndex = beforeLaneIndex + xdiff;
+                                width = Math.Max(0.1f, width);
+                                @event.Width = width;
+                                @event.LaneIndex = laneIndex;
+                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.Tab) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift))
+                                {
+                                    width = 12;
+                                    laneIndex = 0;
+                                }
+
+                                Cursor.Current = Cursors.SizeWE;
+                            })
+                            .Finally(() =>
+                            {
+                                Cursor.Current = Cursors.Default;
+                            });
+                    }
+                    IObservable<MouseEventArgs> maskEventRightThumbHandler(StageMaskChangeEvent @event)
+                    {
+                        float beforeWidth = @event.Width;
+                        return mouseMove
+                            .TakeUntil(mouseUp)
+                            .Do(q =>
+                            {
+                                var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
+                                float xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+
+                                float width = beforeWidth + xdiff;
+                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
+                                {
+                                    xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                    width = beforeWidth + xdiff;
+                                    @event.Width = Math.Max(0.1f, width);
+                                }
+                                else
+                                {
+                                    xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                    width = beforeWidth + xdiff;
+                                    @event.Width = Math.Max(1, width);
+
+                                }
+
+
+
+
+                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.Tab) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift))
+                                {
+                                    @event.Width = 12;
+                                }
+                                Cursor.Current = Cursors.SizeWE;
+                            })
+                            .Finally(() =>
+                            {
+                                Cursor.Current = Cursors.Default;
+                            });
+                    }
+
+
+                    IObservable<MouseEventArgs> maskHandler(StageMaskChangeEvent @event)
+                    {
+                        RectangleF rect = GetClickableRectFromCameraEventPosition(@event.Tick, @event.LaneIndex, @event.Width); //cameraと同じ当たり判定
+                        var beforeEvent = new ChangeStageMaskEventOperation.EventDetail(@event);
+                        if (!(System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift)))
+                        {
+                            // 左側
+                            if (rect.GetLeftThumb(EdgeHitWidthRate, MinimumEdgeHitWidth).Contains(scorePos))
+                            {
+                                return maskEventLeftThumbHandler(@event)
+                                    .Finally(() =>
+                                    {
+                                        var afterEvent = new ChangeStageMaskEventOperation.EventDetail(@event);
+                                        if (beforeEvent == afterEvent) return;
+                                        OperationManager.Push(new ChangeStageMaskEventOperation(ScoreEvents.StageMaskChangeEvents, @event, beforeEvent, afterEvent));
+                                    });
+                            }
+
+                            // 右側
+                            if (rect.GetRightThumb(EdgeHitWidthRate, MinimumEdgeHitWidth).Contains(scorePos))
+                            {
+                                return maskEventRightThumbHandler(@event)
+                                    .Finally(() =>
+                                    {
+                                        var afterEvent = new ChangeStageMaskEventOperation.EventDetail(@event);
+                                        if (beforeEvent == afterEvent) return;
+                                        OperationManager.Push(new ChangeStageMaskEventOperation(ScoreEvents.StageMaskChangeEvents, @event, beforeEvent, afterEvent));
+                                    });
+                            }
+                        }
+                        if (rect.Contains(scorePos))
+                        {
+                            if (EventMode == EventEditMode.Erase)
+                            {
+                                return EventEraseHandler(@event)
+                            .Finally(() => {
+                                ScoreEvents.StageMaskChangeEvents.Remove(@event);
+                                OperationManager.Push(new RemoveEventOperation<StageMaskChangeEvent>(ScoreEvents.StageMaskChangeEvents, @event));
+
+                            });
+
+                            }
+                            else if (EventMode == EventEditMode.StageMask || EventMode == EventEditMode.Edit)
+                            {
+                                return MaskEventHandler(@event)
+                               .Finally(() => {
+                                   var afterEvent = new ChangeStageMaskEventOperation.EventDetail(@event);
+                                   if (beforeEvent == afterEvent) return;
+
+                                   OperationManager.Push(new ChangeStageMaskEventOperation(ScoreEvents.StageMaskChangeEvents, @event, beforeEvent, afterEvent));
+
+                               });
+                            }
+
+                        }
+                        return null;
+                    }
+                    IObservable<MouseEventArgs> PivotEventHandler(StagePivotChangeEvent @event)
+                    {
+                        float beforeLaneIndex = @event.LaneIndex;
+                        return mouseMove
+                            .TakeUntil(mouseUp)
+                            .Do(q =>
+                            {
+                                var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
+                                @event.Tick = Math.Max(GetQuantizedTick(GetTickFromYPosition(currentScorePos.Y)), -11520);
+                                float xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
+                                {
+                                    xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                }
+                                else
+                                {
+                                    xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                }
+
+                                float laneIndex = beforeLaneIndex + xdiff;
+                                @event.LaneIndex = laneIndex;
+
+
+                                Cursor.Current = Cursors.SizeAll;
+                            })
+                            .Finally(() => Cursor.Current = Cursors.Default);
+                    }
+                    IObservable<MouseEventArgs> pivotHandler(StagePivotChangeEvent @event)
+                    {
+                        RectangleF rect = GetClickableRectFromStageEventPosition(@event.Tick, @event.LaneIndex);
+                        var beforeEvent = new ChangeStagePivotEventOperation.EventDetail(@event);
+                        if (rect.Contains(scorePos))
+                        {
+                            if (EventMode == EventEditMode.Erase)
+                            {
+                                return EventEraseHandler(@event)
+                            .Finally(() => {
+                                ScoreEvents.StagePivotChangeEvents.Remove(@event);
+                                OperationManager.Push(new RemoveEventOperation<StagePivotChangeEvent>(ScoreEvents.StagePivotChangeEvents, @event));
+
+                            });
+
+                            }
+                            else if (EventMode == EventEditMode.StagePivot || EventMode == EventEditMode.Edit)
+                            {
+                                return PivotEventHandler(@event)
+                               .Finally(() => {
+                                   var afterEvent = new ChangeStagePivotEventOperation.EventDetail(@event);
+                                   if (beforeEvent == afterEvent) return;
+
+                                   OperationManager.Push(new ChangeStagePivotEventOperation(ScoreEvents.StagePivotChangeEvents, @event, beforeEvent, afterEvent));
+
+                               });
+                            }
+
+                        }
+                        return null;
+                    }
+                    IObservable<MouseEventArgs> StyleEventHandler(StageStyleChangeEvent @event)
+                    {
+                        float beforeLaneIndex = @event.LaneIndex;
+                        return mouseMove
+                            .TakeUntil(mouseUp)
+                            .Do(q =>
+                            {
+                                var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
+                                @event.Tick = Math.Max(GetQuantizedTick(GetTickFromYPosition(currentScorePos.Y)), -11520);
+                                float xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
+                                {
+                                    xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                }
+                                else
+                                {
+                                    xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                }
+
+                                float laneIndex = beforeLaneIndex + xdiff;
+                                @event.LaneIndex = laneIndex;
+
+
+                                Cursor.Current = Cursors.SizeAll;
+                            })
+                            .Finally(() => Cursor.Current = Cursors.Default);
+                    }
+                    IObservable<MouseEventArgs> styleHandler(StageStyleChangeEvent @event)
+                    {
+                        RectangleF rect = GetClickableRectFromStageEventPosition(@event.Tick, @event.LaneIndex);
+                        var beforeEvent = new ChangeStageStyleEventOperation.EventDetail(@event);
+                        if (rect.Contains(scorePos))
+                        {
+                            if (EventMode == EventEditMode.Erase)
+                            {
+                                return EventEraseHandler(@event)
+                            .Finally(() => {
+                                ScoreEvents.StageStyleChangeEvents.Remove(@event);
+                                OperationManager.Push(new RemoveEventOperation<StageStyleChangeEvent>(ScoreEvents.StageStyleChangeEvents, @event));
+
+                            });
+
+                            }
+                            else if (EventMode == EventEditMode.StageStyle || EventMode == EventEditMode.Edit)
+                            {
+                                return StyleEventHandler(@event)
+                               .Finally(() => {
+                                   var afterEvent = new ChangeStageStyleEventOperation.EventDetail(@event);
+                                   if (beforeEvent == afterEvent) return;
+
+                                   OperationManager.Push(new ChangeStageStyleEventOperation(ScoreEvents.StageStyleChangeEvents, @event, beforeEvent, afterEvent));
+
+                               });
+                            }
+
+                        }
+                        return null;
+                    }
+                    IObservable<MouseEventArgs> TransEventHandler(StageTransformChangeEvent @event)
+                    {
+                        float beforeLaneIndex = @event.XTranslation;
+                        return mouseMove
+                            .TakeUntil(mouseUp)
+                            .Do(q =>
+                            {
+                                var currentScorePos = GetDrawingMatrix(new Matrix()).GetInvertedMatrix().TransformPoint(q.Location);
+                                @event.Tick = Math.Max(GetQuantizedTick(GetTickFromYPosition(currentScorePos.Y)), -11520);
+                                float xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                if (System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) && System.Windows.Input.Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt))
+                                {
+                                    xdiff = widthamount * (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                }
+                                else
+                                {
+                                    xdiff = (int)((currentScorePos.X - scorePos.X) / (UnitLaneWidth + BorderThickness));
+                                }
+
+                                float laneIndex = beforeLaneIndex + xdiff;
+                                @event.XTranslation = laneIndex;
+
+
+                                Cursor.Current = Cursors.SizeAll;
+                            })
+                            .Finally(() => Cursor.Current = Cursors.Default);
+                    }
+                    IObservable<MouseEventArgs> transHandler(StageTransformChangeEvent @event)
+                    {
+                        RectangleF rect = GetClickableRectFromStageEventPosition(@event.Tick, @event.XTranslation);
+                        var beforeEvent = new ChangeStageTransformEventOperation.EventDetail(@event);
+                        if (rect.Contains(scorePos))
+                        {
+                            if (EventMode == EventEditMode.Erase)
+                            {
+                                return EventEraseHandler(@event)
+                            .Finally(() => {
+                                ScoreEvents.StageTransformChangeEvents.Remove(@event);
+                                OperationManager.Push(new RemoveEventOperation<StageTransformChangeEvent>(ScoreEvents.StageTransformChangeEvents, @event));
+
+                            });
+
+                            }
+                            else if (EventMode == EventEditMode.StageTransform || EventMode == EventEditMode.Edit)
+                            {
+                                return TransEventHandler(@event)
+                               .Finally(() => {
+                                   var afterEvent = new ChangeStageTransformEventOperation.EventDetail(@event);
+                                   if (beforeEvent == afterEvent) return;
+
+                                   OperationManager.Push(new ChangeStageTransformEventOperation(ScoreEvents.StageTransformChangeEvents, @event, beforeEvent, afterEvent));
+
+                               });
+                            }
+
+                        }
                         return null;
                     }
 
@@ -5077,6 +5434,31 @@ namespace Ched.UI
                         foreach (var @event in ScoreEvents.CommentEvents.Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
                         {
                             var subscription = commentHandler(@event);
+                            if (subscription != null) return subscription;
+                        }
+                        foreach (var @event in ScoreEvents.CameraChangeEvents.Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
+                        {
+                            var subscription = cameraHandler(@event);
+                            if (subscription != null) return subscription;
+                        }
+                        foreach (var @event in ScoreEvents.StageMaskChangeEvents.Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
+                        {
+                            var subscription = maskHandler(@event);
+                            if (subscription != null) return subscription;
+                        }
+                        foreach (var @event in ScoreEvents.StagePivotChangeEvents.Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
+                        {
+                            var subscription = pivotHandler(@event);
+                            if (subscription != null) return subscription;
+                        }
+                        foreach (var @event in ScoreEvents.StageStyleChangeEvents.Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
+                        {
+                            var subscription = styleHandler(@event);
+                            if (subscription != null) return subscription;
+                        }
+                        foreach (var @event in ScoreEvents.StageTransformChangeEvents.Where(q => q.Tick >= HeadTick && q.Tick <= tailTick))
+                        {
+                            var subscription = transHandler(@event);
                             if (subscription != null) return subscription;
                         }
 
@@ -5099,25 +5481,25 @@ namespace Ched.UI
                             newEvent = @event;
                             op = new InsertEventOperation<HighSpeedChangeEvent>(ScoreEvents.HighSpeedChangeEvents, @event);
                             newEvent.Tick = Math.Max(GetQuantizedTick(GetTickFromYPosition(scorePos.Y)), -11520);
-                            newEvent.EditLaneIndex = GetNewNoteLaneIndex(scorePos.X, 4) * 0.52f;
+                            newEvent.EditLaneIndex = GetNewEventLaneIndex(scorePos.X, 4) * 0.52f;
                             newEvent.SpeedCh = channel;
                             Invalidate();
                             return HighSpeedEventHandler(newEvent)
                                 .Finally(() => {
 
-                                    var spratio = ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == Channel).OrderBy(e => e.Tick).LastOrDefault(e => e.Tick <= CurrentTick)?.SpeedRatio ?? 1.0m;
-                                    var spcustom = ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == Channel).OrderBy(e => e.Tick).LastOrDefault(e => e.Tick <= CurrentTick)?.CustomArgs ?? "";
-                                    var spskip = ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == Channel).OrderBy(e => e.Tick).LastOrDefault(e => e.Tick == CurrentTick)?.Skip ?? 0;
-                                    var spease = ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == Channel).OrderBy(e => e.Tick).LastOrDefault(e => e.Tick == CurrentTick)?.Ease ?? 0;
-                                    var sphide = ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == Channel).OrderBy(e => e.Tick).LastOrDefault(e => e.Tick <= CurrentTick)?.HideNotes ?? 0;
+                                    var spratio = ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == Channel).OrderBy(e => e.Tick).LastOrDefault(e => e.Tick <= newEvent.Tick && !e.Equals(newEvent))?.SpeedRatio ?? 1.0m;
+                                    var spcustom = ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == Channel).OrderBy(e => e.Tick).LastOrDefault(e => e.Tick <= newEvent.Tick && !e.Equals(newEvent))?.CustomArgs ?? "";
+                                    var spskip = ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == Channel).OrderBy(e => e.Tick).LastOrDefault(e => e.Tick == newEvent.Tick&& !e.Equals(newEvent))?.Skip ?? 0;
+                                    var spease = ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == Channel).OrderBy(e => e.Tick).LastOrDefault(e => e.Tick == newEvent.Tick && !e.Equals(newEvent))?.Ease ?? 0;
+                                    var sphide = ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == Channel).OrderBy(e => e.Tick).LastOrDefault(e => e.Tick <= newEvent.Tick && !e.Equals(newEvent))?.HideNotes ?? 0;
 
                                     if (!ApplicationSettings.Default.IsAnotherChannelFormSpeeds)
                                     {
-                                        spratio = ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == Channel).LastOrDefault(e => e.Tick <= CurrentTick)?.SpeedRatio ?? 1.0m;
-                                        spcustom = ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == Channel).LastOrDefault(e => e.Tick <= CurrentTick)?.CustomArgs ?? "";
-                                        spskip = ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == Channel).LastOrDefault(e => e.Tick == CurrentTick)?.Skip ?? 0;
-                                        spease = ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == Channel).LastOrDefault(e => e.Tick == CurrentTick)?.Ease ?? 0;
-                                        sphide = ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == Channel).LastOrDefault(e => e.Tick <= CurrentTick)?.HideNotes ?? 0;
+                                        spratio = ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == Channel).LastOrDefault(e => e.Tick <= newEvent.Tick && !e.Equals(newEvent))?.SpeedRatio ?? 1.0m;
+                                        spcustom = ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == Channel).LastOrDefault(e => e.Tick <= newEvent.Tick && !e.Equals(newEvent))?.CustomArgs ?? "";
+                                        spskip = ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == Channel).LastOrDefault(e => e.Tick == newEvent.Tick && !e.Equals(newEvent))?.Skip ?? 0;
+                                        spease = ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == Channel).LastOrDefault(e => e.Tick == newEvent.Tick && !e.Equals(newEvent))?.Ease ?? 0;
+                                        sphide = ScoreEvents.HighSpeedChangeEvents.Where(q => q.SpeedCh == Channel).LastOrDefault(e => e.Tick <= newEvent.Tick && !e.Equals(newEvent))?.HideNotes ?? 0;
                                     }
                                     var form = new HighSpeedSelectionForm()
                                     {
@@ -5170,7 +5552,7 @@ namespace Ched.UI
 
                                     var form = new BpmSelectionForm()
                                     {
-                                        Bpm = ScoreEvents.BpmChangeEvents.OrderBy(e => e.Tick).LastOrDefault(e => e.Tick <= CurrentTick)?.Bpm ?? 120
+                                        Bpm = ScoreEvents.BpmChangeEvents.OrderBy(e => e.Tick).LastOrDefault(e => e.Tick <= newBpmEvent.Tick && !e.Equals(newBpmEvent))?.Bpm ?? 120
                                     };
                                     if (form.ShowDialog(this) != DialogResult.OK)
                                     {
@@ -5203,16 +5585,16 @@ namespace Ched.UI
                             newComEvent = comEvent;
                             op = new InsertEventOperation<CommentEvent>(ScoreEvents.CommentEvents, comEvent);
                             newComEvent.Tick = Math.Max(GetQuantizedTick(GetTickFromYPosition(scorePos.Y)), -11520);
-                            newComEvent.LaneIndex = GetNewNoteLaneIndex(scorePos.X, 4) * 0.52f;
+                            newComEvent.LaneIndex = GetNewEventLaneIndex(scorePos.X, 4) * 0.52f;
                             Invalidate();
                             return CommentEventHandler(newComEvent)
                                 .Finally(() => {
-
+                                    
                                     var form = new CommentInsertForm()
                                     {
-                                        Comment = ScoreEvents.CommentEvents.OrderBy(e => e.Tick).LastOrDefault(e => e.Tick == CurrentTick)?.Comment ?? "コメント",
-                                        TextSize = (decimal)(ScoreEvents.CommentEvents.OrderBy(e => e.Tick).LastOrDefault(e => e.Tick == CurrentTick)?.Size ?? 9),
-                                        Color = (ScoreEvents.CommentEvents.OrderBy(e => e.Tick).LastOrDefault(e => e.Tick == CurrentTick)?.Color ?? 0),
+                                        Comment = ScoreEvents.CommentEvents.OrderBy(e => e.Tick).LastOrDefault(e => e.Tick == newComEvent.Tick && !e.Equals(newComEvent))?.Comment ?? "コメント",
+                                        TextSize = (decimal)(ScoreEvents.CommentEvents.OrderBy(e => e.Tick).LastOrDefault(e => e.Tick == newComEvent.Tick && !e.Equals(newComEvent))?.Size ?? 9),
+                                        Color = (ScoreEvents.CommentEvents.OrderBy(e => e.Tick).LastOrDefault(e => e.Tick == newComEvent.Tick && !e.Equals(newComEvent))?.Color ?? 0),
                                         LaneIndex = newComEvent.LaneIndex
                                     };
                                     if (form.ShowDialog(this) != DialogResult.OK)
@@ -5225,7 +5607,85 @@ namespace Ched.UI
                                     newComEvent.Size = (float)form.TextSize;
                                     newComEvent.Color = form.Color;
                                     newComEvent.LaneIndex = form.LaneIndex;
+                                    
 
+                                    OperationManager.Push(op);
+                                });
+                            break;
+                        case EventEditMode.Camera:
+                            CameraChangeEvent newCamEvent = null;
+                            op = null;
+                            float camWidth = ScoreEvents.CameraChangeEvents.OrderBy(e => e.Tick).LastOrDefault(e => e.Tick <= Math.Max(GetQuantizedTick(GetTickFromYPosition(scorePos.Y)), -11520))?.Width ?? 12;
+                            var camEvent = new CameraChangeEvent() { Width = camWidth, Zoom = 1, Tilt = 1, Type = -7 };
+                            ScoreEvents.CameraChangeEvents.Add(camEvent);
+                            newCamEvent = camEvent;
+                            op = new InsertEventOperation<CameraChangeEvent>(ScoreEvents.CameraChangeEvents, camEvent);
+                            newCamEvent.Tick = Math.Max(GetQuantizedTick(GetTickFromYPosition(scorePos.Y)), -11520);
+                            newCamEvent.LaneIndex = GetNewEventLaneIndex(scorePos.X, camWidth);
+                            Invalidate();
+                            return CameraEventHandler(newCamEvent)
+                                .Finally(() => {
+                                    OperationManager.Push(op);
+                                });
+                            break;
+                        case EventEditMode.StageMask:
+                            StageMaskChangeEvent newMaskEvent = null;
+                            op = null;
+                            float maskWidth = ScoreEvents.StageMaskChangeEvents.OrderBy(e => e.Tick).LastOrDefault(e => e.Tick <= Math.Max(GetQuantizedTick(GetTickFromYPosition(scorePos.Y)), -11520))?.Width ?? 12;
+                            var maskEvent = new StageMaskChangeEvent() { Width = maskWidth,  Type = -8 };
+                            ScoreEvents.StageMaskChangeEvents.Add(maskEvent);
+                            newMaskEvent = maskEvent;
+                            op = new InsertEventOperation<StageMaskChangeEvent>(ScoreEvents.StageMaskChangeEvents, maskEvent);
+                            newMaskEvent.Tick = Math.Max(GetQuantizedTick(GetTickFromYPosition(scorePos.Y)), -11520);
+                            newMaskEvent.LaneIndex = GetNewEventLaneIndex(scorePos.X, maskWidth);
+                            Invalidate();
+                            return MaskEventHandler(newMaskEvent)
+                                .Finally(() => {
+                                    OperationManager.Push(op);
+                                });
+                            break;
+                        case EventEditMode.StagePivot:
+                            StagePivotChangeEvent newPivotEvent = null;
+                            op = null;
+                            var pivotEvent = new StagePivotChangeEvent() {  Type = -9 };
+                            ScoreEvents.StagePivotChangeEvents.Add(pivotEvent);
+                            newPivotEvent = pivotEvent;
+                            op = new InsertEventOperation<StagePivotChangeEvent>(ScoreEvents.StagePivotChangeEvents, pivotEvent);
+                            newPivotEvent.Tick = Math.Max(GetQuantizedTick(GetTickFromYPosition(scorePos.Y)), -11520);
+                            newPivotEvent.LaneIndex = GetNewEventLaneIndex(scorePos.X, 1);
+                            Invalidate();
+                            return PivotEventHandler(newPivotEvent)
+                                .Finally(() => {
+                                    OperationManager.Push(op);
+                                });
+                            break;
+                        case EventEditMode.StageStyle:
+                            StageStyleChangeEvent newStyleEvent = null;
+                            op = null;
+                            var styleEvent = new StageStyleChangeEvent() { Type = -10 };
+                            ScoreEvents.StageStyleChangeEvents.Add(styleEvent);
+                            newStyleEvent = styleEvent;
+                            op = new InsertEventOperation<StageStyleChangeEvent>(ScoreEvents.StageStyleChangeEvents, styleEvent);
+                            newStyleEvent.Tick = Math.Max(GetQuantizedTick(GetTickFromYPosition(scorePos.Y)), -11520);
+                            newStyleEvent.LaneIndex = GetNewEventLaneIndex(scorePos.X, 1);
+                            Invalidate();
+                            return StyleEventHandler(newStyleEvent)
+                                .Finally(() => {
+                                    OperationManager.Push(op);
+                                });
+                            break;
+                        case EventEditMode.StageTransform:
+                            StageTransformChangeEvent newTransEvent = null;
+                            op = null;
+                            var transEvent = new StageTransformChangeEvent() { Type = -11 };
+                            ScoreEvents.StageTransformChangeEvents.Add(transEvent);
+                            newTransEvent = transEvent;
+                            op = new InsertEventOperation<StageTransformChangeEvent>(ScoreEvents.StageTransformChangeEvents, transEvent);
+                            newTransEvent.Tick = Math.Max(GetQuantizedTick(GetTickFromYPosition(scorePos.Y)), -11520);
+                            newTransEvent.XTranslation = GetNewEventLaneIndex(scorePos.X, 1);
+                            Invalidate();
+                            return TransEventHandler(newTransEvent)
+                                .Finally(() => {
                                     OperationManager.Push(op);
                                 });
                             break;
@@ -5787,7 +6247,6 @@ namespace Ched.UI
                 RectangleF rect = GetRectFromNotePosition(note.ParentNote.Tick, note.ParentNote.LaneIndex, note.ParentNote.Width);
 
                 dc.DrawAir(rect, note.VerticalDirection, note.HorizontalDirection, isch, noteVisualMode);
-                
             }
 
             using (var posPen = new Pen(Color.FromArgb(196, 0, 0)))
@@ -5968,7 +6427,955 @@ namespace Ched.UI
                         if (drawLine) pe.Graphics.DrawLine(new Pen(Color.FromArgb(100, 255, 70, 255)), rightBase, -GetYPositionFromTick(item.Tick), point.X, -GetYPositionFromTick(item.Tick));
                     }
                 }
+                //Camera描画
+                
+                var cameras = ScoreEvents.CameraChangeEvents.OrderBy(p => p.Tick).ToList();
+                foreach (var camera in cameras)
+                {
 
+                    pe.Graphics.DrawLine(new Pen(Color.FromArgb(100, 255, 100, 0)), GetRectFromNotePosition(camera.Tick, camera.LaneIndex, camera.Width).Left, -GetYPositionFromTick(camera.Tick), GetRectFromNotePosition(camera.Tick, camera.LaneIndex, camera.Width).Right, -GetYPositionFromTick(camera.Tick));
+                }
+                //headが下,tailが上
+                
+                var camleftsteps = cameras.OrderBy(p => p.Tick)
+                    .Where(p => p.Tick >= headTick && p.Tick <= tailTick)
+                    .Select(p => {
+                        var nextstep = p;
+                        if (cameras.OrderBy(q => q.Tick).Where(q => q.Tick > p.Tick).Count() > 0)
+                            nextstep = cameras.OrderBy(q => q.Tick).First(q => q.Tick > p.Tick);
+                        else
+                            return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(tailTick))
+                        };
+
+                        switch (p.Ease)
+                        {
+                            case 0:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.LaneIndex, -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 1:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 2:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.LaneIndex, -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 3:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(nextstep.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.LaneIndex, -GetYPositionFromTick(p.Tick))
+                        };
+                                break;
+                            case 4:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 5:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(nextstep.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(nextstep.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(nextstep.Tick)),
+                        };
+                                break;
+                            default:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.LaneIndex, -GetYPositionFromTick(nextstep.Tick))
+                                };
+                                break;
+                        }
+                    }
+                   ).SelectMany( p => p).ToList();
+                var camrightsteps = cameras.OrderBy(p => p.Tick)
+                    .Where(p => p.Tick >= headTick && p.Tick <= tailTick)
+                    .Select(p => {
+                        var nextstep = p;
+                        if (cameras.OrderBy(q => q.Tick).Where(q => q.Tick > p.Tick).Count() > 0)
+                            nextstep = cameras.OrderBy(q => q.Tick).First(q => q.Tick > p.Tick);
+                        else
+                            return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(tailTick))
+                        };
+
+                        switch (p.Ease)
+                        {
+                            case 0:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (nextstep.LaneIndex + nextstep.Width), -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 1:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 2:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (nextstep.LaneIndex + nextstep.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (nextstep.LaneIndex + nextstep.Width), -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 3:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(nextstep.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (nextstep.LaneIndex + nextstep.Width), -GetYPositionFromTick(p.Tick))
+                        };
+                                break;
+                            case 4:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (nextstep.LaneIndex + nextstep.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 5:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(nextstep.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(nextstep.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(nextstep.Tick)),
+                        };
+                                break;
+                            default:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (nextstep.LaneIndex + nextstep.Width), -GetYPositionFromTick(nextstep.Tick))
+                                };
+                                break;
+                        }
+                    }
+                   ).SelectMany(p => p).ToList();
+                camleftsteps.Insert(0, new PointF((UnitLaneWidth + BorderThickness) * 0, -GetYPositionFromTick(headTick)));
+                camleftsteps.Insert(1, new PointF((UnitLaneWidth + BorderThickness) * 0, -GetYPositionFromTick(headTick)));
+                camleftsteps.Insert(2, new PointF((UnitLaneWidth + BorderThickness) * 0, -GetYPositionFromTick(tailTick)));
+                camrightsteps.Insert(0, new PointF((UnitLaneWidth + BorderThickness) * Constants.LanesCount, -GetYPositionFromTick(headTick)));
+                camrightsteps.Insert(1, new PointF((UnitLaneWidth + BorderThickness) * Constants.LanesCount, -GetYPositionFromTick(headTick)));
+                camrightsteps.Insert(2, new PointF((UnitLaneWidth + BorderThickness) * Constants.LanesCount, -GetYPositionFromTick(tailTick)));
+                var camprestepleft = new PointF((UnitLaneWidth + BorderThickness) * 0, -GetYPositionFromTick(headTick));
+                var camprestepright = new PointF((UnitLaneWidth + BorderThickness) * Constants.LanesCount, -GetYPositionFromTick(headTick));
+                var camnextstepleft = new PointF((UnitLaneWidth + BorderThickness) * 0, -GetYPositionFromTick(headTick));
+                var camnextstepright = new PointF((UnitLaneWidth + BorderThickness) * Constants.LanesCount, -GetYPositionFromTick(headTick));
+                if (cameras.Count() > 0)
+                {
+                    camleftsteps[0] = new PointF((UnitLaneWidth + BorderThickness) * cameras.First().LaneIndex, -GetYPositionFromTick(headTick));
+                    camleftsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * cameras.First().LaneIndex, -GetYPositionFromTick(headTick));
+                    camleftsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * cameras.First().LaneIndex, -GetYPositionFromTick(cameras.First().Tick));
+                    camrightsteps[0] = new PointF((UnitLaneWidth + BorderThickness) * (cameras.First().LaneIndex + cameras.First().Width), -GetYPositionFromTick(headTick));
+                    camrightsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * (cameras.First().LaneIndex + cameras.First().Width), -GetYPositionFromTick(headTick));
+                    camrightsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * (cameras.First().LaneIndex + cameras.First().Width), -GetYPositionFromTick(cameras.First().Tick));
+                    camnextstepleft = new PointF((UnitLaneWidth + BorderThickness) * cameras.Last().LaneIndex, -GetYPositionFromTick(tailTick));
+                    camprestepright = new PointF((UnitLaneWidth + BorderThickness) * (cameras.First().LaneIndex + cameras.First().Width), -GetYPositionFromTick(headTick));
+                    camnextstepright = new PointF((UnitLaneWidth + BorderThickness) * (cameras.Last().LaneIndex + cameras.Last().Width), -GetYPositionFromTick(tailTick));
+                }
+                if (cameras.FindAll(p => p.Tick < headTick).Count > 0)
+                {
+                    var camprestep = cameras.OrderBy(p => p.Tick).Last(p => p.Tick < headTick);
+                    camleftsteps[0] = new PointF((UnitLaneWidth + BorderThickness) * camprestep.LaneIndex, -GetYPositionFromTick(camprestep.Tick));
+                    camleftsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * camprestep.LaneIndex, -GetYPositionFromTick(camprestep.Tick));
+                    camleftsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * camprestep.LaneIndex, -GetYPositionFromTick(tailTick));
+                    camrightsteps[0] = new PointF((UnitLaneWidth + BorderThickness) * (camprestep.LaneIndex + camprestep.Width), -GetYPositionFromTick(camprestep.Tick));
+                    camrightsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * (camprestep.LaneIndex + camprestep.Width), -GetYPositionFromTick(camprestep.Tick));
+                    camrightsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * (camprestep.LaneIndex + camprestep.Width), -GetYPositionFromTick(tailTick));
+                    camprestepright = new PointF((UnitLaneWidth + BorderThickness) * (camprestep.LaneIndex + camprestep.Width) , -GetYPositionFromTick(camprestep.Tick));
+                    if(cameras.FindAll(p => p.Tick >= headTick).Count > 0)
+                    {
+                        var basestep = cameras.OrderBy(p => p.Tick).First(p => p.Tick >= headTick);
+                        switch (camprestep.Ease)
+                        {
+                            case 0:
+                                camleftsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * camprestep.LaneIndex, -GetYPositionFromTick(camprestep.Tick));
+                                camleftsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * basestep.LaneIndex, -GetYPositionFromTick(basestep.Tick));
+                                camrightsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * (camprestep.LaneIndex + camprestep.Width), -GetYPositionFromTick(camprestep.Tick));
+                                camrightsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * (basestep.LaneIndex + basestep.Width), -GetYPositionFromTick(basestep.Tick));
+                                break;
+                            case 1:
+                                camleftsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * camprestep.LaneIndex, -GetYPositionFromTick(camprestep.Tick));
+                                camleftsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * camprestep.LaneIndex, -GetYPositionFromTick(basestep.Tick));
+                                camrightsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * (camprestep.LaneIndex + camprestep.Width), -GetYPositionFromTick(camprestep.Tick));
+                                camrightsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * (camprestep.LaneIndex + camprestep.Width), -GetYPositionFromTick(basestep.Tick));
+                                break;
+                            case 2:
+                                camleftsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * basestep.LaneIndex, -GetYPositionFromTick(camprestep.Tick));
+                                camleftsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * basestep.LaneIndex, -GetYPositionFromTick(basestep.Tick));
+                                camrightsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * (basestep.LaneIndex + basestep.Width), -GetYPositionFromTick(camprestep.Tick));
+                                camrightsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * (basestep.LaneIndex + basestep.Width), -GetYPositionFromTick(basestep.Tick));
+                                break;
+                            case 3:
+                                camleftsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * camprestep.LaneIndex, -GetYPositionFromTick(basestep.Tick));
+                                camleftsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * basestep.LaneIndex, -GetYPositionFromTick(basestep.Tick));
+                                camrightsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * (camprestep.LaneIndex + camprestep.Width), -GetYPositionFromTick(basestep.Tick));
+                                camrightsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * (basestep.LaneIndex + basestep.Width), -GetYPositionFromTick(basestep.Tick));
+                                break;
+                            case 4:
+                                camleftsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * basestep.LaneIndex, -GetYPositionFromTick(camprestep.Tick));
+                                camleftsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * camprestep.LaneIndex, -GetYPositionFromTick(basestep.Tick));
+                                camrightsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * (basestep.LaneIndex + basestep.Width), -GetYPositionFromTick(camprestep.Tick));
+                                camrightsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * (camprestep.LaneIndex + camprestep.Width), -GetYPositionFromTick(basestep.Tick));
+                                break;
+                            case 5:
+                                camleftsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * camprestep.LaneIndex, -GetYPositionFromTick(camprestep.Tick));
+                                camleftsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * camprestep.LaneIndex, -GetYPositionFromTick(camprestep.Tick));
+                                camleftsteps.Insert(3, new PointF((UnitLaneWidth + BorderThickness) * camprestep.LaneIndex, -GetYPositionFromTick(basestep.Tick)));
+                                camleftsteps.Insert(4, new PointF((UnitLaneWidth + BorderThickness) * camprestep.LaneIndex, -GetYPositionFromTick(basestep.Tick)));
+                                camleftsteps.Insert(5, new PointF((UnitLaneWidth + BorderThickness) * camprestep.LaneIndex, -GetYPositionFromTick(basestep.Tick)));
+                                camrightsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * (camprestep.LaneIndex + camprestep.Width), -GetYPositionFromTick(camprestep.Tick));
+                                camrightsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * (camprestep.LaneIndex + camprestep.Width), -GetYPositionFromTick(camprestep.Tick));
+                                camrightsteps.Insert(3, new PointF((UnitLaneWidth + BorderThickness) * (camprestep.LaneIndex + camprestep.Width), -GetYPositionFromTick(basestep.Tick)));
+                                camrightsteps.Insert(4, new PointF((UnitLaneWidth + BorderThickness) * (camprestep.LaneIndex + camprestep.Width), -GetYPositionFromTick(basestep.Tick)));
+                                camrightsteps.Insert(5, new PointF((UnitLaneWidth + BorderThickness) * (camprestep.LaneIndex + camprestep.Width), -GetYPositionFromTick(basestep.Tick)));
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    
+
+                }
+                if (cameras.FindAll(p => p.Tick > tailTick).Count > 0)
+                {
+                    var camnextstep = cameras.OrderBy(p => p.Tick).First(p => p.Tick > tailTick);
+                    camnextstepleft = new PointF((UnitLaneWidth + BorderThickness) * camnextstep.LaneIndex, -GetYPositionFromTick(camnextstep.Tick));
+                    camnextstepright = new PointF((UnitLaneWidth + BorderThickness) * (camnextstep.LaneIndex + camnextstep.Width), -GetYPositionFromTick(camnextstep.Tick));
+
+                }
+                //var camleftpoints = new List<PointF>() { };
+
+                //camleftpoints.AddRange(camleftsteps);
+                camleftsteps.Add(camnextstepleft);
+                camrightsteps.Add(camnextstepright);
+                if(cameras.Count > 0) //ここなくても座標的に描画されないけど一応
+                {
+                    Console.WriteLine(camleftsteps.Count);
+                    pe.Graphics.DrawBeziers(new Pen(Color.FromArgb(150, 255, 100, 0)), camleftsteps.ToArray());
+                    //pe.Graphics.DrawLines(new Pen(Color.FromArgb(150, 255, 100, 0)), camleftpoints.ToArray());
+                    pe.Graphics.DrawBeziers(new Pen(Color.FromArgb(150, 255, 100, 0)), camrightsteps.ToArray());
+                }
+
+                //StageMask描画
+
+                var masks = ScoreEvents.StageMaskChangeEvents.OrderBy(p => p.Tick).ToList();
+                foreach (var mask in masks)
+                {
+
+                    pe.Graphics.DrawLine(new Pen(Color.FromArgb(100, 0, 255, 60)), GetRectFromNotePosition(mask.Tick, mask.LaneIndex, mask.Width).Left, -GetYPositionFromTick(mask.Tick), GetRectFromNotePosition(mask.Tick, mask.LaneIndex, mask.Width).Right, -GetYPositionFromTick(mask.Tick));
+                }
+                //headが下,tailが上
+
+                var maskleftsteps = masks.OrderBy(p => p.Tick)
+                    .Where(p => p.Tick >= headTick && p.Tick <= tailTick)
+                    .Select(p => {
+                        var nextstep = p;
+                        if (masks.OrderBy(q => q.Tick).Where(q => q.Tick > p.Tick).Count() > 0)
+                            nextstep = masks.OrderBy(q => q.Tick).First(q => q.Tick > p.Tick);
+                        else
+                            return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(tailTick))
+                        };
+
+                        switch (p.Ease)
+                        {
+                            case 0:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.LaneIndex, -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 1:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 2:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.LaneIndex, -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 3:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(nextstep.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.LaneIndex, -GetYPositionFromTick(p.Tick))
+                        };
+                                break;
+                            case 4:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 5:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(nextstep.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(nextstep.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(nextstep.Tick)),
+                        };
+                                break;
+                            default:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.LaneIndex, -GetYPositionFromTick(nextstep.Tick))
+                                };
+                                break;
+                        }
+                    }
+                   ).SelectMany(p => p).ToList();
+                var maskrightsteps = masks.OrderBy(p => p.Tick)
+                    .Where(p => p.Tick >= headTick && p.Tick <= tailTick)
+                    .Select(p => {
+                        var nextstep = p;
+                        if (masks.OrderBy(q => q.Tick).Where(q => q.Tick > p.Tick).Count() > 0)
+                            nextstep = masks.OrderBy(q => q.Tick).First(q => q.Tick > p.Tick);
+                        else
+                            return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(tailTick))
+                        };
+
+                        switch (p.Ease)
+                        {
+                            case 0:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (nextstep.LaneIndex + nextstep.Width), -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 1:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 2:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (nextstep.LaneIndex + nextstep.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (nextstep.LaneIndex + nextstep.Width), -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 3:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(nextstep.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (nextstep.LaneIndex + nextstep.Width), -GetYPositionFromTick(p.Tick))
+                        };
+                                break;
+                            case 4:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (nextstep.LaneIndex + nextstep.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 5:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(nextstep.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(nextstep.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(nextstep.Tick)),
+                        };
+                                break;
+                            default:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (p.LaneIndex + p.Width), -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * (nextstep.LaneIndex + nextstep.Width), -GetYPositionFromTick(nextstep.Tick))
+                                };
+                                break;
+                        }
+                    }
+                   ).SelectMany(p => p).ToList();
+                maskleftsteps.Insert(0, new PointF((UnitLaneWidth + BorderThickness) * 0, -GetYPositionFromTick(headTick)));
+                maskleftsteps.Insert(1, new PointF((UnitLaneWidth + BorderThickness) * 0, -GetYPositionFromTick(headTick)));
+                maskleftsteps.Insert(2, new PointF((UnitLaneWidth + BorderThickness) * 0, -GetYPositionFromTick(tailTick)));
+                maskrightsteps.Insert(0, new PointF((UnitLaneWidth + BorderThickness) * Constants.LanesCount, -GetYPositionFromTick(headTick)));
+                maskrightsteps.Insert(1, new PointF((UnitLaneWidth + BorderThickness) * Constants.LanesCount, -GetYPositionFromTick(headTick)));
+                maskrightsteps.Insert(2, new PointF((UnitLaneWidth + BorderThickness) * Constants.LanesCount, -GetYPositionFromTick(tailTick)));
+                var masknextstepleft = new PointF((UnitLaneWidth + BorderThickness) * 0, -GetYPositionFromTick(headTick));
+                var masknextstepright = new PointF((UnitLaneWidth + BorderThickness) * Constants.LanesCount, -GetYPositionFromTick(headTick));
+                if (masks.Count() > 0)
+                {
+                    maskleftsteps[0] = new PointF((UnitLaneWidth + BorderThickness) * masks.First().LaneIndex, -GetYPositionFromTick(headTick));
+                    maskleftsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * masks.First().LaneIndex, -GetYPositionFromTick(headTick));
+                    maskleftsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * masks.First().LaneIndex, -GetYPositionFromTick(masks.First().Tick));
+                    maskrightsteps[0] = new PointF((UnitLaneWidth + BorderThickness) * (masks.First().LaneIndex + masks.First().Width), -GetYPositionFromTick(headTick));
+                    maskrightsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * (masks.First().LaneIndex + masks.First().Width), -GetYPositionFromTick(headTick));
+                    maskrightsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * (masks.First().LaneIndex + masks.First().Width), -GetYPositionFromTick(masks.First().Tick));
+                    masknextstepleft = new PointF((UnitLaneWidth + BorderThickness) * masks.Last().LaneIndex, -GetYPositionFromTick(tailTick));
+                    masknextstepright = new PointF((UnitLaneWidth + BorderThickness) * (masks.Last().LaneIndex + masks.Last().Width), -GetYPositionFromTick(tailTick));
+                }
+                if (masks.FindAll(p => p.Tick < headTick).Count > 0)
+                {
+                    var prestep = masks.OrderBy(p => p.Tick).Last(p => p.Tick < headTick);
+                    maskleftsteps[0] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(prestep.Tick));
+                    maskleftsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(prestep.Tick));
+                    maskleftsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(tailTick));
+                    maskrightsteps[0] = new PointF((UnitLaneWidth + BorderThickness) * (prestep.LaneIndex + prestep.Width), -GetYPositionFromTick(prestep.Tick));
+                    maskrightsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * (prestep.LaneIndex + prestep.Width), -GetYPositionFromTick(prestep.Tick));
+                    maskrightsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * (prestep.LaneIndex + prestep.Width), -GetYPositionFromTick(tailTick));
+                    if (masks.FindAll(p => p.Tick >= headTick).Count > 0)
+                    {
+                        var basestep = masks.OrderBy(p => p.Tick).First(p => p.Tick >= headTick);
+                        switch (prestep.Ease)
+                        {
+                            case 0:
+                                maskleftsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(prestep.Tick));
+                                maskleftsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * basestep.LaneIndex, -GetYPositionFromTick(basestep.Tick));
+                                maskrightsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * (prestep.LaneIndex + prestep.Width), -GetYPositionFromTick(prestep.Tick));
+                                maskrightsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * (basestep.LaneIndex + basestep.Width), -GetYPositionFromTick(basestep.Tick));
+                                break;
+                            case 1:
+                                maskleftsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(prestep.Tick));
+                                maskleftsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(basestep.Tick));
+                                maskrightsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * (prestep.LaneIndex + prestep.Width), -GetYPositionFromTick(prestep.Tick));
+                                maskrightsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * (prestep.LaneIndex + prestep.Width), -GetYPositionFromTick(basestep.Tick));
+                                break;
+                            case 2:
+                                maskleftsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * basestep.LaneIndex, -GetYPositionFromTick(prestep.Tick));
+                                maskleftsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * basestep.LaneIndex, -GetYPositionFromTick(basestep.Tick));
+                                maskrightsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * (basestep.LaneIndex + basestep.Width), -GetYPositionFromTick(prestep.Tick));
+                                maskrightsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * (basestep.LaneIndex + basestep.Width), -GetYPositionFromTick(basestep.Tick));
+                                break;
+                            case 3:
+                                maskleftsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(basestep.Tick));
+                                maskleftsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * basestep.LaneIndex, -GetYPositionFromTick(basestep.Tick));
+                                maskrightsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * (prestep.LaneIndex + prestep.Width), -GetYPositionFromTick(basestep.Tick));
+                                maskrightsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * (basestep.LaneIndex + basestep.Width), -GetYPositionFromTick(basestep.Tick));
+                                break;
+                            case 4:
+                                maskleftsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * basestep.LaneIndex, -GetYPositionFromTick(prestep.Tick));
+                                maskleftsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(basestep.Tick));
+                                maskrightsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * (basestep.LaneIndex + basestep.Width), -GetYPositionFromTick(prestep.Tick));
+                                maskrightsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * (prestep.LaneIndex + prestep.Width), -GetYPositionFromTick(basestep.Tick));
+                                break;
+                            case 5:
+                                maskleftsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(prestep.Tick));
+                                maskleftsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(prestep.Tick));
+                                maskleftsteps.Insert(3, new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(basestep.Tick)));
+                                maskleftsteps.Insert(4, new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(basestep.Tick)));
+                                maskleftsteps.Insert(5, new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(basestep.Tick)));
+                                maskrightsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * (prestep.LaneIndex + prestep.Width), -GetYPositionFromTick(prestep.Tick));
+                                maskrightsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * (prestep.LaneIndex + prestep.Width), -GetYPositionFromTick(prestep.Tick));
+                                maskrightsteps.Insert(3, new PointF((UnitLaneWidth + BorderThickness) * (prestep.LaneIndex + prestep.Width), -GetYPositionFromTick(basestep.Tick)));
+                                maskrightsteps.Insert(4, new PointF((UnitLaneWidth + BorderThickness) * (prestep.LaneIndex + prestep.Width), -GetYPositionFromTick(basestep.Tick)));
+                                maskrightsteps.Insert(5, new PointF((UnitLaneWidth + BorderThickness) * (prestep.LaneIndex + prestep.Width), -GetYPositionFromTick(basestep.Tick)));
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+
+                }
+                if (masks.FindAll(p => p.Tick > tailTick).Count > 0)
+                {
+                    var masknextstep = masks.OrderBy(p => p.Tick).First(p => p.Tick > tailTick);
+                    masknextstepleft = new PointF((UnitLaneWidth + BorderThickness) * masknextstep.LaneIndex, -GetYPositionFromTick(masknextstep.Tick));
+                    masknextstepright = new PointF((UnitLaneWidth + BorderThickness) * (masknextstep.LaneIndex + masknextstep.Width), -GetYPositionFromTick(masknextstep.Tick));
+
+                }
+                maskleftsteps.Add(masknextstepleft);
+                maskrightsteps.Add(masknextstepright);
+                if (masks.Count > 0) //ここなくても座標的に描画されないけど一応
+                {
+                    pe.Graphics.DrawBeziers(new Pen(Color.FromArgb(150, 0, 255, 50)), maskleftsteps.ToArray());
+                    pe.Graphics.DrawBeziers(new Pen(Color.FromArgb(150, 0, 255, 50)), maskrightsteps.ToArray());
+                }
+
+                //StagPivot描画
+
+                var pivots = ScoreEvents.StagePivotChangeEvents.OrderBy(p => p.Tick).ToList();
+                foreach (var item in pivots)
+                {
+                    pe.Graphics.DrawLine(new Pen(Color.FromArgb(200, 230, 230, 230)), GetRectFromNotePosition(item.Tick, item.LaneIndex - 0.5f, 1).Left, -GetYPositionFromTick(item.Tick), GetRectFromNotePosition(item.Tick, item.LaneIndex - 0.5f, 1).Right, -GetYPositionFromTick(item.Tick));
+                }
+                //headが下,tailが上
+
+                var pivotsteps = pivots.OrderBy(p => p.Tick)
+                    .Where(p => p.Tick >= headTick && p.Tick <= tailTick)
+                    .Select(p => {
+                        var nextstep = p;
+                        if (pivots.OrderBy(q => q.Tick).Where(q => q.Tick > p.Tick).Count() > 0)
+                            nextstep = pivots.OrderBy(q => q.Tick).First(q => q.Tick > p.Tick);
+                        else
+                            return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(tailTick))
+                        };
+
+                        switch (p.Ease)
+                        {
+                            case 0:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.LaneIndex, -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 1:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 2:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.LaneIndex, -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 3:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(nextstep.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.LaneIndex, -GetYPositionFromTick(p.Tick))
+                        };
+                                break;
+                            case 4:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 5:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(nextstep.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(nextstep.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(nextstep.Tick)),
+                        };
+                                break;
+                            default:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.LaneIndex, -GetYPositionFromTick(nextstep.Tick))
+                                };
+                                break;
+                        }
+                    }
+                   ).SelectMany(p => p).ToList();
+                pivotsteps.Insert(0, new PointF((UnitLaneWidth + BorderThickness) * 0, -GetYPositionFromTick(headTick)));
+                pivotsteps.Insert(1, new PointF((UnitLaneWidth + BorderThickness) * 0, -GetYPositionFromTick(headTick)));
+                pivotsteps.Insert(2, new PointF((UnitLaneWidth + BorderThickness) * 0, -GetYPositionFromTick(tailTick)));
+                var pivotnextstep = new PointF((UnitLaneWidth + BorderThickness) * 0, -GetYPositionFromTick(headTick));
+                if (pivots.Count() > 0)
+                {
+                    pivotsteps[0] = new PointF((UnitLaneWidth + BorderThickness) * pivots.First().LaneIndex, -GetYPositionFromTick(headTick));
+                    pivotsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * pivots.First().LaneIndex, -GetYPositionFromTick(headTick));
+                    pivotsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * pivots.First().LaneIndex, -GetYPositionFromTick(pivots.First().Tick));
+                    pivotnextstep = new PointF((UnitLaneWidth + BorderThickness) * pivots.Last().LaneIndex, -GetYPositionFromTick(tailTick));
+                }
+                if (pivots.FindAll(p => p.Tick < headTick).Count > 0)
+                {
+                    var prestep = pivots.OrderBy(p => p.Tick).Last(p => p.Tick < headTick);
+                    pivotsteps[0] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(prestep.Tick));
+                    pivotsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(prestep.Tick));
+                    pivotsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(tailTick));
+                    if (pivots.FindAll(p => p.Tick >= headTick).Count > 0)
+                    {
+                        var basestep = pivots.OrderBy(p => p.Tick).First(p => p.Tick >= headTick);
+                        switch (prestep.Ease)
+                        {
+                            case 0:
+                                pivotsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(prestep.Tick));
+                                pivotsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * basestep.LaneIndex, -GetYPositionFromTick(basestep.Tick));
+                                
+                                break;
+                            case 1:
+                                pivotsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(prestep.Tick));
+                                pivotsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(basestep.Tick));
+                                
+                                break;
+                            case 2:
+                                pivotsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * basestep.LaneIndex, -GetYPositionFromTick(prestep.Tick));
+                                pivotsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * basestep.LaneIndex, -GetYPositionFromTick(basestep.Tick));
+                               
+                                break;
+                            case 3:
+                                pivotsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(basestep.Tick));
+                                pivotsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * basestep.LaneIndex, -GetYPositionFromTick(basestep.Tick));
+                                break;
+                            case 4:
+                                pivotsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * basestep.LaneIndex, -GetYPositionFromTick(prestep.Tick));
+                                pivotsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(basestep.Tick));
+                                break;
+                            case 5:
+                                pivotsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(prestep.Tick));
+                                pivotsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(prestep.Tick));
+                                pivotsteps.Insert(3, new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(basestep.Tick)));
+                                pivotsteps.Insert(4, new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(basestep.Tick)));
+                                pivotsteps.Insert(5, new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(basestep.Tick)));
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+
+                }
+                if (pivots.FindAll(p => p.Tick > tailTick).Count > 0)
+                {
+                    var pivotnext = pivots.OrderBy(p => p.Tick).First(p => p.Tick > tailTick);
+                    pivotnextstep = new PointF((UnitLaneWidth + BorderThickness) * pivotnext.LaneIndex, -GetYPositionFromTick(pivotnext.Tick));
+                }
+                pivotsteps.Add(pivotnextstep);
+                if (pivots.Count > 0) //ここなくても座標的に描画されないけど一応
+                {
+                    pe.Graphics.DrawBeziers(new Pen(Color.FromArgb(150, 0, 80, 255)), pivotsteps.ToArray());
+                }
+
+                //StagStyle描画
+
+                var styles = ScoreEvents.StageStyleChangeEvents.OrderBy(p => p.Tick).ToList();
+                foreach (var item in styles)
+                {
+                    pe.Graphics.DrawLine(new Pen(Color.FromArgb(200, 230, 230, 230)), GetRectFromNotePosition(item.Tick, item.LaneIndex - 0.5f, 1).Left, -GetYPositionFromTick(item.Tick), GetRectFromNotePosition(item.Tick, item.LaneIndex - 0.5f, 1).Right, -GetYPositionFromTick(item.Tick));
+                }
+                //headが下,tailが上
+
+                var stylesteps = styles.OrderBy(p => p.Tick)
+                    .Where(p => p.Tick >= headTick && p.Tick <= tailTick)
+                    .Select(p => {
+                        var nextstep = p;
+                        if (styles.OrderBy(q => q.Tick).Where(q => q.Tick > p.Tick).Count() > 0)
+                            nextstep = styles.OrderBy(q => q.Tick).First(q => q.Tick > p.Tick);
+                        else
+                            return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(tailTick))
+                        };
+
+                        switch (p.Ease)
+                        {
+                            case 0:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.LaneIndex, -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 1:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 2:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.LaneIndex, -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 3:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(nextstep.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.LaneIndex, -GetYPositionFromTick(p.Tick))
+                        };
+                                break;
+                            case 4:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 5:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(nextstep.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(nextstep.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(nextstep.Tick)),
+                        };
+                                break;
+                            default:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.LaneIndex, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.LaneIndex, -GetYPositionFromTick(nextstep.Tick))
+                                };
+                                break;
+                        }
+                    }
+                   ).SelectMany(p => p).ToList();
+                stylesteps.Insert(0, new PointF((UnitLaneWidth + BorderThickness) * 0, -GetYPositionFromTick(headTick)));
+                stylesteps.Insert(1, new PointF((UnitLaneWidth + BorderThickness) * 0, -GetYPositionFromTick(headTick)));
+                stylesteps.Insert(2, new PointF((UnitLaneWidth + BorderThickness) * 0, -GetYPositionFromTick(tailTick)));
+                var stylenextstep = new PointF((UnitLaneWidth + BorderThickness) * 0, -GetYPositionFromTick(headTick));
+                if (styles.Count() > 0)
+                {
+                    stylesteps[0] = new PointF((UnitLaneWidth + BorderThickness) * styles.First().LaneIndex, -GetYPositionFromTick(headTick));
+                    stylesteps[1] = new PointF((UnitLaneWidth + BorderThickness) * styles.First().LaneIndex, -GetYPositionFromTick(headTick));
+                    stylesteps[2] = new PointF((UnitLaneWidth + BorderThickness) * styles.First().LaneIndex, -GetYPositionFromTick(styles.First().Tick));
+                    stylenextstep = new PointF((UnitLaneWidth + BorderThickness) * styles.Last().LaneIndex, -GetYPositionFromTick(tailTick));
+                }
+                if (styles.FindAll(p => p.Tick < headTick).Count > 0)
+                {
+                    var prestep = styles.OrderBy(p => p.Tick).Last(p => p.Tick < headTick);
+                    stylesteps[0] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(prestep.Tick));
+                    stylesteps[1] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(prestep.Tick));
+                    stylesteps[2] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(tailTick));
+                    if (styles.FindAll(p => p.Tick >= headTick).Count > 0)
+                    {
+                        var basestep = styles.OrderBy(p => p.Tick).First(p => p.Tick >= headTick);
+                        switch (prestep.Ease)
+                        {
+                            case 0:
+                                stylesteps[1] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(prestep.Tick));
+                                stylesteps[2] = new PointF((UnitLaneWidth + BorderThickness) * basestep.LaneIndex, -GetYPositionFromTick(basestep.Tick));
+
+                                break;
+                            case 1:
+                                stylesteps[1] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(prestep.Tick));
+                                stylesteps[2] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(basestep.Tick));
+
+                                break;
+                            case 2:
+                                stylesteps[1] = new PointF((UnitLaneWidth + BorderThickness) * basestep.LaneIndex, -GetYPositionFromTick(prestep.Tick));
+                                stylesteps[2] = new PointF((UnitLaneWidth + BorderThickness) * basestep.LaneIndex, -GetYPositionFromTick(basestep.Tick));
+
+                                break;
+                            case 3:
+                                stylesteps[1] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(basestep.Tick));
+                                stylesteps[2] = new PointF((UnitLaneWidth + BorderThickness) * basestep.LaneIndex, -GetYPositionFromTick(basestep.Tick));
+                                break;
+                            case 4:
+                                stylesteps[1] = new PointF((UnitLaneWidth + BorderThickness) * basestep.LaneIndex, -GetYPositionFromTick(prestep.Tick));
+                                stylesteps[2] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(basestep.Tick));
+                                break;
+                            case 5:
+                                stylesteps[1] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(prestep.Tick));
+                                stylesteps[2] = new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(prestep.Tick));
+                                stylesteps.Insert(3, new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(basestep.Tick)));
+                                stylesteps.Insert(4, new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(basestep.Tick)));
+                                stylesteps.Insert(5, new PointF((UnitLaneWidth + BorderThickness) * prestep.LaneIndex, -GetYPositionFromTick(basestep.Tick)));
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+
+                }
+                if (styles.FindAll(p => p.Tick > tailTick).Count > 0)
+                {
+                    var stylenext = styles.OrderBy(p => p.Tick).First(p => p.Tick > tailTick);
+                    stylenextstep = new PointF((UnitLaneWidth + BorderThickness) * stylenext.LaneIndex, -GetYPositionFromTick(stylenext.Tick));
+                }
+                stylesteps.Add(stylenextstep);
+                if (styles.Count > 0) //ここなくても座標的に描画されないけど一応
+                {
+                    pe.Graphics.DrawBeziers(new Pen(Color.FromArgb(150, 0, 255, 210)), stylesteps.ToArray());
+                }
+
+                //StagTrans描画
+
+                var transes = ScoreEvents.StageTransformChangeEvents.OrderBy(p => p.Tick).ToList();
+                foreach (var item in transes)
+                {
+                    pe.Graphics.DrawLine(new Pen(Color.FromArgb(200, 230, 230, 230)), GetRectFromNotePosition(item.Tick, item.XTranslation - 0.5f, 1).Left, -GetYPositionFromTick(item.Tick), GetRectFromNotePosition(item.Tick, item.XTranslation - 0.5f, 1).Right, -GetYPositionFromTick(item.Tick));
+                }
+                //headが下,tailが上
+
+                var transsteps = transes.OrderBy(p => p.Tick)
+                    .Where(p => p.Tick >= headTick && p.Tick <= tailTick)
+                    .Select(p => {
+                        var nextstep = p;
+                        if (transes.OrderBy(q => q.Tick).Where(q => q.Tick > p.Tick).Count() > 0)
+                            nextstep = transes.OrderBy(q => q.Tick).First(q => q.Tick > p.Tick);
+                        else
+                            return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.XTranslation, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.XTranslation, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.XTranslation, -GetYPositionFromTick(tailTick))
+                        };
+
+                        switch (p.Ease)
+                        {
+                            case 0:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.XTranslation, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.XTranslation, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.XTranslation, -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 1:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.XTranslation, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.XTranslation, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.XTranslation, -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 2:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.XTranslation, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.XTranslation, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.XTranslation, -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 3:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.XTranslation, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.XTranslation, -GetYPositionFromTick(nextstep.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.XTranslation, -GetYPositionFromTick(p.Tick))
+                        };
+                                break;
+                            case 4:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.XTranslation, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.XTranslation, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.XTranslation, -GetYPositionFromTick(nextstep.Tick))
+                        };
+                                break;
+                            case 5:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.XTranslation, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.XTranslation, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.XTranslation, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.XTranslation, -GetYPositionFromTick(nextstep.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.XTranslation, -GetYPositionFromTick(nextstep.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.XTranslation, -GetYPositionFromTick(nextstep.Tick)),
+                        };
+                                break;
+                            default:
+                                return new PointF[] {
+                        new PointF((UnitLaneWidth + BorderThickness) * p.XTranslation, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * p.XTranslation, -GetYPositionFromTick(p.Tick)),
+                        new PointF((UnitLaneWidth + BorderThickness) * nextstep.XTranslation, -GetYPositionFromTick(nextstep.Tick))
+                                };
+                                break;
+                        }
+                    }
+                   ).SelectMany(p => p).ToList();
+                transsteps.Insert(0, new PointF((UnitLaneWidth + BorderThickness) * 0, -GetYPositionFromTick(headTick)));
+                transsteps.Insert(1, new PointF((UnitLaneWidth + BorderThickness) * 0, -GetYPositionFromTick(headTick)));
+                transsteps.Insert(2, new PointF((UnitLaneWidth + BorderThickness) * 0, -GetYPositionFromTick(tailTick)));
+                var transnextstep = new PointF((UnitLaneWidth + BorderThickness) * 0, -GetYPositionFromTick(headTick));
+                if (transes.Count() > 0)
+                {
+                    transsteps[0] = new PointF((UnitLaneWidth + BorderThickness) * transes.First().XTranslation, -GetYPositionFromTick(headTick));
+                    transsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * transes.First().XTranslation, -GetYPositionFromTick(headTick));
+                    transsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * transes.First().XTranslation, -GetYPositionFromTick(transes.First().Tick));
+                    transnextstep = new PointF((UnitLaneWidth + BorderThickness) * transes.Last().XTranslation, -GetYPositionFromTick(tailTick));
+                }
+                if (transes.FindAll(p => p.Tick < headTick).Count > 0)
+                {
+                    var prestep = transes.OrderBy(p => p.Tick).Last(p => p.Tick < headTick);
+                    transsteps[0] = new PointF((UnitLaneWidth + BorderThickness) * prestep.XTranslation, -GetYPositionFromTick(prestep.Tick));
+                    transsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * prestep.XTranslation, -GetYPositionFromTick(prestep.Tick));
+                    transsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * prestep.XTranslation, -GetYPositionFromTick(tailTick));
+                    if (transes.FindAll(p => p.Tick >= headTick).Count > 0)
+                    {
+                        var basestep = transes.OrderBy(p => p.Tick).First(p => p.Tick >= headTick);
+                        switch (prestep.Ease)
+                        {
+                            case 0:
+                                transsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * prestep.XTranslation, -GetYPositionFromTick(prestep.Tick));
+                                transsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * basestep.XTranslation, -GetYPositionFromTick(basestep.Tick));
+
+                                break;
+                            case 1:
+                                transsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * prestep.XTranslation, -GetYPositionFromTick(prestep.Tick));
+                                transsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * prestep.XTranslation, -GetYPositionFromTick(basestep.Tick));
+
+                                break;
+                            case 2:
+                                transsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * basestep.XTranslation, -GetYPositionFromTick(prestep.Tick));
+                                transsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * basestep.XTranslation, -GetYPositionFromTick(basestep.Tick));
+
+                                break;
+                            case 3:
+                                transsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * prestep.XTranslation, -GetYPositionFromTick(basestep.Tick));
+                                transsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * basestep.XTranslation, -GetYPositionFromTick(basestep.Tick));
+                                break;
+                            case 4:
+                                transsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * basestep.XTranslation, -GetYPositionFromTick(prestep.Tick));
+                                transsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * prestep.XTranslation, -GetYPositionFromTick(basestep.Tick));
+                                break;
+                            case 5:
+                                transsteps[1] = new PointF((UnitLaneWidth + BorderThickness) * prestep.XTranslation, -GetYPositionFromTick(prestep.Tick));
+                                transsteps[2] = new PointF((UnitLaneWidth + BorderThickness) * prestep.XTranslation, -GetYPositionFromTick(prestep.Tick));
+                                transsteps.Insert(3, new PointF((UnitLaneWidth + BorderThickness) * prestep.XTranslation, -GetYPositionFromTick(basestep.Tick)));
+                                transsteps.Insert(4, new PointF((UnitLaneWidth + BorderThickness) * prestep.XTranslation, -GetYPositionFromTick(basestep.Tick)));
+                                transsteps.Insert(5, new PointF((UnitLaneWidth + BorderThickness) * prestep.XTranslation, -GetYPositionFromTick(basestep.Tick)));
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+
+                }
+                if (transes.FindAll(p => p.Tick > tailTick).Count > 0)
+                {
+                    var transnext = transes.OrderBy(p => p.Tick).First(p => p.Tick > tailTick);
+                    transnextstep = new PointF((UnitLaneWidth + BorderThickness) * transnext.XTranslation, -GetYPositionFromTick(transnext.Tick));
+                }
+                transsteps.Add(transnextstep);
+                if (transes.Count > 0) //ここなくても座標的に描画されないけど一応
+                {
+                    pe.Graphics.DrawBeziers(new Pen(Color.FromArgb(150, 200, 230, 200)), transsteps.ToArray());
+                }
 
 
             }
@@ -6127,16 +7534,10 @@ namespace Ched.UI
 
         private RectangleF GetRectFromNotePosition(int tick, float laneIndex, float width)
         {
-            float width2 = 0;
-
-            if(width < 0.1)
-            {
-                width2 = 0.1f;
-            }
             return new RectangleF(
                 (UnitLaneWidth + BorderThickness) * laneIndex + BorderThickness,
                 GetYPositionFromTick(tick) - ShortNoteHeight / 2,
-                (UnitLaneWidth + BorderThickness) * (width + width2) - BorderThickness,
+                (UnitLaneWidth + BorderThickness) * Math.Max(0.1f, width) - BorderThickness,
                 ShortNoteHeight
                 );
         }
@@ -6204,6 +7605,16 @@ namespace Ched.UI
                 ShortNoteHeight * 2
                 );
         }
+        private RectangleF GetRectFromCameraEventPosition(int tick, float laneIndex, float width)
+        {
+            width = Math.Max(0.1f, width);
+            return new RectangleF(
+                (UnitLaneWidth + BorderThickness) * laneIndex + BorderThickness,
+                GetYPositionFromTick(tick) - ShortNoteHeight / 2,
+                (UnitLaneWidth + BorderThickness) * width - BorderThickness,
+                ShortNoteHeight
+                );
+        }
 
         private RectangleF GetClickableRectFromNotePosition(int tick, float laneIndex, float width)
         {
@@ -6233,11 +7644,28 @@ namespace Ched.UI
         {
             return GetRectFromCommentPosition(tick, laneIndex, size).Expand(1, 3);
         }
+        private RectangleF GetClickableRectFromCameraEventPosition(int tick, float laneIndex, float width)
+        {
+            return GetRectFromCameraEventPosition(tick, laneIndex, width).Expand(1, 3);
+        }
+        private RectangleF GetClickableRectFromStageMaskEventPosition(int tick, float laneIndex, float width)
+        {
+            return GetRectFromCameraEventPosition(tick, laneIndex, width).Expand(1, 3);
+        }
+        private RectangleF GetClickableRectFromStageEventPosition(int tick, float laneIndex)
+        {
+            return GetRectFromCameraEventPosition(tick, laneIndex - 0.5f, 1).Expand(1, 3);
+        }
         private float GetNewNoteLaneIndex(float xpos, float width)
         {
             float newNoteLaneIndex = (int)Math.Round(xpos / (UnitLaneWidth + BorderThickness) - width / 2);
             if (EditableOutLane) return newNoteLaneIndex;
             else return Math.Min(Constants.LanesCount - width, Math.Max(0, newNoteLaneIndex));
+
+        }
+        private float GetNewEventLaneIndex(float xpos, float width)
+        {
+            return (int)Math.Round(xpos / (UnitLaneWidth + BorderThickness) - width / 2);
 
         }
 
@@ -7300,6 +8728,10 @@ namespace Ched.UI
             Initialize();
             UpdateScore(score);
         }
+        public void UpdateStages(List<Stage> stages)
+        {
+            Stages = stages;
+        }
 
         public void UpdateScore(Score score)
         {
@@ -7339,7 +8771,6 @@ namespace Ched.UI
             public IReadOnlyCollection<Damage> Damages { get { return source.Damages; } }
             public IReadOnlyCollection<Guide> Guides { get { return source.Guides; } }
             public IReadOnlyCollection<StepNoteTap> StepNoteTaps { get { return source.StepNoteTaps; } }
-            public IReadOnlyCollection<Marker> Markers { get { return source.Markers; } }
 
             public NoteCollection(Core.NoteCollection src)
             {
@@ -7378,11 +8809,6 @@ namespace Ched.UI
             public void Add(StepNoteTap note)
             {
                 source.StepNoteTaps.Add(note);
-                NoteChanged?.Invoke(this, EventArgs.Empty);
-            }
-            public void Add(Marker note)
-            {
-                source.Markers.Add(note);
                 NoteChanged?.Invoke(this, EventArgs.Empty);
             }
 
@@ -7450,11 +8876,6 @@ namespace Ched.UI
             public void Remove(StepNoteTap note)
             {
                 source.StepNoteTaps.Remove(note);
-                NoteChanged?.Invoke(this, EventArgs.Empty);
-            }
-            public void Remove(Marker note)
-            {
-                source.Markers.Remove(note);
                 NoteChanged?.Invoke(this, EventArgs.Empty);
             }
             public void Remove(Air note)
@@ -7551,7 +8972,6 @@ namespace Ched.UI
                 foreach (var note in collection.Damages) Add(note);
                 foreach (var note in collection.Guides) Add(note);
                 foreach (var note in collection.StepNoteTaps) Add(note);
-                foreach (var note in collection.Markers) Add(note);
             }
 
             public void Clear()

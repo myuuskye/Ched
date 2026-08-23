@@ -52,6 +52,10 @@ namespace Ched.Core
         private Dictionary<int, string> channelNames = new Dictionary<int, string>();
         [Newtonsoft.Json.JsonProperty]
         private Dictionary<int, IExportSetting> exportSettings = new Dictionary<int, IExportSetting>();
+        [Newtonsoft.Json.JsonProperty]
+        private List<Stage> stages = new List<Stage>();
+        [Newtonsoft.Json.JsonProperty]
+        private int stageCount = 0;
 
         public string Path { get; set; }
 
@@ -151,6 +155,22 @@ namespace Ched.Core
         {
             get { return exportSettings; }
             set { exportSettings = value; }
+        }
+        /// <summary>
+        /// ステージを格納します。
+        /// </summary>
+        public List<Stage> Stages
+        {
+            get { return stages; }
+            set { stages = value; }
+        }
+        /// <summary>
+        /// 累計ステージ数を格納します。
+        /// </summary>
+        public int StageCount
+        {
+            get { return stageCount; }
+            set { stageCount = value; }
         }
 
         public void Save(string path)

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using Ched.Core;
 using Ched.Core.Notes;
 using Ched.UI;
 
@@ -202,7 +202,65 @@ namespace Ched.UI.Operations
 
     }
 
-    
+    public class ChangeShortNoteStageOperation : EditShortNoteOperation
+    {
+        public override string Description { get { return "ノートステージの変更"; } }
+
+
+        protected NoteStage BeforeStage { get; }
+        protected NoteStage AfterStage { get; }
+
+        public ChangeShortNoteStageOperation(TappableBase note, NoteStage before, NoteStage after) : base(note)
+        {
+            BeforeStage = before;
+            AfterStage = after;
+        }
+
+        public override void Redo()
+        {
+            Note.Stage = AfterStage.Stage;
+        }
+
+        public override void Undo()
+        {
+            Note.Stage = BeforeStage.Stage;
+        }
+
+        public struct NoteStage
+        {
+            public int Stage { get; }
+
+            public NoteStage(int stage)
+            {
+                Stage = stage;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (obj == null || !(obj is NoteStage)) return false;
+                NoteStage other = (NoteStage)obj;
+                return Stage == other.Stage ;
+            }
+
+            public override int GetHashCode()
+            {
+                return Stage * 2 ^ 2;
+            }
+
+            public static bool operator ==(NoteStage a, NoteStage b)
+            {
+                return a.Equals(b);
+            }
+
+            public static bool operator !=(NoteStage a, NoteStage b)
+            {
+                return !a.Equals(b);
+            }
+        }
+
+    }
+
+
 
     public class ChangeHoldDurationOperation : IOperation
     {
@@ -489,6 +547,65 @@ namespace Ched.UI.Operations
         }
 
     }
+    public class ChangeSlideStageOperation : IOperation
+    {
+        public string Description { get { return "スライドステージの変更"; } }
+
+        protected Slide Note;
+
+        protected NoteStage BeforeStage { get; }
+        protected NoteStage AfterStage { get; }
+
+        public ChangeSlideStageOperation(Slide slide, NoteStage before, NoteStage after)
+        {
+            Note = slide;
+            BeforeStage = before;
+            AfterStage = after;
+        }
+
+        public void Redo()
+        {
+            Note.Stage = AfterStage.Stage;
+        }
+
+        public void Undo()
+        {
+            Note.Stage = BeforeStage.Stage;
+        }
+
+        public struct NoteStage
+        {
+            public int Stage { get; }
+
+            public NoteStage(int stage)
+            {
+                Stage = stage;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (obj == null || !(obj is NoteStage)) return false;
+                NoteStage other = (NoteStage)obj;
+                return Stage == other.Stage;
+            }
+
+            public override int GetHashCode()
+            {
+                return Stage * 2 ^ 2;
+            }
+
+            public static bool operator ==(NoteStage a, NoteStage b)
+            {
+                return a.Equals(b);
+            }
+
+            public static bool operator !=(NoteStage a, NoteStage b)
+            {
+                return !a.Equals(b);
+            }
+        }
+
+    }
 
     public class FlipSlideOperation : IOperation
     {
@@ -759,6 +876,65 @@ namespace Ched.UI.Operations
             }
 
             public static bool operator !=(NoteChannel a, NoteChannel b)
+            {
+                return !a.Equals(b);
+            }
+        }
+
+    }
+    public class ChangeGuideStageOperation : IOperation
+    {
+        public string Description { get { return "GUIDEステージの変更"; } }
+
+        protected Guide Note;
+
+        protected NoteStage BeforeStage { get; }
+        protected NoteStage AfterStage { get; }
+
+        public ChangeGuideStageOperation(Guide guide, NoteStage before, NoteStage after)
+        {
+            Note = guide;
+            BeforeStage = before;
+            AfterStage = after;
+        }
+
+        public void Redo()
+        {
+            Note.Stage = AfterStage.Stage;
+        }
+
+        public void Undo()
+        {
+            Note.Stage = BeforeStage.Stage;
+        }
+
+        public struct NoteStage
+        {
+            public int Stage { get; }
+
+            public NoteStage(int stage)
+            {
+                Stage = stage;
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (obj == null || !(obj is NoteStage)) return false;
+                NoteStage other = (NoteStage)obj;
+                return Stage == other.Stage;
+            }
+
+            public override int GetHashCode()
+            {
+                return Stage * 2 ^ 2;
+            }
+
+            public static bool operator ==(NoteStage a, NoteStage b)
+            {
+                return a.Equals(b);
+            }
+
+            public static bool operator !=(NoteStage a, NoteStage b)
             {
                 return !a.Equals(b);
             }

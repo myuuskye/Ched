@@ -40,6 +40,9 @@ namespace Ched.UI.Windows
         private decimal eventSpeedRatio;
         private int eventSpeedCh;
         private string customArgs;
+        private float laneIndex;
+        private float skip;
+        private bool hideNotes;
 
         public int EventTick
         {
@@ -83,7 +86,36 @@ namespace Ched.UI.Windows
                 NotifyPropertyChanged();
             }
         }
-
+        public float LaneIndex
+        {
+            get => laneIndex;
+            set
+            {
+                if (value == laneIndex) return;
+                laneIndex = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public float Skip
+        {
+            get => skip;
+            set
+            {
+                if (value == skip) return;
+                skip = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public bool HideNotes
+        {
+            get => hideNotes;
+            set
+            {
+                if (value == hideNotes) return;
+                hideNotes = value;
+                NotifyPropertyChanged();
+            }
+        }
         public HighSpeedEventPropertiesWindowViewModel()
         {
         }
@@ -101,6 +133,9 @@ namespace Ched.UI.Windows
             EventSpeedRatio = Event.SpeedRatio; 
             EventSpeedCh = Event.SpeedCh;
             EventCustomArgs = Event.CustomArgs;
+            LaneIndex = Event.EditLaneIndex;
+            Skip = Event.Skip;
+            HideNotes = Event.HideNotes == 0 ? false : true;
             
         }
 
@@ -111,6 +146,9 @@ namespace Ched.UI.Windows
             Event.SpeedCh = EventSpeedCh;
             Event.Type = EventSpeedCh;
             Event.CustomArgs = EventCustomArgs;
+            Event.EditLaneIndex = LaneIndex;
+            Event.Skip = Skip;
+            Event.HideNotes = HideNotes ? 1 : 0;
 
             if(EventCustomArgs.Length > 0)
             {

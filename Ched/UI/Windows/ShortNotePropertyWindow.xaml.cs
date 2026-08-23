@@ -21,7 +21,21 @@ namespace Ched.UI.Windows
     {
         public ShortNotePropertiesWindow()
         {
+            
             InitializeComponent();
+
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            
+            var data = ((ShortNotePropertiesWindowViewModel)DataContext);
+            StageComboBox.ItemsSource = data.Stages;
+            StageComboBox.SelectedValue = data.Note.Stage;
+        }
+        private void StageComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ((ShortNotePropertiesWindowViewModel)DataContext).NoteStage = (int)StageComboBox.SelectedValue;
         }
 
     }
@@ -29,13 +43,14 @@ namespace Ched.UI.Windows
     public class ShortNotePropertiesWindowViewModel : ViewModel
     {
 
-        private TappableBase Note { get; }
-        private NoteView noteView { get; }
+        public TappableBase Note { get; }
+        public List<Stage> Stages { get; }
 
         private int noteTick;
         private float noteLaneIndex;
         private float noteWidth;
         private int noteChannel;
+        private int noteStage;
         private int lanedecimalPlaces;
         private int widthdecimalPlaces;
         private float noteOpacity;
@@ -58,6 +73,16 @@ namespace Ched.UI.Windows
             {
                 if (value == noteChannel) return;
                 noteChannel = value;
+                NotifyPropertyChanged();
+            }
+        }
+        public int NoteStage
+        {
+            get => noteStage;
+            set
+            {
+                if (value == noteStage) return;
+                noteStage = value;
                 NotifyPropertyChanged();
             }
         }
@@ -121,28 +146,31 @@ namespace Ched.UI.Windows
             Note = note;
         }
 
-        public ShortNotePropertiesWindowViewModel(TappableBase note)
+        public ShortNotePropertiesWindowViewModel(TappableBase note, List<Stage> stages)
         {
             Note = note;
+            Stages = stages;
         }
 
         public void BeginEdit()
         {
             NoteTick = Note.Tick;
             NoteChannel = Note.Channel;
+            NoteStage = Note.Stage;
             NoteLaneIndex = Note.LaneIndex;
             NoteWidth = Note.Width;
             LaneIndexDecimalPlaces = Note.LaneIndex.ToString().Length;
             WidthDecimalPlaces = Note.Width.ToString().Length;
+            
         }
 
         public void CommitEdit()
         {
-            Console.WriteLine(NoteLaneIndex + " " + NoteWidth);
             Note.Tick = NoteTick;
             Note.Channel = NoteChannel;
             Note.LaneIndex = NoteLaneIndex;
             Note.Width = NoteWidth;
+            Note.Stage = NoteStage;
         }
     }
 }

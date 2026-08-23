@@ -546,44 +546,6 @@ namespace Ched.UI.Operations
         }
     }
 
-    public class InsertMarkerOperation : NoteCollectionOperation<Marker>
-    {
-        public override string Description { get { return "MARKERの追加"; } }
-
-        public InsertMarkerOperation(NoteView.NoteCollection collection, Marker note) : base(collection, note)
-        {
-        }
-
-        public override void Redo()
-        {
-            Collection.Add(Note);
-        }
-
-        public override void Undo()
-        {
-            Collection.Remove(Note);
-        }
-    }
-
-    public class RemoveMarkerOperation : NoteCollectionOperation<Marker>
-    {
-        public override string Description { get { return "MARKERの削除"; } }
-
-        public RemoveMarkerOperation(NoteView.NoteCollection collection, Marker note) : base(collection, note)
-        {
-        }
-
-        public override void Redo()
-        {
-            Collection.Remove(Note);
-        }
-
-        public override void Undo()
-        {
-            Collection.Add(Note);
-        }
-    }
-
 
 
 }

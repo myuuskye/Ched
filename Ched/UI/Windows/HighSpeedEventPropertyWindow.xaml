@@ -63,6 +63,15 @@
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
+                        <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.EditorLane}" />
+                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding LaneIndex}" DecimalPlaces="3" Increment="1" Minimum="-10000000000"  Maximum="10000000000" />
+                    </Grid>
+                    <Grid Style="{StaticResource ResourceKey=InputFieldRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
                         <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.SpeedRatio}" />
                         <local:BindableNumericUpDown Grid.Column="1" Value="{Binding EventSpeedRatio}" DecimalPlaces="5" Increment="1" Minimum="-10000000000"  Maximum="10000000000" />
                     </Grid>
@@ -75,7 +84,23 @@
                         <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.SpeedCh}" />
                         <local:BindableNumericUpDown Grid.Column="1" Value="{Binding EventSpeedCh}" DecimalPlaces="0" Increment="1" Minimum="0"  Maximum="100000" />
                     </Grid>
+                    <Grid Style="{StaticResource ResourceKey=InputFieldRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
 
+                        <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.SkipBeats}" />
+                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding Skip}" DecimalPlaces="0" Increment="1" Maximum="1000000000000000" Minimum="-1000000000000000" />
+                    </Grid>
+                    <Grid Style="{StaticResource ResourceKey=InputFieldRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <CheckBox Content="{x:Static localization:MainFormStrings.HideNotes}" IsChecked="{Binding HideNotes}" Margin="0,-4,426,4" Grid.ColumnSpan="2" />
+                    </Grid>
 
 
 
@@ -84,8 +109,8 @@
             </GroupBox>
 
             <GroupBox Header="{x:Static localization:MainFormStrings.Other}" Margin="{StaticResource ContainerMargin}">
-
-                <Grid Style="{StaticResource ResourceKey=InputFieldRow}">
+                <StackPanel Orientation="Vertical" Grid.IsSharedSizeScope="True">
+                    <Grid Style="{StaticResource ResourceKey=InputFieldRow}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
                         <ColumnDefinition Width="*" />
@@ -94,7 +119,16 @@
                     <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.Custom}" />
                     <TextBox Grid.Column="1" Text="{Binding EventCustomArgs}"  Height="60" />
                 </Grid>
-                
+                    <Grid Style="{StaticResource ResourceKey=InputFieldRow}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" SharedSizeGroup="Label" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Label Grid.Column="0" Content="{x:Static localization:MainFormStrings.Ease}" />
+                        <local:BindableNumericUpDown Grid.Column="1" Value="{Binding Ease}" DecimalPlaces="0" Increment="1" Minimum="0"  Maximum="1" />
+                    </Grid>
+                </StackPanel>
 
             </GroupBox>
 

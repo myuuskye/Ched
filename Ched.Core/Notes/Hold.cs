@@ -14,9 +14,13 @@ namespace Ched.Core.Notes
         [Newtonsoft.Json.JsonProperty]
         private float width = 1;
         [Newtonsoft.Json.JsonProperty]
-        private int channel = 1;
+        private int channel = 0;
         [Newtonsoft.Json.JsonProperty]
         private int duration = 1;
+        [Newtonsoft.Json.JsonProperty]
+        private int stage ;
+        [Newtonsoft.Json.JsonProperty]
+        private Channel noteChannel;
 
         [Newtonsoft.Json.JsonProperty]
         private StartTap startNote;
@@ -58,6 +62,28 @@ namespace Ched.Core.Notes
             set
             {
                 channel = value;
+            }
+        }
+        /// <summary>
+        /// ノートのステージを設定します。
+        /// </summary>
+        public int Stage
+        {
+            get { return stage; }
+            set
+            {
+                stage = value;
+            }
+        }
+        /// <summary>
+        /// ノートのチャンネルを設定します。
+        /// </summary>
+        public Channel NoteChannel
+        {
+            get { return noteChannel; }
+            set
+            {
+                noteChannel = value;
             }
         }
 
@@ -130,6 +156,22 @@ namespace Ched.Core.Notes
             public override int Tick { get { return parent.StartTick; } }
 
             public override int Channel { get { return parent.Channel; } set { parent.Channel = value; } }
+            public override int Stage
+            {
+                get { return parent.Stage; }
+                set
+                {
+                    parent.Stage = value;
+                }
+            }
+            public override Channel NoteChannel
+            {
+                get { return parent.NoteChannel; }
+                set
+                {
+                    parent.NoteChannel = value;
+                }
+            }
 
             public override bool IsTap { get { return true; } }
             public override float LaneIndex { get { return parent.LaneIndex; } }
@@ -145,6 +187,8 @@ namespace Ched.Core.Notes
             public override bool IsTap { get { return false; } }
 
             public override int Channel { get { return parent.Channel; } set { parent.Channel = value; } }
+            public override int Stage { get { return parent.Stage; } set { parent.Stage = value; } }
+            public override Channel NoteChannel { get { return parent.NoteChannel; } set { parent.NoteChannel = value; } }
 
             public override int Tick { get { return parent.StartTick + parent.Duration; } }
             public override float LaneIndex { get { return parent.LaneIndex; } }

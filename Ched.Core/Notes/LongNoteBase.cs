@@ -52,7 +52,8 @@ namespace Ched.Core.Notes
         public abstract int Tick { get; }
         public abstract float Width { get; }
         public abstract int Channel { get; set; }
-
+        public abstract int Stage { get; set; }
+        public abstract Channel NoteChannel { get; set; }
 
     }
 

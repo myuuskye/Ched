@@ -747,4 +747,100 @@
   <data name="Skill" xml:space="preserve">
     <value>スキル</value>
   </data>
+  <data name="Ease" xml:space="preserve">
+    <value>加減速</value>
+  </data>
+  <data name="Rotation" xml:space="preserve">
+    <value>回転</value>
+  </data>
+  <data name="Tilt" xml:space="preserve">
+    <value>傾き</value>
+  </data>
+  <data name="Zoom" xml:space="preserve">
+    <value>ズーム</value>
+  </data>
+  <data name="ZoomAlign" xml:space="preserve">
+    <value>ズーム調整</value>
+  </data>
+  <data name="ZoomLane" xml:space="preserve">
+    <value>ズーム対象レーン</value>
+  </data>
+  <data name="ZoomY" xml:space="preserve">
+    <value>ズーム対象Y</value>
+  </data>
+  <data name="Camera" xml:space="preserve">
+    <value>カメラ</value>
+  </data>
+  <data name="Stage" xml:space="preserve">
+    <value>ステージ</value>
+  </data>
+  <data name="Anchor" xml:space="preserve">
+    <value>レーンを中心にする</value>
+  </data>
+  <data name="DivisionLineAlpha" xml:space="preserve">
+    <value>分割線透明度</value>
+  </data>
+  <data name="DivisionParity" xml:space="preserve">
+    <value>分割パリティ</value>
+  </data>
+  <data name="DivisionSize" xml:space="preserve">
+    <value>レーン分割大きさ</value>
+  </data>
+  <data name="EditorLane" xml:space="preserve">
+    <value>編集レーン</value>
+  </data>
+  <data name="FullWidth" xml:space="preserve">
+    <value>フルサイズ</value>
+  </data>
+  <data name="JudgeLineAlpha" xml:space="preserve">
+    <value>判定線透明度</value>
+  </data>
+  <data name="JudgeLineColor" xml:space="preserve">
+    <value>判定線色</value>
+  </data>
+  <data name="JudgeLineStyle" xml:space="preserve">
+    <value>判定線スタイル</value>
+  </data>
+  <data name="LaneAlpha" xml:space="preserve">
+    <value>レーン透明度</value>
+  </data>
+  <data name="LeftBorderStyle" xml:space="preserve">
+    <value>レーン左端スタイル</value>
+  </data>
+  <data name="NoteAlpha" xml:space="preserve">
+    <value>ノーツ透明度</value>
+  </data>
+  <data name="RightBorderStyle" xml:space="preserve">
+    <value>レーン右端スタイル</value>
+  </data>
+  <data name="XTranslate" xml:space="preserve">
+    <value>X座標</value>
+  </data>
+  <data name="YBeatOffset" xml:space="preserve">
+    <value>Yオフセット(拍)</value>
+  </data>
+  <data name="YOffset" xml:space="preserve">
+    <value>Yオフセット</value>
+  </data>
+  <data name="YTranslate" xml:space="preserve">
+    <value>Y座標</value>
+  </data>
+  <data name="ZoomAlignCenter" xml:space="preserve">
+    <value>ズームを中央にする</value>
+  </data>
+  <data name="HideNotes" xml:space="preserve">
+    <value>ノーツを非表示</value>
+  </data>
+  <data name="SkipBeats" xml:space="preserve">
+    <value>スキップ拍数</value>
+  </data>
+  <data name="StageManager" xml:space="preserve">
+    <value>ステージ管理</value>
+  </data>
+  <data name="Name" xml:space="preserve">
+    <value>名前</value>
+  </data>
+  <data name="Number" xml:space="preserve">
+    <value>番号</value>
+  </data>
 </root>

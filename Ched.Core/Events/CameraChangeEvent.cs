@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 namespace Ched.Core.Events
 {
     /// <summary>
-    /// ハイスピードの変更を表すクラスです。
+    /// カメラの変更を表すクラスです。
     /// </summary>
     [Newtonsoft.Json.JsonObject(Newtonsoft.Json.MemberSerialization.OptIn)]
-    [DebuggerDisplay("Tick = {Tick}, Value = {SpeedRatio}, Ch = {Channel}")]
+    [DebuggerDisplay("Tick = {Tick}, Lane = {LaneIndex}, Width = {Width}")]
     public class CameraChangeEvent : EventBase
     {
         [Newtonsoft.Json.JsonProperty]
@@ -20,7 +20,7 @@ namespace Ched.Core.Events
         [Newtonsoft.Json.JsonProperty]
         private float width;
         [Newtonsoft.Json.JsonProperty]
-        private float zoom;
+        private float zoom = 1;
         [Newtonsoft.Json.JsonProperty]
         private float zoomTargetLane;
         [Newtonsoft.Json.JsonProperty]
@@ -30,7 +30,7 @@ namespace Ched.Core.Events
         [Newtonsoft.Json.JsonProperty]
         private float rotation;
         [Newtonsoft.Json.JsonProperty]
-        private float tilt;
+        private float tilt = 1;
         [Newtonsoft.Json.JsonProperty]
         private int ease;
 
@@ -56,7 +56,7 @@ namespace Ched.Core.Events
             get { return zoomTargetLane; }
             set { zoomTargetLane = value; }
         }
-        public float ZoomTartgetY
+        public float ZoomTargetY
         {
             get { return zoomTargetY; }
             set { zoomTargetY = value; }
